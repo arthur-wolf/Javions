@@ -4,7 +4,7 @@ public final class Units {
 
     private Units(){}
     public static final double CENTI = 1e-2;
-    public static final double KILO = 0;
+    public static final double KILO = 1e3;
 
     public static class Angle {
 
@@ -38,13 +38,13 @@ public final class Units {
         public static final double KILOMETER_PER_HOUR = 1;
 
     }
-    static double convert(double value, double fromUnit, double toUnit){
+    public static double convert(double value, double fromUnit, double toUnit){
         return value * (fromUnit/toUnit);
     }
-    static double convertFrom(double value, double fromUnit){
+    public static double convertFrom(double value, double fromUnit){
         return value * (fromUnit);
     }
-    static double convertTo(double value, double toUnit){
+    public static double convertTo(double value, double toUnit){
         return value * (toUnit);
     }
 }
