@@ -20,6 +20,6 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
     @Override
     public String toString() {
         return "(" + Units.convert(this.longitudeT32, Units.Angle.T32, Units.Angle.DEGREE)
-                + "°, " + Units.convert(this.latitudeT32, Units.Angle.T32, Units.Angle.DEGREE) + "°";
+                + "°, " + Units.convert(this.latitudeT32, Units.Angle.T32, Units.Angle.DEGREE) + "°)";
     }
 }
