@@ -40,12 +40,35 @@ public final class Units {
         public static final double KILOMETER_PER_HOUR = Length.KILOMETER / Time.HOUR;
 
     }
+
+    /**
+     * This method is useful if we want to convert the unit of a value
+     *
+     * @param value : the given value that we want to convert
+     * @param fromUnit : the initial unit in which the value is expressed
+     * @param toUnit : the arrival unit in which the value will be expressed
+     * @return the given value in the unit "toUnit"
+     */
     public static double convert(double value, double fromUnit, double toUnit){
         return value * (fromUnit/toUnit);
     }
+
+    /**
+     * This method works as the previous one, when the arrival unit (toUnit) is the base unit and is therefore 1
+     * @param value : the given value that we want to convert
+     * @param fromUnit : the initial unit in which the value is expressed
+     * @return the given value in the base unit
+     */
     public static double convertFrom(double value, double fromUnit){
         return value * (fromUnit);
     }
+
+    /**
+     * This method works as the previous one, when the initial unit (fromUnit) is the base unit and is therefore 1
+     * @param value : the given value that we want to convert
+     * @param toUnit : the arrival unit in which the value will be expressed
+     * @return the given value in the unit "toUnit"
+     */
     public static double convertTo(double value, double toUnit){
         return value / (toUnit);
     }
