@@ -53,8 +53,8 @@ public final class Units {
 
     /**
      * Converts a value from a given unit to the base unit
-     * @param value : the given value that we want to convert
-     * @param fromUnit : the initial unit in which the value is expressed
+     * @param value the given value that we want to convert
+     * @param fromUnit the initial unit in which the value is expressed
      * @return the given value in the base unit
      */
     public static double convertFrom(double value, double fromUnit){
@@ -63,8 +63,8 @@ public final class Units {
 
     /**
      * Converts a value from the base unit to a given unit
-     * @param value : the given value that we want to convert
-     * @param toUnit : the arrival unit in which the value will be expressed
+     * @param value the given value that we want to convert
+     * @param toUnit the arrival unit in which the value will be expressed
      * @return the given value in the unit "toUnit"
      */
     public static double convertTo(double value, double toUnit){
