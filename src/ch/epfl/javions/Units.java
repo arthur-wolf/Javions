@@ -35,18 +35,16 @@ public final class Units {
     public static class Speed {
         private Speed (){}
 
-        public static final  double METER_PER_SECOND = Length.METER / Time.SECOND;
         public static final double KNOT = Length.NAUTICAL_MILE / Time.HOUR;
         public static final double KILOMETER_PER_HOUR = Length.KILOMETER / Time.HOUR;
 
     }
 
     /**
-     * This method is useful if we want to convert the unit of a value
-     *
-     * @param value : the given value that we want to convert
-     * @param fromUnit : the initial unit in which the value is expressed
-     * @param toUnit : the arrival unit in which the value will be expressed
+     * Converts a value from one unit to another
+     * @param value the given value that we want to convert
+     * @param fromUnit the initial unit in which the value is expressed
+     * @param toUnit the arrival unit in which the value will be expressed
      * @return the given value in the unit "toUnit"
      */
     public static double convert(double value, double fromUnit, double toUnit){
@@ -54,7 +52,7 @@ public final class Units {
     }
 
     /**
-     * This method works as the previous one, when the arrival unit (toUnit) is the base unit and is therefore 1
+     * Converts a value from a given unit to the base unit
      * @param value : the given value that we want to convert
      * @param fromUnit : the initial unit in which the value is expressed
      * @return the given value in the base unit
@@ -64,7 +62,7 @@ public final class Units {
     }
 
     /**
-     * This method works as the previous one, when the initial unit (fromUnit) is the base unit and is therefore 1
+     * Converts a value from the base unit to a given unit
      * @param value : the given value that we want to convert
      * @param toUnit : the arrival unit in which the value will be expressed
      * @return the given value in the unit "toUnit"
