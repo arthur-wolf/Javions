@@ -1,5 +1,9 @@
 package ch.epfl.javions;
 
+/**
+ * Method to check preconditions in other methods
+ * @author Arthur Wolf (344200)
+ */
 public final class Preconditions {
     private Preconditions() {}
 

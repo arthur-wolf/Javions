@@ -1,5 +1,11 @@
 package ch.epfl.javions;
 
+/**
+ * Represents geographic coordinates expressed in t32
+ * @author Arthur Wolf (344200)
+ * @param longitudeT32 the longitude in t32
+ * @param latitudeT32 the latitude in t32
+ */
 public record GeoPos(int longitudeT32, int latitudeT32) {
     public GeoPos {
         if (!isValidLatitudeT32(latitudeT32))

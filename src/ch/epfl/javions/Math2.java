@@ -1,5 +1,9 @@
 package ch.epfl.javions;
 
+/**
+ * Methods to execute some mathematical computations
+ * @author Arthur Wolf (344200)
+ */
 public final class Math2 {
     private Math2() {}
 

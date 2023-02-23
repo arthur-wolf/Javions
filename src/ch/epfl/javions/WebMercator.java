@@ -1,5 +1,9 @@
 package ch.epfl.javions;
 
+/**
+ * Methods to project geographic coordinates with regard to the WebMercator projection
+ * @author Oussama Ghali (341478)
+ */
 public class WebMercator {
     private WebMercator (){}
 

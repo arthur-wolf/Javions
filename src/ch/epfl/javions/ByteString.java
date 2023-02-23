@@ -5,7 +5,9 @@ import java.util.HexFormat;
 import java.util.Objects;
 
 /**
- * Represents an byte sequence. A ByteString is immutable and its bytes are interpreted as unsigned.
+ * Represents a byte sequence. A ByteString is immutable and its bytes are interpreted as unsigned.
+ * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
  */
 public final class ByteString {
     private final byte[] bytes;

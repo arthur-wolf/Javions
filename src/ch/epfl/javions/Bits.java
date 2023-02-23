@@ -2,6 +2,10 @@ package ch.epfl.javions;
 
 import java.util.Objects;
 
+/**
+ * Methods to extract a range of bits from a long value
+ * @author Arthur Wolf (344200)
+ */
 public class Bits {
     private Bits(){}
 
