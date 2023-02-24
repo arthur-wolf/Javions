@@ -2,9 +2,10 @@ package ch.epfl.javions;
 
 /**
  * Represents geographic coordinates expressed in t32
- * @author Arthur Wolf (344200)
+ *
  * @param longitudeT32 the longitude in t32
- * @param latitudeT32 the latitude in t32
+ * @param latitudeT32  the latitude in t32
+ * @author Arthur Wolf (344200)
  */
 public record GeoPos(int longitudeT32, int latitudeT32) {
     public GeoPos {
@@ -14,6 +15,7 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
 
     /**
      * Checks if the given latitude expressed in t32 is indeed expressed as a correct t32 value
+     *
      * @param latitudeT32 the latitude value to check
      * @return true if it is a correct t32 value
      */
@@ -23,6 +25,7 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
 
     /**
      * Converts the longitude from t32 to radians
+     *
      * @return the value of the longitude in radians
      */
     public double longitude() {
@@ -31,6 +34,7 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
 
     /**
      * Converts the latitude from t32 to radians
+     *
      * @return the value of the longitude in radians
      */
     public double latitude() {
@@ -39,6 +43,7 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
 
     /**
      * Creates a string from a GeoPos featuring its own longitude and latitude expressed in degrees
+     *
      * @return the string as described above
      */
     @Override
