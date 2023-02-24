@@ -13,11 +13,11 @@ public class IcaoAddressTest {
 
     @Test
     void IcaoAddressThrowsOnEmptyString() {
-        assertThrows(IllegalArgumentException.class, () -> new AircraftRegistration(""));
+        assertThrows(IllegalArgumentException.class, () -> new IcaoAddress(""));
     }
 
     @Test
     void IcaoAddressThrowsOnInvalidString() {
-        assertThrows(IllegalArgumentException.class, () -> new AircraftRegistration("@+é"));
+        assertThrows(IllegalArgumentException.class, () -> new IcaoAddress("@+é"));
     }
 }

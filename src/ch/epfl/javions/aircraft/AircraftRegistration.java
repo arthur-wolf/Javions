@@ -1,5 +1,7 @@
 package ch.epfl.javions.aircraft;
 
+import ch.epfl.javions.Preconditions;
+
 import java.util.regex.Pattern;
 
 /**
@@ -9,7 +11,7 @@ import java.util.regex.Pattern;
  * @author Arthur Wolf (344200)
  */
 public record AircraftRegistration(String string) {
-    public static Pattern AircraftRegistrationPattern = Pattern.compile("[A-Z0-9 .?/_+-]+");
+    public static Pattern aircraftRegistrationPattern = Pattern.compile("[A-Z0-9 .?/_+-]+");
 
     /**
      * Validates the pattern of the given address if it matches the corresponding regular expression
@@ -17,7 +19,6 @@ public record AircraftRegistration(String string) {
      * @param string The registration to validate
      */
     public AircraftRegistration {
-        if (!(AircraftRegistrationPattern.matcher(string).matches()))
-            throw new IllegalArgumentException();
+        Preconditions.checkArgument(aircraftRegistrationPattern.matcher(string).matches());
     }
 }

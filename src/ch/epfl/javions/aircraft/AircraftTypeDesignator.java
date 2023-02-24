@@ -1,5 +1,7 @@
 package ch.epfl.javions.aircraft;
 
+import ch.epfl.javions.Preconditions;
+
 import java.util.regex.Pattern;
 
 /**
@@ -9,7 +11,7 @@ import java.util.regex.Pattern;
  * @author Arthur Wolf (344200)
  */
 public record AircraftTypeDesignator(String string) {
-    public static Pattern AircraftTypeDesignatorPattern = Pattern.compile("[A-Z0-9]{2,4}");
+    public static Pattern aircraftTypeDesignatorPattern = Pattern.compile("[A-Z0-9]{2,4}");
 
     /**
      * Validates the pattern of the given address if it matches the corresponding regular expression or if it is an empty string
@@ -17,7 +19,6 @@ public record AircraftTypeDesignator(String string) {
      * @param string The type designator to validate
      */
     public AircraftTypeDesignator {
-        if (!(AircraftTypeDesignatorPattern.matcher(string).matches() || string.isEmpty()))
-            throw new IllegalArgumentException();
+        Preconditions.checkArgument(aircraftTypeDesignatorPattern.matcher(string).matches() || string.isEmpty());
     }
 }
