@@ -12,7 +12,7 @@ public class AircraftDatabaseTest {
 
     @Test
     void AircraftDatabaseWorksOnValidFilename() {
-        assertDoesNotThrow(() -> new AircraftDatabase("aircraftDatabase.csv"));
+        assertDoesNotThrow(() -> new AircraftDatabase("aircraft.zip"));
     }
 
     @Test
@@ -24,10 +24,11 @@ public class AircraftDatabaseTest {
                 new AircraftDescription("L2J"),
                 WakeTurbulenceCategory.MEDIUM);
         try {
-            AircraftData actual = new AircraftDatabase("aircraftDatabase.csv").get(new IcaoAddress("4B1814"));
+            AircraftData actual = new AircraftDatabase("aircraft.zip").get(new IcaoAddress("4B1814"));
             assertEquals(expected, actual);
         } catch (Exception e) {
             e.printStackTrace();
+            assertNull(e);
         }
     }
 
@@ -40,10 +41,11 @@ public class AircraftDatabaseTest {
                 new AircraftDescription("V0-"),
                 WakeTurbulenceCategory.UNKNOWN);
         try {
-            AircraftData actual = new AircraftDatabase("aircraftDatabase.csv").get(new IcaoAddress("105A14"));
+            AircraftData actual = new AircraftDatabase("aircraft.zip").get(new IcaoAddress("105A14"));
             assertEquals(expected, actual);
         } catch (Exception e) {
             e.printStackTrace();
+            assertNull(e);
         }
     }
 }

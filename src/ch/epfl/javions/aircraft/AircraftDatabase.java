@@ -31,7 +31,7 @@ public class AircraftDatabase {
      */
     public AircraftData get(IcaoAddress address) throws IOException {
         // get the path of the file containing the aircraft database
-        String data = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile();
+        String data = getClass().getResource("/" + this.filename).getFile();
         // store the last two digits of the address in a variable
         String lastTwoDigits = address.string().substring(4);
 
