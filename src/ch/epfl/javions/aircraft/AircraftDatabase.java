@@ -3,6 +3,7 @@ package ch.epfl.javions.aircraft;
 import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.zip.ZipFile;
 
@@ -31,13 +32,10 @@ public class AircraftDatabase {
      * @throws IOException if an I/O error occurs
      */
     public AircraftData get(IcaoAddress address) throws IOException {
-        // get the path of the file containing the aircraft database
-        String data = Objects.requireNonNull(getClass().getResource("/" + this.filename)).getFile();
-        data = URLDecoder.decode(data, StandardCharsets.UTF_8);
         // store the last two digits of the address in a variable
         String lastTwoDigits = address.string().substring(4);
 
-        try (ZipFile zip = new ZipFile(data);
+        try (ZipFile zip = new ZipFile(filename);
              InputStream inputStream = zip.getInputStream(zip.getEntry(lastTwoDigits + ".csv"));
              Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
              BufferedReader bufferedReader = new BufferedReader(reader)) {

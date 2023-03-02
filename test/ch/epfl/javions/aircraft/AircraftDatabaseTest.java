@@ -2,9 +2,13 @@ package ch.epfl.javions.aircraft;
 
 import org.junit.jupiter.api.Test;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AircraftDatabaseTest {
+    String filename = URLDecoder.decode(getClass().getResource("/aircraft.zip").getFile(), StandardCharsets.UTF_8);
     @Test
     void AircraftDatabaseThrowsOnNullFilename() {
         assertThrows(NullPointerException.class, () -> new AircraftDatabase(null));
@@ -24,7 +28,7 @@ public class AircraftDatabaseTest {
                 new AircraftDescription("L2J"),
                 WakeTurbulenceCategory.MEDIUM);
         try {
-            AircraftData actual = new AircraftDatabase("aircraft.zip").get(new IcaoAddress("4B1814"));
+            AircraftData actual = new AircraftDatabase(filename).get(new IcaoAddress("4B1814"));
             assertEquals(expected, actual);
         } catch (Exception e) {
             e.printStackTrace();
@@ -41,7 +45,7 @@ public class AircraftDatabaseTest {
                 new AircraftDescription("V0-"),
                 WakeTurbulenceCategory.UNKNOWN);
         try {
-            AircraftData actual = new AircraftDatabase("aircraft.zip").get(new IcaoAddress("105A14"));
+            AircraftData actual = new AircraftDatabase(filename).get(new IcaoAddress("105A14"));
             assertEquals(expected, actual);
         } catch (Exception e) {
             e.printStackTrace();
