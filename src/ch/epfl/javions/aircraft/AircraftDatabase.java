@@ -1,6 +1,7 @@
 package ch.epfl.javions.aircraft;
 
 import java.io.*;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.zip.ZipFile;
@@ -31,7 +32,8 @@ public class AircraftDatabase {
      */
     public AircraftData get(IcaoAddress address) throws IOException {
         // get the path of the file containing the aircraft database
-        String data = getClass().getResource("/" + this.filename).getFile();
+        String data = Objects.requireNonNull(getClass().getResource("/" + this.filename)).getFile();
+        data = URLDecoder.decode(data, StandardCharsets.UTF_8);
         // store the last two digits of the address in a variable
         String lastTwoDigits = address.string().substring(4);
 
@@ -45,12 +47,12 @@ public class AircraftDatabase {
             // the address of the next line, we stop searching for it since the addresses are sorted in the file
             while (true) {
                 if ((line = bufferedReader.readLine()) != null) {
-                    if (line.split(",")[0].compareTo(address.string()) > 0) {
+                    if (line.split(",", -1)[0].compareTo(address.string()) > 0) {
                         return null;
                     }
-                    if (line.split(",")[0].compareTo(address.string()) == 0) {
+                    if (line.split(",", -1)[0].compareTo(address.string()) == 0) {
                         if (line.startsWith(address.string())) {
-                            String[] splitted = line.split(",");
+                            String[] splitted = line.split(",", -1);
                             return new AircraftData(
                                     new AircraftRegistration(splitted[1]),
                                     new AircraftTypeDesignator(splitted[2]),
