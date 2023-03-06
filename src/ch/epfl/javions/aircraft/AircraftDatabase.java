@@ -58,7 +58,6 @@ public class AircraftDatabase {
                                     WakeTurbulenceCategory.of(splitted[5]));
                         }
                     }
-                    return null;
                 }
             }
         }
