@@ -59,6 +59,9 @@ public class AircraftDatabase {
                         }
                     }
                 }
+                else {
+                    return null;
+                }
             }
         }
     }
