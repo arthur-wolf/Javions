@@ -43,10 +43,11 @@ public class AircraftDatabase {
             // the address of the next line, we stop searching for it since the addresses are sorted in the file
             while (true) {
                 if ((line = bufferedReader.readLine()) != null) {
-                    if (line.split(",", -1)[0].compareTo(address.string()) > 0) {
+                    int compare = line.split(",", -1)[0].compareTo(address.string());
+                    if (compare > 0) {
                         return null;
                     }
-                    if (line.split(",", -1)[0].compareTo(address.string()) == 0) {
+                    else if (compare == 0) {
                         if (line.startsWith(address.string())) {
                             String[] splitted = line.split(",", -1);
                             return new AircraftData(
@@ -57,6 +58,7 @@ public class AircraftDatabase {
                                     WakeTurbulenceCategory.of(splitted[5]));
                         }
                     }
+                    return null;
                 }
             }
         }
