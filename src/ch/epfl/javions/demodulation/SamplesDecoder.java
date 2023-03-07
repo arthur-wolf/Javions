@@ -11,6 +11,7 @@ import java.util.Objects;
  * into signed 12 bits samples
  *
  * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
  */
 public final class SamplesDecoder {
     private final InputStream inputStream;
@@ -43,10 +44,16 @@ public final class SamplesDecoder {
         Preconditions.checkArgument(batch.length == batchSize);
         byte[] bytes = inputStream.readNBytes(batchSize * 2);
 
-        int count = 0;
-        for (int i = 0; i < readTable.length; i += 2) {
-            readTable[i] = bytes[i + 1];
+        // swap blocks of bytes two by two
+        for (int i = 0; i < batch.length; i += 2) {
+            readTable[i] =  bytes[i + 1];
             readTable[i + 1] = bytes[i];
+        }
+
+        int count = 0;
+        // Convert the bytes into signed 12 bits samples
+        for (int i = 0; i < batch.length; i++) {
+            batch[i] = (short) (((readTable[i * 2] << 8) | (readTable[i * 2 + 1] & 0xFF)) - 2048);
             count++;
         }
         return count;
