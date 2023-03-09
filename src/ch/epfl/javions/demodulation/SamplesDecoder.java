@@ -46,7 +46,7 @@ public final class SamplesDecoder {
 
         // swap blocks of bytes two by two
         for (int i = 0; i < batch.length; i += 2) {
-            readTable[i] =  bytes[i + 1];
+            readTable[i] = bytes[i + 1];
             readTable[i + 1] = bytes[i];
         }
 
