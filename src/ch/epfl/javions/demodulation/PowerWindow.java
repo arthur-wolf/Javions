@@ -12,16 +12,20 @@ import java.io.InputStream;
 
 public final class PowerWindow {
     private final InputStream inputStream;
-    private  int[] evenTab;
-    private  int[] oddTab;
+    private int[] firstTab;
+    private int[] secondTab;
     private final int windowSize;
-    private long position = 0;
+    private long absolutePosition;
 
-    private int readPowers = 0;
-    private boolean evenTabIsFirst = true;
+    private int readPowers;
 
     private final PowerComputer powerComputer;
 
+    private int countSample;
+
+    private int positionInBatch;
+
+    private final static int BATCH_SIZE = (int) Math.pow(2, 16);
 
     /**
      * Constructs a new power window
@@ -36,10 +40,11 @@ public final class PowerWindow {
 
         this.inputStream = stream;
         this.windowSize = windowSize;
-
-        this.evenTab = new int[windowSize * 2];
-        this.oddTab = new int[windowSize * 2];
+        this.firstTab = new int[windowSize * 2];
+        this.secondTab = new int[windowSize * 2];
         this.powerComputer = new PowerComputer(inputStream, windowSize * 2);
+        countSample = powerComputer.readBatch(firstTab);
+
     }
 
     /**
@@ -53,14 +58,14 @@ public final class PowerWindow {
      * @return the current position of the window
      */
     public long position() {
-        return position;
+        return absolutePosition;
     }
 
     /**
      * @return always true except when the end of the sample stream has been reached, and the window passes it
      */
     public boolean isFull() {
-        return readPowers == evenTab.length;
+        return countSample >= windowSize;
     }
 
     /**
@@ -75,11 +80,10 @@ public final class PowerWindow {
         if (!(i >= 0 && i < windowSize)) {
             throw new IndexOutOfBoundsException();
         }
-
-        if (position + i < windowSize) {
-            return evenTab[(int) (position + i)];
+        if (absolutePosition + i < windowSize) {
+            return firstTab[(int) (absolutePosition + i)];
         } else {
-            return oddTab[(int) (position + i - windowSize)];
+            return secondTab[(int) (absolutePosition + i - windowSize)];
         }
     }
 
@@ -90,12 +94,18 @@ public final class PowerWindow {
      */
     public void advance() throws IOException {
         Preconditions.checkArgument(windowSize <= Math.pow(2, 16));
-        if (evenTabIsFirst) {
-            // Fill first tab
-        } else {
-            // Fill second tab
+        absolutePosition++;
+        positionInBatch++;
+        countSample--;
+        if (positionInBatch + windowSize == BATCH_SIZE) {
+            countSample += powerComputer.readBatch(secondTab);
         }
-
+        if (positionInBatch == BATCH_SIZE) {
+            positionInBatch = 0;
+            int[] temp = firstTab;
+            firstTab = secondTab;
+            secondTab = temp;
+        }
     }
 
     /**
