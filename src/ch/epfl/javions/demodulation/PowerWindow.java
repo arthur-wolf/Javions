@@ -11,20 +11,13 @@ import java.io.InputStream;
  */
 
 public final class PowerWindow {
-    private final InputStream inputStream;
     private int[] firstTab;
     private int[] secondTab;
     private final int windowSize;
     private long absolutePosition;
-
-    private int readPowers;
-
     private final PowerComputer powerComputer;
-
     private int countSample;
-
     private int positionInBatch;
-
     private final static int BATCH_SIZE = (int) Math.pow(2, 16);
 
     /**
@@ -37,14 +30,11 @@ public final class PowerWindow {
 
     public PowerWindow(InputStream stream, int windowSize) throws IOException {
         Preconditions.checkArgument(windowSize > 0 && windowSize <= Math.pow(2, 16));
-
-        this.inputStream = stream;
         this.windowSize = windowSize;
         this.firstTab = new int[windowSize * 2];
         this.secondTab = new int[windowSize * 2];
-        this.powerComputer = new PowerComputer(inputStream, windowSize * 2);
+        this.powerComputer = new PowerComputer(stream, windowSize * 2);
         countSample = powerComputer.readBatch(firstTab);
-
     }
 
     /**
@@ -73,10 +63,9 @@ public final class PowerWindow {
      *
      * @param i the index of the sample to get
      * @return returns the power sample at the given index
-     * @throws IOException if i is not in the range [0, windowSize[
      */
 
-    public int get(int i) throws IOException {
+    public int get(int i) {
         if (!(i >= 0 && i < windowSize)) {
             throw new IndexOutOfBoundsException();
         }
