@@ -42,17 +42,17 @@ public final class SamplesDecoder {
      */
     public int readBatch(short[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
-        byte[] bytes = inputStream.readNBytes(batchSize * 2);
+        byte[] bytes = new byte [batchSize * 2];
+        int size = inputStream.readNBytes(bytes,0, 2*batchSize);
 
         // swap blocks of bytes two by two
-        for (int i = 0; i < batch.length; i += 2) {
+        for (int i = 0; i < size; i += 2) {
             readTable[i] = bytes[i + 1];
             readTable[i + 1] = bytes[i];
         }
-
         int count = 0;
         // Convert the bytes into signed 12 bits samples
-        for (int i = 0; i < batch.length; i++) {
+        for (int i = 0; i < size/2; i++) {
             batch[i] = (short) (((readTable[i * 2] << 8) | (readTable[i * 2 + 1] & 0xFF)) - 2048);
             count++;
         }

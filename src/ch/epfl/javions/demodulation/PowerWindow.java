@@ -31,9 +31,9 @@ public final class PowerWindow {
     public PowerWindow(InputStream stream, int windowSize) throws IOException {
         Preconditions.checkArgument(windowSize > 0 && windowSize <= Math.pow(2, 16));
         this.windowSize = windowSize;
-        this.firstTab = new int[windowSize * 2];
-        this.secondTab = new int[windowSize * 2];
-        this.powerComputer = new PowerComputer(stream, windowSize * 2);
+        this.firstTab = new int[BATCH_SIZE];
+        this.secondTab = new int[BATCH_SIZE];
+        this.powerComputer = new PowerComputer(stream, BATCH_SIZE);
         countSample = powerComputer.readBatch(firstTab);
     }
 
@@ -66,13 +66,13 @@ public final class PowerWindow {
      */
 
     public int get(int i) {
-        if (!(i >= 0 && i < windowSize)) {
+        if (!(i >= 0 && i < BATCH_SIZE)) {
             throw new IndexOutOfBoundsException();
         }
-        if (absolutePosition + i < windowSize) {
+        if (absolutePosition + i < BATCH_SIZE) {
             return firstTab[(int) (absolutePosition + i)];
         } else {
-            return secondTab[(int) (absolutePosition + i - windowSize)];
+            return secondTab[(int) (absolutePosition + i - BATCH_SIZE)];
         }
     }
 

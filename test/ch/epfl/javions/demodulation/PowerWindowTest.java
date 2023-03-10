@@ -47,6 +47,7 @@ class PowerWindowTest {
         assertEquals(tab3[1], window.get(3));
         assertEquals(tab3[2], window.get(4));
 
+
     }
 
 }
