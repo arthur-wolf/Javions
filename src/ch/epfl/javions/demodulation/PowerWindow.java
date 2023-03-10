@@ -64,7 +64,7 @@ public final class PowerWindow {
      * @return returns the power sample at the given index
      */
     public int get(int i) {
-        if (!(i >= 0 && i < BATCH_SIZE)) {
+        if (!(i >= 0 && i < windowSize)) {
             throw new IndexOutOfBoundsException();
         }
         if (positionInBatch + i < BATCH_SIZE) {
@@ -102,7 +102,7 @@ public final class PowerWindow {
      * @throws IOException if offset is not strictly positive
      */
     public void advanceBy(int offset) throws IOException {
-        Preconditions.checkArgument(offset > 0);
+        Preconditions.checkArgument(offset >= 0);
         for (int i = 0; i < offset; i++) {
             advance();
         }
