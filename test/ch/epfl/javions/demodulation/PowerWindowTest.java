@@ -20,34 +20,25 @@ class PowerWindowTest {
         int windowSize = 5;
         PowerWindow window = new PowerWindow(stream, windowSize);
 
-        assertEquals(tab[0], window.get(0));
-        assertEquals(tab[1], window.get(1));
-        assertEquals(tab[2], window.get(2));
-        assertEquals(tab[3], window.get(3));
-        assertEquals(tab[4], window.get(4));
+        for (int i = 0; i < 5; i++) {
+            assertEquals(tab[i], window.get(i));
+        }
 
         window.advanceBy(8);
-        assertEquals(tab1[0], window.get(0));
-        assertEquals(tab1[1], window.get(1));
-        assertEquals(tab1[2], window.get(2));
-        assertEquals(tab1[3], window.get(3));
-        assertEquals(tab1[4], window.get(4));
+        for (int i = 0; i < 5; i++) {
+            assertEquals(tab1[i], window.get(i));
+        }
 
         window.advanceBy(8);
-        assertEquals(tab2[0], window.get(0));
-        assertEquals(tab2[1], window.get(1));
-        assertEquals(tab2[2], window.get(2));
-        assertEquals(tab2[3], window.get(3));
-        assertEquals(tab2[4], window.get(4));
+        for (int i = 0; i < 5; i++) {
+            assertEquals(tab2[i], window.get(i));
+        }
 
         window.advanceBy(6);
         assertEquals(tab2[6], window.get(0));
         assertEquals(tab2[7], window.get(1));
-        assertEquals(tab3[0], window.get(2));
-        assertEquals(tab3[1], window.get(3));
-        assertEquals(tab3[2], window.get(4));
-
-
+        for (int i = 0; i < 3; i++) {
+            assertEquals(tab3[i], window.get(i + 2));
+        }
     }
-
 }

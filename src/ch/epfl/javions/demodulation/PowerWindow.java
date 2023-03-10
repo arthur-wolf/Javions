@@ -27,7 +27,6 @@ public final class PowerWindow {
      * @param windowSize the size of the window
      * @throws IOException if an I/O error occurs
      */
-
     public PowerWindow(InputStream stream, int windowSize) throws IOException {
         Preconditions.checkArgument(windowSize > 0 && windowSize <= Math.pow(2, 16));
         this.windowSize = windowSize;
@@ -52,7 +51,7 @@ public final class PowerWindow {
     }
 
     /**
-     * @return always true except when the end of the sample stream has been reached, and the window passes it
+     * @return true if the window is full, false otherwise
      */
     public boolean isFull() {
         return countSample >= windowSize;
@@ -64,7 +63,6 @@ public final class PowerWindow {
      * @param i the index of the sample to get
      * @return returns the power sample at the given index
      */
-
     public int get(int i) {
         if (!(i >= 0 && i < BATCH_SIZE)) {
             throw new IndexOutOfBoundsException();

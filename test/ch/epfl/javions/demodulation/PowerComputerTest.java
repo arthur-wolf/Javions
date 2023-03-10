@@ -28,7 +28,6 @@ public class PowerComputerTest {
         assertThrows(IllegalArgumentException.class, () -> powerComputer.readBatch(actual));
     }
 
-
     @Test
     void readBatchTest() throws IOException {
         int[] expected = new int[]{73, 292, 65, 745, 98, 4226, 12244, 25722, 36818, 23825};
