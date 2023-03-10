@@ -23,7 +23,7 @@ public final class PowerComputer {
      * @param batchSize the number of samples to read at once
      */
     public PowerComputer(InputStream stream, int batchSize) {
-       Preconditions.checkArgument((batchSize > 0) && (batchSize % 8 == 0));
+        Preconditions.checkArgument((batchSize > 0) && (batchSize % 8 == 0));
 
         this.inputStream = stream;
         this.batchSize = batchSize;

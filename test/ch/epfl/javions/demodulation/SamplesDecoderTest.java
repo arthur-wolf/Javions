@@ -22,7 +22,7 @@ public class SamplesDecoderTest {
     @Test
     void readBatchThrowsOnInvalidBatchSize() throws IOException {
         InputStream stream = new FileInputStream("resources/samples.bin");
-        SamplesDecoder samplesDecoder = new SamplesDecoder(stream,1200);
+        SamplesDecoder samplesDecoder = new SamplesDecoder(stream, 1200);
         short[] actual = new short[2400]; // 1200 * 2, could be any number != 1200
         assertThrows(IllegalArgumentException.class, () -> samplesDecoder.readBatch(actual));
     }
@@ -33,11 +33,11 @@ public class SamplesDecoderTest {
         short[] actual = new short[1200];
 
         InputStream stream = new FileInputStream("resources/samples.bin");
-        SamplesDecoder samplesDecoder = new SamplesDecoder(stream,1200);
+        SamplesDecoder samplesDecoder = new SamplesDecoder(stream, 1200);
         int signedSamples = samplesDecoder.readBatch(actual);
 
         for (int i = 0; i < 10; i++) {
-            assertEquals(expected[i],actual[i]);
+            assertEquals(expected[i], actual[i]);
         }
         assertEquals(actual.length, signedSamples);
     }

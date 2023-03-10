@@ -69,10 +69,10 @@ public final class PowerWindow {
         if (!(i >= 0 && i < BATCH_SIZE)) {
             throw new IndexOutOfBoundsException();
         }
-        if (absolutePosition + i < BATCH_SIZE) {
-            return firstTab[(int) (absolutePosition + i)];
+        if (positionInBatch + i < BATCH_SIZE) {
+            return firstTab[positionInBatch + i];
         } else {
-            return secondTab[(int) (absolutePosition + i - BATCH_SIZE)];
+            return secondTab[positionInBatch + i - BATCH_SIZE];
         }
     }
 
