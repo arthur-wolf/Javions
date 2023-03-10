@@ -49,7 +49,7 @@ public final class Crc24 {
      * @param bytes     the bytes to compute the checksum of
      * @return the CRC24 checksum of the given bytes
      */
-    public static int crc_bitwise(int generator, byte[] bytes) {
+    private static int crc_bitwise(int generator, byte[] bytes) {
         int[] table = new int[]{0, generator};
         int crc = 0;
 

@@ -39,15 +39,15 @@ public final class PowerComputer {
     public int readBatch(int[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
 
-        SamplesDecoder samplesDecoder = new SamplesDecoder(inputStream, batchSize);
-        short[] powerArray = new short[batchSize];
+        SamplesDecoder samplesDecoder = new SamplesDecoder(inputStream, batchSize * 2 );
+        short[] powerArray = new short[batchSize * 2];
         int count = samplesDecoder.readBatch(powerArray);
 
         // Compute the power of the signal using the given formula
         for (int i = 1; i < count; i += 2) {
             batch[(i - 1) / 2] = computePower(i, powerArray);
         }
-        return count;
+        return count / 2;
     }
 
     /**

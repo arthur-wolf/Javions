@@ -84,7 +84,7 @@ public final class PowerWindow {
         absolutePosition++;
         positionInBatch++;
         countSample--;
-        if (positionInBatch + windowSize == BATCH_SIZE) {
+        if (positionInBatch + windowSize - 1 == BATCH_SIZE) {
             countSample += powerComputer.readBatch(secondTab);
         }
         if (positionInBatch == BATCH_SIZE) {
