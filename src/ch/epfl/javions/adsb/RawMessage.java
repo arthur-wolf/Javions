@@ -64,11 +64,41 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
         return Bits.extractUInt(payload, 51, 5);
     }
 
+    /**
+     * Returns the downlink format of the message
+     *
+     * @return the downlink format of the message
+     */
     public int downLinkFormat() {
         return Bits.extractUInt(this.bytes.byteAt(0), 3, 5);
     }
 
-    /*public IcaoAddress icaoAddress() {
-        return new IcaoAddress(Bits.extractUInt(, 0, 24));
-    }*/
+    /**
+     * Returns the ICAO address of the message
+     *
+     * @return the ICAO address of the message
+     */
+    public IcaoAddress icaoAddress() {
+        long intIcaoAddres = bytes.bytesInRange(1, 4);
+        String IcaoAddress = Long.toHexString(intIcaoAddres).toUpperCase();
+        return new IcaoAddress(IcaoAddress);
+    }
+
+    /**
+     * Returns the payload of the message
+     *
+     * @return the payload of the message
+     */
+    public long payload() {
+        return bytes.bytesInRange(4, 11);
+    }
+
+    /**
+     * Returns the type code of the message
+     *
+     * @return the type code of the message
+     */
+    public int typeCode() {
+        return Bits.extractUInt(bytes.byteAt(4), 3, 5);
+    }
 }

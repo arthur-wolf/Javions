@@ -61,8 +61,8 @@ public final class ByteString {
     /**
      * Returns a long value representing the bytes in the range defined by fromIndex and toIndex
      *
-     * @param fromIndex the beginning of the range
-     * @param toIndex   the end of the range
+     * @param fromIndex the beginning of the range (included)
+     * @param toIndex   the end of the range (excluded)
      * @return a long value representing the bytes in the range
      */
     public long bytesInRange(int fromIndex, int toIndex) {
