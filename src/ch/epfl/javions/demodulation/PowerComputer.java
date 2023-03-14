@@ -15,6 +15,9 @@ import java.io.InputStream;
 public final class PowerComputer {
     private final InputStream inputStream;
     private final int batchSize;
+    private final SamplesDecoder samplesDecoder;
+    short[] powerArray;
+
 
     /**
      * Constructs a new power computer
@@ -24,9 +27,11 @@ public final class PowerComputer {
      */
     public PowerComputer(InputStream stream, int batchSize) {
         Preconditions.checkArgument((batchSize > 0) && (batchSize % 8 == 0));
-
         this.inputStream = stream;
         this.batchSize = batchSize;
+
+        samplesDecoder = new SamplesDecoder(inputStream, batchSize * 2 );
+        powerArray = new short[batchSize * 2];
     }
 
     /**
@@ -38,14 +43,10 @@ public final class PowerComputer {
      */
     public int readBatch(int[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
-
-        SamplesDecoder samplesDecoder = new SamplesDecoder(inputStream, batchSize * 2 );
-        short[] powerArray = new short[batchSize * 2];
         int count = samplesDecoder.readBatch(powerArray);
-
         // Compute the power of the signal using the given formula
-        for (int i = 1; i < count; i += 2) {
-            batch[(i - 1) / 2] = computePower(i, powerArray);
+        for (int i = 0; i < count; i += 2) {
+            batch[i / 2] = computePower(i, powerArray);
         }
         return count / 2;
     }
@@ -59,8 +60,8 @@ public final class PowerComputer {
      */
     private int computePower(int index, short[] samples) {
         int oddIndexesSum = getSample(index - 6, samples) - getSample(index - 4, samples) + getSample(index - 2, samples) - getSample(index, samples);
-        int evenIndexesSum = getSample(index - 7, samples) - getSample(index - 5, samples) + getSample(index - 3, samples) - getSample(index - 1, samples);
-        return (int) (Math.pow(oddIndexesSum, 2) + Math.pow(evenIndexesSum, 2));
+        int evenIndexesSum = getSample(index - 5, samples) - getSample(index - 3, samples) + getSample(index - 1, samples) - getSample(index + 1, samples);
+        return oddIndexesSum*oddIndexesSum + evenIndexesSum*evenIndexesSum;
     }
 
     /**
