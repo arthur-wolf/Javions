@@ -50,12 +50,12 @@ public final class SamplesDecoder {
             readTable[i] = bytes[i + 1];
             readTable[i + 1] = bytes[i];
         }
-        int count = 0;
         // Convert the bytes into signed 12 bits samples
         for (int i = 0; i < size / 2; i++) {
             batch[i] = (short) (((readTable[i * 2] << 8) | (readTable[i * 2 + 1] & 0xFF)) - 2048);
-            count++;
+
         }
-        return count;
+
+        return size/2;
     }
 }

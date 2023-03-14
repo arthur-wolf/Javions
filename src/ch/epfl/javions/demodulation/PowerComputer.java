@@ -13,10 +13,10 @@ import java.io.InputStream;
  * @author Oussama Ghali (341478)
  */
 public final class PowerComputer {
-    private final InputStream inputStream;
     private final int batchSize;
     private final SamplesDecoder samplesDecoder;
     short[] powerArray;
+    byte[] circularTable;
 
 
     /**
@@ -27,11 +27,11 @@ public final class PowerComputer {
      */
     public PowerComputer(InputStream stream, int batchSize) {
         Preconditions.checkArgument((batchSize > 0) && (batchSize % 8 == 0));
-        this.inputStream = stream;
         this.batchSize = batchSize;
-
-        samplesDecoder = new SamplesDecoder(inputStream, batchSize * 2 );
+        samplesDecoder = new SamplesDecoder(stream, batchSize * 2);
         powerArray = new short[batchSize * 2];
+        circularTable = new byte[8];
+
     }
 
     /**
@@ -45,33 +45,15 @@ public final class PowerComputer {
         Preconditions.checkArgument(batch.length == batchSize);
         int count = samplesDecoder.readBatch(powerArray);
         // Compute the power of the signal using the given formula
+        int I, Q;
         for (int i = 0; i < count; i += 2) {
-            batch[i / 2] = computePower(i, powerArray);
+            circularTable[i % 8] = (byte) powerArray[i];
+            circularTable[(i + 1) % 8] = (byte) powerArray[i + 1];
+            I = circularTable[i % 8] - circularTable[(i + 2) % 8] + circularTable[(i + 4) % 8] - circularTable[(i + 6) % 8];
+            Q = circularTable[(i + 1) % 8] - circularTable[(i + 3) % 8] + circularTable[(i + 5) % 8] - circularTable[(i + 7) % 8];
+            batch[i / 2] = (I * I) + (Q * Q);
         }
         return count / 2;
     }
 
-    /**
-     * Computes the power of the signal at the given index
-     *
-     * @param index   the index of the sample to compute the power at
-     * @param samples the array of samples to compute the power of
-     * @return the power of the signal at the given index
-     */
-    private int computePower(int index, short[] samples) {
-        int oddIndexesSum = getSample(index - 6, samples) - getSample(index - 4, samples) + getSample(index - 2, samples) - getSample(index, samples);
-        int evenIndexesSum = getSample(index - 5, samples) - getSample(index - 3, samples) + getSample(index - 1, samples) - getSample(index + 1, samples);
-        return oddIndexesSum*oddIndexesSum + evenIndexesSum*evenIndexesSum;
-    }
-
-    /**
-     * Returns the sample at the given index or 0 if the index is negative
-     *
-     * @param index  the index of the sample to return
-     * @param sample the array of samples to get the sample from
-     * @return the sample at the given index or 0 if the index is negative
-     */
-    private short getSample(int index, short[] sample) {
-        return index < 0 ? 0 : sample[index];
-    }
 }
