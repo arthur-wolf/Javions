@@ -22,7 +22,6 @@ public final class AdsbDemodulator {
      * @throws IOException if an I/O error occurs
      */
     public AdsbDemodulator(InputStream samplesStram) throws IOException {
-        Preconditions.checkArgument(samplesStram != null);
         this.samplesStream = samplesStram;
         this.powerWindow = new PowerWindow(samplesStream, 1200);
 
