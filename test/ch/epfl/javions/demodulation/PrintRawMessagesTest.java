@@ -14,8 +14,11 @@ void Test() throws IOException  {
         try (InputStream s = new FileInputStream(f)) {
             AdsbDemodulator d = new AdsbDemodulator(s);
             RawMessage m;
-            while ((m = d.nextMessage()) != null)
-                System.out.println(m);
+            int count = 1;
+            while ((m = d.nextMessage()) != null) {
+                System.out.println("" + count + "| " + m);
+                count++;
+            }
         }
     }
 }

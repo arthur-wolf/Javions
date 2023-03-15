@@ -40,25 +40,24 @@ public final class AdsbDemodulator {
             sigmaV = powerWindow.get(5) + powerWindow.get(15) + powerWindow.get(20) + powerWindow.get(25) + powerWindow.get(30) + powerWindow.get(40);
             sigmaP1 = powerWindow.get(1) + powerWindow.get(11) + powerWindow.get(36) + powerWindow.get(46);
 
-
             // If this condition is verified, we consider that the preamble of the message is indeed at the beginning of the window
             if (sigmaP >= 2 * sigmaV) {
                 if ((sigmaP > sigmaP1) && (sigmaP_1 < sigmaP)) {
                     byte[] bytes = new byte[14];
-                        for (int i = 0; i < 8; i++) {
-                            bytes[0] |= (powerWindow.get(80 + 10 * i) < powerWindow.get(85 + 10 * i) ? 0 : 1) << (7 - i % 8);
+                    for (int i = 0; i < 8; i++) {
+                        bytes[0] |= (powerWindow.get(80 + 10 * i) < powerWindow.get(85 + 10 * i) ? 0 : 1) << (7 - i);
+                    }
+                    if (RawMessage.size(bytes[0]) == 14) {
+                        for (int i = 8; i < 112; i++) {
+                            bytes[i / 8] |= (powerWindow.get(80 + 10 * i) < powerWindow.get(85 + 10 * i) ? 0 : 1) << (7 - i % 8);
                         }
-                        if (RawMessage.size(bytes[0]) == 14) {
-                            for (int i = 8; i < 112; i++) {
-                                bytes[i / 8] |= (powerWindow.get(80 + 10 * i) < powerWindow.get(85 + 10 * i) ? 0 : 1) << (7 - i % 8);
-                            }
-                            RawMessage rawMessage = RawMessage.of(powerWindow.position() * 100, bytes);
+                        RawMessage rawMessage = RawMessage.of(powerWindow.position() * 100, bytes);
 
-                            if (rawMessage != null) {
-                                powerWindow.advanceBy(1200);
-                                return rawMessage;
-                            }
+                        if (rawMessage != null) {
+                            powerWindow.advanceBy(1200);
+                            return rawMessage;
                         }
+                    }
                 }
             }
             powerWindow.advance();
