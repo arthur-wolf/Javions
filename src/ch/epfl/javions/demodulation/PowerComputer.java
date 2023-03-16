@@ -16,7 +16,8 @@ public final class PowerComputer {
     private final int batchSize;
     private final SamplesDecoder samplesDecoder;
     short[] powerArray;
-    byte[] circularTable;
+    short[] circularTable;
+    private int arrayHead;
 
 
     /**
@@ -30,8 +31,8 @@ public final class PowerComputer {
         this.batchSize = batchSize;
         samplesDecoder = new SamplesDecoder(stream, batchSize * 2);
         powerArray = new short[batchSize * 2];
-        circularTable = new byte[8];
-
+        circularTable = new short[8];
+        this.arrayHead = 0;
     }
 
     /**
@@ -47,11 +48,13 @@ public final class PowerComputer {
         // Compute the power of the signal using the given formula
         int I, Q;
         for (int i = 0; i < count; i += 2) {
-            circularTable[i % 8] = (byte) powerArray[i];
-            circularTable[(i + 1) % 8] = (byte) powerArray[i + 1];
-            I = circularTable[i % 8] - circularTable[(i + 2) % 8] + circularTable[(i + 4) % 8] - circularTable[(i + 6) % 8];
-            Q = circularTable[(i + 1) % 8] - circularTable[(i + 3) % 8] + circularTable[(i + 5) % 8] - circularTable[(i + 7) % 8];
+            circularTable[arrayHead % 8] = powerArray[i];
+            circularTable[(arrayHead + 1) % 8] = powerArray[i + 1];
+            I = circularTable[0] - circularTable[2] + circularTable[4] - circularTable[6];
+            Q = circularTable[1] - circularTable[3] + circularTable[5] - circularTable[7];
             batch[i / 2] = (I * I) + (Q * Q);
+
+            arrayHead = (arrayHead + 2) % 8;
         }
         return count / 2;
     }
