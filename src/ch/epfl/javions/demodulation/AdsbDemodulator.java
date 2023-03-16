@@ -37,12 +37,12 @@ public final class AdsbDemodulator {
         while (powerWindow.isFull()) {
             sigmaP_1 = sigmaP;
             sigmaP = sigmaP1;
-            sigmaV = powerWindow.get(5) + powerWindow.get(15) + powerWindow.get(20) + powerWindow.get(25) + powerWindow.get(30) + powerWindow.get(40);
             sigmaP1 = powerWindow.get(1) + powerWindow.get(11) + powerWindow.get(36) + powerWindow.get(46);
 
             // If this condition is verified, we consider that the preamble of the message is indeed at the beginning of the window
-            if (sigmaP >= 2 * sigmaV) {
-                if ((sigmaP > sigmaP1) && (sigmaP_1 < sigmaP)) {
+            if ((sigmaP > sigmaP1) && (sigmaP_1 < sigmaP)) {
+                sigmaV = powerWindow.get(5) + powerWindow.get(15) + powerWindow.get(20) + powerWindow.get(25) + powerWindow.get(30) + powerWindow.get(40);
+                if (sigmaP >= 2 * sigmaV) {
                     byte[] bytes = new byte[14];
                     for (int i = 0; i < 8; i++) {
                         bytes[0] |= (powerWindow.get(80 + 10 * i) < powerWindow.get(85 + 10 * i) ? 0 : 1) << (7 - i);

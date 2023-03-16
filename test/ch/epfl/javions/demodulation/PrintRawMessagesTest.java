@@ -9,14 +9,14 @@ import java.io.InputStream;
 
 public final class PrintRawMessagesTest {
     @Test
-void Test() throws IOException  {
+    void printRawMessages() throws IOException {
         String f = "resources/samples_20230304_1442.bin";
         try (InputStream s = new FileInputStream(f)) {
             AdsbDemodulator d = new AdsbDemodulator(s);
             RawMessage m;
             int count = 1;
             while ((m = d.nextMessage()) != null) {
-                System.out.println("" + count + "| " + m);
+                System.out.printf("%3d| %s%n", count, m);
                 count++;
             }
         }

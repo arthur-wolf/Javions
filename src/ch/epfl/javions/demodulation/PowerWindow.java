@@ -18,7 +18,7 @@ public final class PowerWindow {
     private final PowerComputer powerComputer;
     private int countSample;
     private int positionInBatch;
-    private final static int BATCH_SIZE = (int) Math.pow(2, 16);
+    private final static int BATCH_SIZE = 1<<16;
 
     /**
      * Constructs a new power window
@@ -28,7 +28,7 @@ public final class PowerWindow {
      * @throws IOException if an I/O error occurs
      */
     public PowerWindow(InputStream stream, int windowSize) throws IOException {
-        Preconditions.checkArgument(windowSize > 0 && windowSize <= Math.pow(2, 16));
+        Preconditions.checkArgument(windowSize > 0 && windowSize <= (1<<16));
         this.windowSize = windowSize;
         this.firstTab = new int[BATCH_SIZE];
         this.secondTab = new int[BATCH_SIZE];
@@ -80,7 +80,6 @@ public final class PowerWindow {
      * @throws IOException if windowSize is greater than 2^16
      */
     public void advance() throws IOException {
-        Preconditions.checkArgument(windowSize <= Math.pow(2, 16));
         absolutePosition++;
         positionInBatch++;
         countSample--;
