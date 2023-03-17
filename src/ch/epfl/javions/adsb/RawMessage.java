@@ -56,10 +56,10 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     }
 
     /**
-     * Returns the type code of the message
+     * Returns the type code of the given message
      *
      * @param payload the payload of the message
-     * @return the type code of the message
+     * @return the type code of the given message
      */
     public static int typeCode(long payload) {
         return Bits.extractUInt(payload, 51, 5);

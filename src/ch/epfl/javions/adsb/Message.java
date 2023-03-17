@@ -17,14 +17,10 @@ public interface Message {
      */
     long timeStampsNs();
 
-
     /**
      * Returns the ICAO address of the sender of the message.
      *
      * @return the ICAO address of the sender of the message.
      */
     IcaoAddress icaoAddress();
-
-
-
 }
