@@ -4,6 +4,7 @@ import ch.epfl.javions.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * @author Oussama Ghali (341478)
@@ -64,9 +65,8 @@ public final class PowerWindow {
      * @return returns the power sample at the given index
      */
     public int get(int i) {
-        if (!(i >= 0 && i < windowSize)) {
-            throw new IndexOutOfBoundsException();
-        }
+        Objects.checkIndex(i, windowSize);
+
         if (positionInBatch + i < BATCH_SIZE) {
             return firstTab[positionInBatch + i];
         } else {

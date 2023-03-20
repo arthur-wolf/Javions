@@ -81,8 +81,15 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     public IcaoAddress icaoAddress() {
         long intIcaoAddres = bytes.bytesInRange(1, 4);
-        String IcaoAddress = Long.toHexString(intIcaoAddres).toUpperCase();
-        return new IcaoAddress(IcaoAddress);
+        // If the address is not 6 characters long, we add 0s at the beginning
+        StringBuilder icaoAddress = new StringBuilder(Long.toHexString(intIcaoAddres).toUpperCase());
+        if (icaoAddress.length() < 6) {
+            int length = icaoAddress.length();
+            for (int i = 0; i < 6 - length; i++) {
+                icaoAddress.insert(0, "0");
+            }
+        }
+        return new IcaoAddress(icaoAddress.toString());
     }
 
     /**
