@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class RawMessageTest {
 
+    //<editor-fold desc="VALID_MESSAGES_DF17">
     private static final List<String> VALID_MESSAGES_DF17 = List.of(
             "8D392AE499107FB5C00439035DB8",
             "8D392AE89B00009570AC00DDDBE5",
@@ -64,7 +65,9 @@ public class RawMessageTest {
             "8D3909089910690080140C97401A",
             "8D4B194B99096525F0083E325632",
             "8D40650B99152C24D0483A94E46F");
+    //</editor-fold>
 
+    //<editor-fold desc="VALID_MESSAGES_DF_OTHER">
     private static final List<String> VALID_MESSAGES_DF_OTHER = List.of(
             "8F4B1A3E990C13ACB0942207AEB2",
             "8F40644458BF02864575F1855853",
@@ -117,6 +120,7 @@ public class RawMessageTest {
             "8F4B1A2B584786520B59338782B7",
             "8E3858BCE10A8000000000C5BA29",
             "8F3CDDE6EA11A874875C08CA2E79");
+    //</editor-fold>
 
     private static final List<String> VALID_MESSAGES = Stream
             .concat(VALID_MESSAGES_DF17.stream(), VALID_MESSAGES_DF_OTHER.stream())
