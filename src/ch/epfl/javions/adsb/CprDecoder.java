@@ -63,18 +63,24 @@ public final class CprDecoder {
             oddLongitude = x1;
         } else {
             longitudeZoneNumber = Math.rint(x0 * firstLatitudeEvenZoneNumber - x1 * firstLongitudeEvenZoneNumber);
-            double offset = longitudeZoneNumber < 0 ? firstLongitudeEvenZoneNumber : 0;
-            evenZoneLongitude = longitudeZoneNumber + offset;
-            oddZoneLongitude = longitudeZoneNumber + firstLatitudeEvenZoneNumber - offset;
+            if (longitudeZoneNumber < 0) {
+                evenZoneLongitude = longitudeZoneNumber + firstLongitudeEvenZoneNumber;
+                oddZoneLongitude = longitudeZoneNumber + firstLatitudeEvenZoneNumber;
+            } else {
+                evenZoneLongitude = longitudeZoneNumber;
+                oddZoneLongitude = longitudeZoneNumber;
+            }
             evenLongitude = (evenZoneLongitude + x0) / firstLongitudeEvenZoneNumber;
             oddLongitude = (oddZoneLongitude + x1) / firstLatitudeEvenZoneNumber;
         }
 
         double longitude = mostRecent == 0 ? recenter(evenLongitude) : recenter(oddLongitude);
+
         double latitude = mostRecent == 0 ? recenter(evenLatitude) : recenter(oddLatitude);
 
         longitude = Math.rint(Units.convert(longitude, Units.Angle.TURN, Units.Angle.T32));
         latitude = Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32));
+
 
         return GeoPos.isValidLatitudeT32((int) latitude) ? new GeoPos((int) longitude, (int) latitude) : null;
     }
