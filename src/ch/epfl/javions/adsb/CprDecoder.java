@@ -71,6 +71,7 @@ public final class CprDecoder {
                 oddZoneLongitude = longitudeZoneNumber;
             }
             evenLongitude = (evenZoneLongitude + x0) / firstLongitudeEvenZoneNumber;
+
             oddLongitude = (oddZoneLongitude + x1) / firstLatitudeEvenZoneNumber;
         }
 
