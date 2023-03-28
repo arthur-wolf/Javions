@@ -20,4 +20,24 @@ public class AircraftTypeDesignatorTest {
     void AircraftTypeDesignatorThrowsOnInvalidString() {
         assertThrows(IllegalArgumentException.class, () -> new AircraftTypeDesignator("@+é"));
     }
+    @Test
+    void aircraftTypeDesignatorConstructorThrowsWithInvalidTypeDesignator() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new AircraftTypeDesignator("ABCDE");
+        });
+    }
+
+    @Test
+    void aircraftTypeDesignatorConstructorAcceptsEmptyTypeDesignator() {
+        assertDoesNotThrow(() -> {
+            new AircraftTypeDesignator("");
+        });
+    }
+
+    @Test
+    void aircraftTypeDesignatorConstructorAcceptsValidTypeDesignator() {
+        assertDoesNotThrow(() -> {
+            new AircraftTypeDesignator("BCS3");
+        });
+    }
 }
