@@ -77,7 +77,7 @@ public final class Units {
      * @return the given value in the base unit
      */
     public static double convertFrom(double value, double fromUnit) {
-        return value * (fromUnit);
+        return convert(value, fromUnit, 1);
     }
 
     /**
@@ -88,6 +88,6 @@ public final class Units {
      * @return the given value in the unit "toUnit"
      */
     public static double convertTo(double value, double toUnit) {
-        return value / (toUnit);
+        return convert(value, 1, toUnit);
     }
 }
