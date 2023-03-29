@@ -34,7 +34,7 @@ public final class Crc24 {
             crc = ((crc << Byte.SIZE) | Byte.toUnsignedInt(b)) ^ table[Bits.extractUInt(crc, GENERATOR_LENGTH - 8, 8)];
         }
 
-        for (int i = 0; i < 24; i++) {
+        for (int i = 0; i < GENERATOR_LENGTH; i++) {
             crc = (crc << 1) ^ (table[Bits.extractUInt(crc, GENERATOR_LENGTH - 1, 1)]);
         }
 
@@ -59,7 +59,7 @@ public final class Crc24 {
             }
         }
 
-        for (int i = 0; i < 24; i++) {
+        for (int i = 0; i < GENERATOR_LENGTH; i++) {
             crc = (crc << 1) ^ (table[Bits.extractUInt(crc, GENERATOR_LENGTH - 1, 1)]);
         }
 

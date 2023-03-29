@@ -38,10 +38,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the raw ADS-B message corresponding to the given bytes
      */
     public static RawMessage of(long timeStampNs, byte[] bytes) {
-        if (crc24.crc(bytes) == 0) {
-            return new RawMessage(timeStampNs, new ByteString(bytes));
-        }
-        return null;
+        return (bytes.length == LENGTH && crc24.crc(bytes) == 0) ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
     }
 
     /**

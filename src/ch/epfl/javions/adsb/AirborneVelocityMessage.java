@@ -7,6 +7,13 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 
 import java.util.Objects;
 
+/**
+ * Represents an airborne velocity message of type.
+ *
+ * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
+ */
+
 public record AirborneVelocityMessage(long timeStampNs,
                                       IcaoAddress icaoAddress,
                                       double speed,

@@ -84,10 +84,10 @@ public final class ByteString {
      */
     @Override
     public boolean equals(Object obj) {
-        if ((obj instanceof ByteString other))
-            return Arrays.equals(other.bytes, bytes);
-        return false;
+        return obj instanceof ByteString other && Arrays.equals(other.bytes, bytes);
     }
+
+
 
     /**
      * returns the hash value of the ByteString

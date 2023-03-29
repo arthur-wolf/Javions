@@ -135,7 +135,6 @@ public record AirbornePositionMessage(long timeStampNs,
     private static double longitude(RawMessage rawMessage) {
         long payload = rawMessage.payload();
         double longitude = Bits.extractUInt(payload, 0, 17);
-        System.out.println(longitude);
         return Math.scalb(longitude, -17);
     }
 

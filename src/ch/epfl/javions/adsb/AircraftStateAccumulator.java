@@ -30,6 +30,8 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     }
 
     /**
+     * Must determine the exact type of the message passed to it as an argument,
+     * to know whether it is an instance of AircraftIdentificationMessage, AirbornePositionMessage or AirborneVelocityMessage.
      * Updates the state of the aircraft with the given message.
      *
      * @param message the message to update the state with.
@@ -67,7 +69,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     /**
      * For the position to be determined, the difference between the odd and even messages must be less than or equal to 10 seconds.
      *
-     * @return true if the difference between the odd and even messages is less than or equal to 10 seconds.
+     * @return true if the odd and even messages aren't null and the difference between them is less than or equal to 10 seconds.
      */
     private boolean checkValid() {
         return (messageEven != null && messageOdd != null && Math.abs(messageEven.timeStampNs() - messageOdd.timeStampNs()) <= DELTA);

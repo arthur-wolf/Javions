@@ -66,7 +66,6 @@ public final class PowerWindow {
      */
     public int get(int i) {
         Objects.checkIndex(i, windowSize);
-
         if (positionInBatch + i < BATCH_SIZE) {
             return firstTab[positionInBatch + i];
         } else {
@@ -81,9 +80,8 @@ public final class PowerWindow {
      */
     public void advance() throws IOException {
         absolutePosition++;
-        positionInBatch++;
         countSample--;
-        if (positionInBatch + windowSize - 1 == BATCH_SIZE) {
+        if (positionInBatch + windowSize == BATCH_SIZE) {
             countSample += powerComputer.readBatch(secondTab);
         }
         if (positionInBatch == BATCH_SIZE) {
@@ -92,6 +90,7 @@ public final class PowerWindow {
             firstTab = secondTab;
             secondTab = temp;
         }
+        positionInBatch++;
     }
 
     /**

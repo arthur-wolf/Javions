@@ -71,7 +71,6 @@ public record AircraftIdentificationMessage(long timeStampNs,
      */
     private static CallSign callSign(RawMessage rawMessage) {
         long payload = rawMessage.payload();
-        System.out.println(Long.toHexString(payload).toUpperCase());
         StringBuilder callSignSB = new StringBuilder();
         for (int i = 7; i >= 0; i--) {
             int index = Bits.extractUInt(payload, i * 6, 6);

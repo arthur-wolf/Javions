@@ -20,13 +20,9 @@ public final class Math2 {
      */
     public static int clamp(int min, int v, int max) {
         Preconditions.checkArgument(min <= max);
-        if (v < min) {
-            return min;
-        } else if (v > max) {
-            return max;
-        }
-        return v;
+        return v < min ? min : (v > max ? max : v);
     }
+
 
     /**
      * computes the value of arsinh(x)

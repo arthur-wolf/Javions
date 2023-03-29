@@ -10,7 +10,7 @@ class AircraftState implements AircraftStateSetter {
 
     @Override
     public void setCategory(int category) {
-
+        System.out.println("category : " + category);
     }
 
     @Override
@@ -19,21 +19,23 @@ class AircraftState implements AircraftStateSetter {
     }
 
     @Override
-    public void setPosition(GeoPos position) {System.out.println("position : " + position);}
+    public void setPosition(GeoPos position) {
+        System.out.println("position : " + position);
+    }
 
     @Override
     public void setAltitude(double altitude) {
-
+        System.out.println("altitude : " + altitude);
     }
 
     @Override
     public void setVelocity(double velocity) {
-
+        System.out.println("vitesse : " + velocity);
     }
 
     @Override
     public void setTrackOrHeading(double trackOrHeading) {
-
+        System.out.println("trackOrHeading : " + trackOrHeading);
     }
 
 }
