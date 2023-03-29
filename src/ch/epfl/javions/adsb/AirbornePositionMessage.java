@@ -59,24 +59,16 @@ public record AirbornePositionMessage(long timeStampNs,
         int qBit = Bits.extractUInt(altitude, 4, 1);
 
         if (qBit == 1) {
-            int lsb4 = Bits.extractUInt(altitude, 0, 4);
-            int msb4 = Bits.extractUInt(altitude, 5, 7);
-            int altitude0 = (msb4 << 4) | lsb4;
-            return Units.convertFrom(altitude0 * 25 - 1000, Units.Length.FOOT);
+            int altitude0 = ((Bits.extractUInt(altitude, 5, 7) << 4) | Bits.extractUInt(altitude, 0, 4)) * 25 - 1000;
+            return Units.convertFrom(altitude0, Units.Length.FOOT);
         } else {
             int unraveledAltitude = unravel(altitude);
             int msb9 = grayValueOf(unraveledAltitude >> 3, 9);
             int lsb3 = grayValueOf(unraveledAltitude & 0b111, 3);
 
-            if (lsb3 == 0 || lsb3 == 5 || lsb3 == 6) {
-                return Double.NaN;
-            }
-            if (lsb3 == 7) {
-                lsb3 = 5;
-            }
-            if (msb9 % 2 == 1) {
-                lsb3 = 6 - lsb3;
-            }
+            if (lsb3 == 0 || lsb3 == 5 || lsb3 == 6) return Double.NaN;
+            if (lsb3 == 7) lsb3 = 5;
+            if (msb9 % 2 == 1) lsb3 = 6 - lsb3;
 
             int altitudeInFeet = lsb3 * 100 + msb9 * 500 - 1300;
             return Units.convertFrom(altitudeInFeet, Units.Length.FOOT);

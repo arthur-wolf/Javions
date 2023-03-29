@@ -35,11 +35,9 @@ public record AircraftIdentificationMessage(long timeStampNs,
      */
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
         CallSign callSign1 = callSign(rawMessage);
-        if (callSign1 != null) {
-            return new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category(rawMessage), callSign1);
-        }
-        return null;
+        return (callSign1 != null) ? new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category(rawMessage), callSign1) : null;
     }
+
 
     /**
      * Returns the category of the aircraft that sent the message

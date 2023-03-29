@@ -32,10 +32,7 @@ public final class AdsbDemodulator {
      * @throws IOException if an I/O error occurs
      */
     public RawMessage nextMessage() throws IOException {
-        int sigmaP = 0;
-        int sigmaP1 = 0;
-        int sigmaP_1;
-        int sigmaV;
+        int sigmaP = 0, sigmaP1 = 0, sigmaP_1;
 
         while (powerWindow.isFull()) {
             sigmaP_1 = sigmaP;
@@ -43,22 +40,19 @@ public final class AdsbDemodulator {
             sigmaP1 = computeSigmaP1();
 
             // We check this condition first in order only to have to compute sigmaV if necessary
-            if ((sigmaP > sigmaP1) && (sigmaP_1 < sigmaP)) {
-                sigmaV = computeSigmaV();
-                // If this condition as well as the two other one are true, we have found a message
-                if (sigmaP >= 2 * sigmaV) {
-                    byte[] bytes = new byte[MESSAGE_SIZE];
-                    // We only fill the first byte since we want to know if the message we found is actually interesting for us (i.e. if its DF attribute is 17)
-                    fillFirstByte(bytes);
-                    // If the message is interesting, we fill the other bytes
-                    if (RawMessage.size(bytes[0]) == MESSAGE_SIZE) {
-                        fillOtherBytes(bytes);
-                        RawMessage rawMessage = RawMessage.of(powerWindow.position() * 100, bytes);
+            // If all the condition true, we have found a message
+            if ((sigmaP > sigmaP1) && (sigmaP_1 < sigmaP) && (sigmaP >= 2 * (computeSigmaV()))) {
+                byte[] bytes = new byte[MESSAGE_SIZE];
+                // We only fill the first byte since we want to know if the message we found is actually interesting for us (i.e. if its DF attribute is 17)
+                fillFirstByte(bytes);
+                // If the message is interesting, we fill the other bytes
+                if (RawMessage.size(bytes[0]) == MESSAGE_SIZE) {
+                    fillOtherBytes(bytes);
+                    RawMessage rawMessage = RawMessage.of(powerWindow.position() * 100, bytes);
 
-                        if (rawMessage != null) {
-                            powerWindow.advanceBy(1200);
-                            return rawMessage;
-                        }
+                    if (rawMessage != null) {
+                        powerWindow.advanceBy(1200);
+                        return rawMessage;
                     }
                 }
             }
@@ -94,7 +88,7 @@ public final class AdsbDemodulator {
      */
     private void fillFirstByte(byte[] bytes) {
         for (int i = 0; i < Byte.SIZE; i++) {
-            bytes[0] |= (powerWindow.get(80 + 10 * i) < powerWindow.get(85 + 10 * i) ? 0 : 1) << (7 - i);
+            bytes[0] |= (powerWindow.get(80 + (10 * i)) < powerWindow.get(85 + (10 * i)) ? 0 : 1) << (7 - i);
         }
     }
 
@@ -105,7 +99,7 @@ public final class AdsbDemodulator {
      */
     private void fillOtherBytes(byte[] bytes) {
         for (int i = Byte.SIZE; i < 112; i++) {
-            bytes[i / 8] |= (powerWindow.get(80 + 10 * i) < powerWindow.get(85 + 10 * i) ? 0 : 1) << (7 - i % Byte.SIZE);
+            bytes[i / 8] |= (powerWindow.get(80 + (10 * i)) < powerWindow.get(85 + (10 * i)) ? 0 : 1) << (7 - (i % Byte.SIZE));
         }
     }
 }

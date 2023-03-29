@@ -69,9 +69,7 @@ public record AirborneVelocityMessage(long timeStampNs,
         int dew = Bits.extractUInt(payload, 21, 1);
         int dns = Bits.extractUInt(payload, 10, 1);
 
-        if (vns == -1 || vew == -1) {
-            return null;
-        }
+        if (vns == -1 || vew == -1)return null;
 
         vew = (dew == 0) ? vew : -vew;
         vns = (dns == 0) ? vns : -vns;
@@ -95,9 +93,7 @@ public record AirborneVelocityMessage(long timeStampNs,
             int hdg = Bits.extractUInt(payload, 11, 10) / (1 << 10);
             int as = Bits.extractUInt(payload, 0, 10) - 1;
 
-            if (as == -1) {
-                return null;
-            }
+            if (as == -1) return null;
 
             return new AirborneVelocityMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), Units.convertFrom(subOrSup * as, Units.Speed.KNOT), Units.convertFrom(hdg, Units.Angle.TURN));
         }

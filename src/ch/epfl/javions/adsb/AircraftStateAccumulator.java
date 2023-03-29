@@ -40,11 +40,8 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
         stateSetter.setLastMessageTimeStampNs(message.timeStampNs());
         switch (message) {
             case AirbornePositionMessage apm -> {
-                if (apm.parity() == 0) {
-                    messageEven = apm;
-                } else {
-                    messageOdd = apm;
-                }
+                messageEven = (apm.parity() == 0) ? apm : messageEven;
+                messageOdd = (apm.parity() != 0) ? apm : messageOdd;
                 stateSetter.setAltitude(apm.altitude());
                 if (checkValid()) {
                     GeoPos position = CprDecoder.decodePosition(messageEven.x(), messageEven.y(), messageOdd.x(), messageOdd.y(), messageEven.timeStampNs() - messageOdd.timeStampNs() > 0 ? 0 : 1);
