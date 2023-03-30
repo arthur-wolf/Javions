@@ -74,7 +74,13 @@ public record AirborneVelocityMessage(long timeStampNs,
         vew = (dew == 0) ? vew : -vew;
         vns = (dns == 0) ? vns : -vns;
 
-        double speed = subOrSup * Math.hypot(vew, vns);
+        double speed;
+        if(subOrSup == SUBSONIC) {
+             speed = subOrSup * Math.hypot(vew, vns);
+        }
+        else {
+             speed = subOrSup * Math.hypot(vew, vns) * 2;
+        }
         double trackOrHeading = Math.atan2(vew, vns) >= 0 ? Math.atan2(vew, vns) : Math.atan2(vew, vns) + (2 * Math.PI);
 
         return new AirborneVelocityMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), Units.convertFrom(speed, Units.Speed.KNOT), trackOrHeading);
