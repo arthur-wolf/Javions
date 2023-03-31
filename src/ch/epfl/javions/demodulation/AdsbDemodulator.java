@@ -61,7 +61,7 @@ public final class AdsbDemodulator {
                     }
                 }
             }
-            // We still have not found a message so we advance the window
+            // We still have not found a message, so we advance the window
             powerWindow.advance();
         }
         // We have reached the end of the stream and there is no more message

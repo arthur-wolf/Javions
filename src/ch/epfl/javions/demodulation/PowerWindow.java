@@ -80,9 +80,11 @@ public final class PowerWindow {
     public void advance() throws IOException {
         absolutePosition++;
         countSample--;
+        // If we reach the end of the window, we read the next batch
         if (positionInBatch + windowSize == BATCH_SIZE) {
             countSample += powerComputer.readBatch(secondTab);
         }
+        // If we reach the end of the batch, we swap the two arrays
         if (positionInBatch == BATCH_SIZE) {
             positionInBatch = 0;
             int[] temp = firstTab;

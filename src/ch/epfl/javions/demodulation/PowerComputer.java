@@ -45,7 +45,7 @@ public final class PowerComputer {
     public int readBatch(int[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
         int count = samplesDecoder.readBatch(powerArray);
-        // Compute the power of the signal using the given formula
+        // Compute the power of the signal using the given formula (2.4.5)
         int I, Q;
         for (int i = 0; i < count; i += 2) {
             circularTable[arrayHead % Byte.SIZE] = powerArray[i];
