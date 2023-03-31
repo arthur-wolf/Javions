@@ -36,12 +36,14 @@ public final class CprDecoder {
                 secondLongitudeEvenZoneNumber, evenLatitude, oddLatitude, evenLongitude,
                 oddLongitude, A, B;
 
-        // Compute Zphi
+        //Allows us to determine the latitude zone numbers (Zphi)
         latitudeZoneNumber = Math.rint(y0 * ZPHI1 - y1 * ZPHI0);
 
+        //With y0 and y1 , we can determine zphi0 and zphi1, which are the latitude zone numbers in which the aircraft is located in each of the two cutouts
         evenZoneLatitude = latitudeZoneNumber < 0 ? latitudeZoneNumber + ZPHI0 : latitudeZoneNumber;
         oddZoneLatitude = latitudeZoneNumber < 0 ? latitudeZoneNumber + ZPHI1 : latitudeZoneNumber;
 
+        //The latitudes at which it was located when each of the messages was sent can be deduced from this:
         evenLatitude = (evenZoneLatitude + y0) / ZPHI0;
         oddLatitude = (oddZoneLatitude + y1) / ZPHI1;
 
