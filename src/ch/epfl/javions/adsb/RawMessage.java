@@ -15,7 +15,7 @@ import ch.epfl.javions.aircraft.IcaoAddress;
  * @author Oussama Ghali (341478)
  */
 public record RawMessage(long timeStampNs, ByteString bytes) {
-    public static final int MESSAGE_LENGTH = 14;
+    public static final int LENGTH = 14;
     private static final Crc24 crc24 = new Crc24(Crc24.GENERATOR);
     private static final int DF_INDEX = 3;
     private static final int DF_SIZE = 5;
@@ -37,7 +37,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     public RawMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
-        Preconditions.checkArgument(bytes.size() == MESSAGE_LENGTH);
+        Preconditions.checkArgument(bytes.size() == LENGTH);
     }
 
     /**
@@ -48,7 +48,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the raw ADS-B message corresponding to the given bytes
      */
     public static RawMessage of(long timeStampNs, byte[] bytes) {
-        return (bytes.length == MESSAGE_LENGTH && crc24.crc(bytes) == 0) ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
+        return (bytes.length == LENGTH && crc24.crc(bytes) == 0) ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
     }
 
     /**
@@ -59,7 +59,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     public static int size(byte byte0) {
         byte extracted = (byte) Bits.extractUInt(byte0, DF_INDEX, DF_SIZE);
-        return (extracted == 17) ? MESSAGE_LENGTH : 0;
+        return (extracted == 17) ? LENGTH : 0;
     }
 
     /**

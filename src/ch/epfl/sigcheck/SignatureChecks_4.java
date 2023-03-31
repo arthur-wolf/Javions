@@ -15,7 +15,7 @@ final class SignatureChecks_4 {
 
     void checkRawMessage() throws Exception {
         v03 = new ch.epfl.javions.adsb.RawMessage(v04, v05);
-        v06 = ch.epfl.javions.adsb.RawMessage.MESSAGE_LENGTH;
+        v06 = ch.epfl.javions.adsb.RawMessage.LENGTH;
         v03 = ch.epfl.javions.adsb.RawMessage.of(v04, v07);
         v06 = ch.epfl.javions.adsb.RawMessage.size(v08);
         v06 = ch.epfl.javions.adsb.RawMessage.typeCode(v04);
