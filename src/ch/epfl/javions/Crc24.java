@@ -11,6 +11,7 @@ public final class Crc24 {
 
     private static final int GENERATOR_LENGTH = 24;
     public static final int GENERATOR = 0xFFF409;
+    private static final int TABLE_SIZE = 256;
     private final int[] table;
 
     /**
@@ -31,7 +32,7 @@ public final class Crc24 {
     public int crc(byte[] bytes) {
         int crc = 0;
         for (byte b : bytes) {
-            crc = ((crc << Byte.SIZE) | Byte.toUnsignedInt(b)) ^ table[Bits.extractUInt(crc, GENERATOR_LENGTH - 8, 8)];
+            crc = ((crc << Byte.SIZE) | Byte.toUnsignedInt(b)) ^ table[Bits.extractUInt(crc, GENERATOR_LENGTH - Byte.SIZE, Byte.SIZE)];
         }
 
         for (int i = 0; i < GENERATOR_LENGTH; i++) {
@@ -74,8 +75,8 @@ public final class Crc24 {
      * @return the table built according to the given generator
      */
     private static int[] buildTable(int generator) {
-        int[] table = new int[256];
-        for (int i = 0; i < 256; i++) {
+        int[] table = new int[TABLE_SIZE];
+        for (int i = 0; i < TABLE_SIZE; i++) {
             table[i] = crc_bitwise(generator, new byte[]{(byte) i});
         }
         return table;

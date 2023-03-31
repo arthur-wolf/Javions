@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.util.Objects;
 
 /**
+ * Represents a power window
+ *
  * @author Oussama Ghali (341478)
  * @author Arthur Wolf (344200)
  */
@@ -19,7 +21,7 @@ public final class PowerWindow {
     private final PowerComputer powerComputer;
     private int countSample;
     private int positionInBatch;
-    private final static int BATCH_SIZE = 1<<16;
+    private final static int BATCH_SIZE = 1 << 16;
 
     /**
      * Constructs a new power window
@@ -29,7 +31,8 @@ public final class PowerWindow {
      * @throws IOException if an I/O error occurs
      */
     public PowerWindow(InputStream stream, int windowSize) throws IOException {
-        Preconditions.checkArgument(windowSize > 0 && windowSize <= (1<<16));
+        Preconditions.checkArgument(windowSize > 0 && windowSize <= (1 << 16));
+
         this.windowSize = windowSize;
         this.firstTab = new int[BATCH_SIZE];
         this.secondTab = new int[BATCH_SIZE];

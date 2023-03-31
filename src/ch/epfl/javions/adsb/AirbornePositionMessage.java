@@ -7,6 +7,10 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 
 import java.util.Objects;
 
+import static ch.epfl.javions.Units.Length.FOOT;
+
+//todo clean up with constants
+
 /**
  * Represents an Airborne Position Message
  *
@@ -25,6 +29,10 @@ public record AirbornePositionMessage(long timeStampNs,
                                       int parity,
                                       double x,
                                       double y) implements Message {
+    private static final int ALTITUDE_INDEX = 36;
+    private static final int ALTITUDE_SIZE = 12;
+    private static final int QBIT_INDEX = 4;
+
     public AirbornePositionMessage {
         Objects.requireNonNull(icaoAddress);
         Preconditions.checkArgument(timeStampNs >= 0);
@@ -55,12 +63,12 @@ public record AirbornePositionMessage(long timeStampNs,
      */
     private static double altitude(RawMessage rawMessage) {
         long payload = rawMessage.payload();
-        int altitude = Bits.extractUInt(payload, 36, 12);
-        int qBit = Bits.extractUInt(altitude, 4, 1);
+        int altitude = Bits.extractUInt(payload, ALTITUDE_INDEX, ALTITUDE_SIZE);
+        int qBit = Bits.extractUInt(altitude, QBIT_INDEX, 1);
 
         if (qBit == 1) {
             int altitude0 = ((Bits.extractUInt(altitude, 5, 7) << 4) | Bits.extractUInt(altitude, 0, 4)) * 25 - 1000;
-            return Units.convertFrom(altitude0, Units.Length.FOOT);
+            return Units.convertFrom(altitude0, FOOT);
         } else {
             int unraveledAltitude = unravel(altitude);
             int msb9 = grayValueOf(unraveledAltitude >> 3, 9);
@@ -71,7 +79,7 @@ public record AirbornePositionMessage(long timeStampNs,
             if (msb9 % 2 == 1) lsb3 = 6 - lsb3;
 
             int altitudeInFeet = lsb3 * 100 + msb9 * 500 - 1300;
-            return Units.convertFrom(altitudeInFeet, Units.Length.FOOT);
+            return Units.convertFrom(altitudeInFeet, FOOT);
         }
     }
 

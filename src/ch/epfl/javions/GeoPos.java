@@ -1,5 +1,7 @@
 package ch.epfl.javions;
 
+import static ch.epfl.javions.Units.Angle.*;
+
 /**
  * Represents geographic coordinates expressed in t32
  *
@@ -8,6 +10,13 @@ package ch.epfl.javions;
  * @author Arthur Wolf (344200)
  */
 public record GeoPos(int longitudeT32, int latitudeT32) {
+
+    /**
+     * Constructs a GeoPos based on the given longitude and latitude expressed in t32
+     *
+     * @param longitudeT32 the longitude in t32
+     * @param latitudeT32  the latitude in t32
+     */
     public GeoPos {
         Preconditions.checkArgument(isValidLatitudeT32(latitudeT32));
     }
@@ -23,21 +32,21 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
     }
 
     /**
-     * Converts the longitude from t32 to radians
+     * Converts the longitude from T32 to radians
      *
      * @return the value of the longitude in radians
      */
     public double longitude() {
-        return Units.convert(this.longitudeT32, Units.Angle.T32, Units.Angle.RADIAN);
+        return Units.convert(this.longitudeT32, T32, RADIAN);
     }
 
     /**
-     * Converts the latitude from t32 to radians
+     * Converts the latitude from T32 to radians
      *
      * @return the value of the longitude in radians
      */
     public double latitude() {
-        return Units.convert(this.latitudeT32, Units.Angle.T32, Units.Angle.RADIAN);
+        return Units.convert(this.latitudeT32, T32, RADIAN);
     }
 
     /**
@@ -47,7 +56,7 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
      */
     @Override
     public String toString() {
-        return "(" + Units.convert(this.longitudeT32, Units.Angle.T32, Units.Angle.DEGREE)
-                + "°, " + Units.convert(this.latitudeT32, Units.Angle.T32, Units.Angle.DEGREE) + "°)";
+        return "(" + Units.convert(this.longitudeT32, T32, DEGREE)
+                + "°, " + Units.convert(this.latitudeT32, T32, DEGREE) + "°)";
     }
 }

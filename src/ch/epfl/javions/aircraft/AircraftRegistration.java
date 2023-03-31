@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
  *
  * @param string the registration string of the aircraft
  * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
  */
 public record AircraftRegistration(String string) {
     public static Pattern aircraftRegistrationPattern = Pattern.compile("[A-Z0-9 .?/_+-]+");

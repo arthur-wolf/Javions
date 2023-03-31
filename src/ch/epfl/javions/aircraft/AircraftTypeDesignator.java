@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
  *
  * @param string the type designator of the aircraft
  * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
  */
 public record AircraftTypeDesignator(String string) {
     public static Pattern aircraftTypeDesignatorPattern = Pattern.compile("[A-Z0-9]{2,4}");

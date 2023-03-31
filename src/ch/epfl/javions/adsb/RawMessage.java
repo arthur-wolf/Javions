@@ -6,6 +6,8 @@ import ch.epfl.javions.Crc24;
 import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
+//todo clean up with constants
+
 /**
  * Represents a raw ADS-B message (meaning its ME attribute has not been decoded yet).
  *
@@ -15,7 +17,7 @@ import ch.epfl.javions.aircraft.IcaoAddress;
  * @author Oussama Ghali (341478)
  */
 public record RawMessage(long timeStampNs, ByteString bytes) {
-    public static final int LENGTH = 14;
+    public static final int MESSAGE_LENGTH = 14;
     public static final Crc24 crc24 = new Crc24(Crc24.GENERATOR);
 
 
@@ -27,7 +29,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     public RawMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
-        Preconditions.checkArgument(bytes.size() == LENGTH);
+        Preconditions.checkArgument(bytes.size() == MESSAGE_LENGTH);
     }
 
     /**
@@ -38,7 +40,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the raw ADS-B message corresponding to the given bytes
      */
     public static RawMessage of(long timeStampNs, byte[] bytes) {
-        return (bytes.length == LENGTH && crc24.crc(bytes) == 0) ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
+        return (bytes.length == MESSAGE_LENGTH && crc24.crc(bytes) == 0) ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
     }
 
     /**
@@ -49,7 +51,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     public static int size(byte byte0) {
         byte extracted = (byte) Bits.extractUInt(byte0, 3, 5);
-        return (extracted == 17) ? LENGTH : 0;
+        return (extracted == 17) ? MESSAGE_LENGTH : 0;
     }
 
     /**

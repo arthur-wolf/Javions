@@ -13,6 +13,7 @@ import java.io.InputStream;
  */
 public final class AdsbDemodulator {
     private static final int MESSAGE_SIZE = 14;
+    private static final int WINDOW_SIZE = 1200;
     private final PowerWindow powerWindow;
 
     /**
@@ -22,7 +23,7 @@ public final class AdsbDemodulator {
      * @throws IOException if an I/O error occurs
      */
     public AdsbDemodulator(InputStream samplesStream) throws IOException {
-        this.powerWindow = new PowerWindow(samplesStream, 1200);
+        this.powerWindow = new PowerWindow(samplesStream, WINDOW_SIZE);
     }
 
     /**
@@ -32,7 +33,7 @@ public final class AdsbDemodulator {
      * @throws IOException if an I/O error occurs
      */
     public RawMessage nextMessage() throws IOException {
-        int sigmaP = 0, sigmaP1 = 0, sigmaP_1;
+        int sigmaP = 0, sigmaP1 = 0, sigmaP_1, sigmaV;
 
         while (powerWindow.isFull()) {
             sigmaP_1 = sigmaP;
@@ -40,19 +41,23 @@ public final class AdsbDemodulator {
             sigmaP1 = computeSigmaP1();
 
             // We check this condition first in order only to have to compute sigmaV if necessary
-            // If all the condition true, we have found a message
-            if ((sigmaP > sigmaP1) && (sigmaP_1 < sigmaP) && (sigmaP >= 2 * (computeSigmaV()))) {
-                byte[] bytes = new byte[MESSAGE_SIZE];
-                // We only fill the first byte since we want to know if the message we found is actually interesting for us (i.e. if its DF attribute is 17)
-                fillFirstByte(bytes);
-                // If the message is interesting, we fill the other bytes
-                if (RawMessage.size(bytes[0]) == MESSAGE_SIZE) {
-                    fillOtherBytes(bytes);
-                    RawMessage rawMessage = RawMessage.of(powerWindow.position() * 100, bytes);
+            if ((sigmaP > sigmaP1) && (sigmaP_1 < sigmaP)) {
 
-                    if (rawMessage != null) {
-                        powerWindow.advanceBy(1200);
-                        return rawMessage;
+                sigmaV = computeSigmaV();
+                // If this condition as well as the two other one are true, we have found a message
+                if (sigmaP >= 2 * sigmaV) {
+                    byte[] bytes = new byte[MESSAGE_SIZE];
+                    // We only fill the first byte since we want to know if the message we found is actually interesting for us (i.e. if its DF attribute is 17)
+                    fillFirstByte(bytes);
+                    // If the message is interesting, we fill the other bytes
+                    if (RawMessage.size(bytes[0]) == MESSAGE_SIZE) {
+                        fillOtherBytes(bytes);
+                        RawMessage rawMessage = RawMessage.of(powerWindow.position() * 100, bytes);
+
+                        if (rawMessage != null) {
+                            powerWindow.advanceBy(WINDOW_SIZE);
+                            return rawMessage;
+                        }
                     }
                 }
             }

@@ -3,6 +3,7 @@ package ch.epfl.javions;
 /**
  * Methods and attributes to define conversions from one unit to another and express various quantities
  *
+ * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
  */
 public final class Units {

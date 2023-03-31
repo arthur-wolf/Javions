@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
  *
  * @param string the ICAO address of the aircraft
  * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
  */
 public record IcaoAddress(String string) {
     public static Pattern icaoAdressPattern = Pattern.compile("[0-9A-F]{6}");

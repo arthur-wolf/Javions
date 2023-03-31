@@ -6,6 +6,8 @@ import ch.epfl.javions.Bits;
 
 import java.util.Objects;
 
+//todo clean up
+
 /**
  * Represents an Aircraft Identification Message
  *

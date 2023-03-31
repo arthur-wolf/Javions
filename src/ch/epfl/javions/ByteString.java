@@ -33,6 +33,7 @@ public final class ByteString {
     public static ByteString ofHexadecimalString(String hexString) {
         HexFormat hf = HexFormat.of().withUpperCase();
         byte[] bytesTemp = hf.parseHex(hexString);
+
         return new ByteString(bytesTemp);
     }
 
@@ -52,8 +53,7 @@ public final class ByteString {
      * @return the byte at the given index
      */
     public int byteAt(int index) {
-        if (!(index >= 0 && index < bytes.length))
-            throw new IndexOutOfBoundsException();
+        Objects.checkIndex(index, bytes.length);
 
         return Byte.toUnsignedInt(bytes[index]);
     }
@@ -86,7 +86,6 @@ public final class ByteString {
     public boolean equals(Object obj) {
         return obj instanceof ByteString other && Arrays.equals(other.bytes, bytes);
     }
-
 
 
     /**

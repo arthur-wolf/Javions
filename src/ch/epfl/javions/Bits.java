@@ -40,8 +40,8 @@ public class Bits {
      * @throws IndexOutOfBoundsException if the given index is not within 0 (included) and 64 (excluded)
      */
     public static boolean testBit(long value, int index) {
-        if (!(index >= 0 && index < Long.SIZE))
-            throw new IndexOutOfBoundsException();
+        Objects.checkIndex(index, Long.SIZE);
+
         // Extract the bit at position index and check if it is a 1 or a 0
         return ((value >> index) & 1) == 1;
     }

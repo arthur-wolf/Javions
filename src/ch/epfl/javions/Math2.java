@@ -1,16 +1,17 @@
 package ch.epfl.javions;
 
 /**
- * Methods to execute some mathematical computations
+ * A class containing various mathematical functions
  *
  * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
  */
 public final class Math2 {
     private Math2() {
     }
 
     /**
-     * limits the value v to the interval defined by min and max
+     * Limits the value v to the interval defined by min and max
      *
      * @param min the minimum of the interval
      * @param v   the value to limit
@@ -20,12 +21,12 @@ public final class Math2 {
      */
     public static int clamp(int min, int v, int max) {
         Preconditions.checkArgument(min <= max);
-        return v < min ? min : (v > max ? max : v);
+        return v < min ? min : (Math.min(v, max));
     }
 
 
     /**
-     * computes the value of arsinh(x)
+     * Computes the value of arsinh(x)
      *
      * @param x the parameter of the function
      * @return the value of arsinh(x)

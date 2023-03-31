@@ -9,6 +9,7 @@ import java.util.zip.ZipFile;
  * Represents the mictronics database of aircraft
  *
  * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
  */
 public class AircraftDatabase {
     private final String filename;

@@ -1,8 +1,9 @@
 package ch.epfl.javions.aircraft;
 
 /**
- * Different enum types listed to define the level of turbulence
+ * Represents the wake turbulence category of an aircraft
  *
+ * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
  */
 public enum WakeTurbulenceCategory {

@@ -14,6 +14,7 @@ import java.util.Objects;
  * @author Oussama Ghali (341478)
  */
 public final class SamplesDecoder {
+    private static final int OFFSET = 2048;
     private final InputStream inputStream;
     private final int batchSize;
     private final byte[] readTable;
@@ -43,7 +44,7 @@ public final class SamplesDecoder {
     public int readBatch(short[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
         byte[] bytes = new byte[batchSize * 2];
-        int size = inputStream.readNBytes(bytes, 0, 2 * batchSize);
+        int size = inputStream.readNBytes(bytes, 0, batchSize * 2);
 
         // swap blocks of bytes two by two
         for (int i = 0; i < size; i += 2) {
@@ -52,10 +53,9 @@ public final class SamplesDecoder {
         }
         // Convert the bytes into signed 12 bits samples
         for (int i = 0; i < size / 2; i++) {
-            batch[i] = (short) (((readTable[i * 2] << 8) | (readTable[i * 2 + 1] & 0xFF)) - 2048);
-
+            batch[i] = (short) (((readTable[i * 2] << 8) | (readTable[i * 2 + 1] & 0xFF)) - OFFSET);
         }
 
-        return size/2;
+        return size / 2;
     }
 }
