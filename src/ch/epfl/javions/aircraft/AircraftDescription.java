@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * @author Oussama Ghali (341478)
  */
 public record AircraftDescription(String string) {
-    public static Pattern aircraftDescriptionPattern = Pattern.compile("[ABDGHLPRSTV-][0123468][EJPT-]");
+    private static final Pattern aircraftDescriptionPattern = Pattern.compile("[ABDGHLPRSTV-][0123468][EJPT-]");
 
     /**
      * Validates the pattern of the given address if it matches the corresponding regular expression or if it is an empty string

@@ -46,8 +46,6 @@ public final class SamplesDecoder {
         byte[] bytes = new byte[batchSize * 2];
         int size = inputStream.readNBytes(bytes, 0, batchSize * 2);
 
-
-
         // swap blocks of bytes two by two
         for (int i = 0; i < size; i += 2) {
             readTable[i] = bytes[i + 1];

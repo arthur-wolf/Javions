@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * @author Oussama Ghali (341478)
  */
 public record IcaoAddress(String string) {
-    public static Pattern icaoAdressPattern = Pattern.compile("[0-9A-F]{6}");
+    private final static Pattern icaoAdressPattern = Pattern.compile("[0-9A-F]{6}");
 
     /**
      * Validates the pattern of the given address if it matches the corresponding regular expression

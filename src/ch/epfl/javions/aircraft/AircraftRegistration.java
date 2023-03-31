@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * @author Oussama Ghali (341478)
  */
 public record AircraftRegistration(String string) {
-    public static Pattern aircraftRegistrationPattern = Pattern.compile("[A-Z0-9 .?/_+-]+");
+    private final static Pattern aircraftRegistrationPattern = Pattern.compile("[A-Z0-9 .?/_+-]+");
 
     /**
      * Validates the pattern of the given address if it matches the corresponding regular expression

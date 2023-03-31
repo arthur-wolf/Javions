@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * @author Oussama Ghali (341478)
  */
 public record AircraftTypeDesignator(String string) {
-    public static Pattern aircraftTypeDesignatorPattern = Pattern.compile("[A-Z0-9]{2,4}");
+    private final static Pattern aircraftTypeDesignatorPattern = Pattern.compile("[A-Z0-9]{2,4}");
 
     /**
      * Validates the pattern of the given address if it matches the corresponding regular expression or if it is an empty string
