@@ -46,11 +46,14 @@ public final class SamplesDecoder {
         byte[] bytes = new byte[batchSize * 2];
         int size = inputStream.readNBytes(bytes, 0, batchSize * 2);
 
+
+
         // swap blocks of bytes two by two
         for (int i = 0; i < size; i += 2) {
             readTable[i] = bytes[i + 1];
             readTable[i + 1] = bytes[i];
         }
+
         // Convert the bytes into signed 12 bits samples
         for (int i = 0; i < size / 2; i++) {
             batch[i] = (short) (((readTable[i * 2] << 8) | (readTable[i * 2 + 1] & 0xFF)) - OFFSET);

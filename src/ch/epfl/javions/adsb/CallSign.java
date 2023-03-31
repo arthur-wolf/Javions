@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * @author Arthur Wolf (344200)
  */
 public record CallSign(String string) {
-    public static Pattern callSignPattern = Pattern.compile("[A-Z0-9]{0,8}");
+    private final static Pattern callSignPattern = Pattern.compile("[A-Z0-9]{0,8}");
 
     /**
      * Validates the pattern of the given address if it matches the corresponding regular expression

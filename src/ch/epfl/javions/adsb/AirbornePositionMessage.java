@@ -9,8 +9,6 @@ import java.util.Objects;
 
 import static ch.epfl.javions.Units.Length.FOOT;
 
-//todo clean up with constants
-
 /**
  * Represents an Airborne Position Message
  *
@@ -32,6 +30,11 @@ public record AirbornePositionMessage(long timeStampNs,
     private static final int ALTITUDE_INDEX = 36;
     private static final int ALTITUDE_SIZE = 12;
     private static final int QBIT_INDEX = 4;
+    private static final int PARITY_INDEX = 34;
+    private static final int LONGITUDE_INDEX = 0;
+    private static final int LONGITUDE_SIZE = 17;
+    private static final int LATITUDE_INDEX = 17;
+    private static final int LATITUDE_SIZE = 17;
 
     public AirbornePositionMessage {
         Objects.requireNonNull(icaoAddress);
@@ -67,16 +70,22 @@ public record AirbornePositionMessage(long timeStampNs,
         int qBit = Bits.extractUInt(altitude, QBIT_INDEX, 1);
 
         if (qBit == 1) {
-            int altitude0 = ((Bits.extractUInt(altitude, 5, 7) << 4) | Bits.extractUInt(altitude, 0, 4)) * 25 - 1000;
-            return Units.convertFrom(altitude0, FOOT);
+            // Take the 4 last bits of the altitude and append them to the first 7 bits of the altitude
+            int altitude1 = ((Bits.extractUInt(altitude, 5, 7) << 4) | Bits.extractUInt(altitude, 0, 4)) * 25 - 1000;
+            return Units.convertFrom(altitude1, FOOT);
         } else {
             int unraveledAltitude = unravel(altitude);
             int msb9 = grayValueOf(unraveledAltitude >> 3, 9);
             int lsb3 = grayValueOf(unraveledAltitude & 0b111, 3);
 
-            if (lsb3 == 0 || lsb3 == 5 || lsb3 == 6) return Double.NaN;
-            if (lsb3 == 7) lsb3 = 5;
-            if (msb9 % 2 == 1) lsb3 = 6 - lsb3;
+            if (lsb3 == 0 || lsb3 == 5 || lsb3 == 6)
+                return Double.NaN;
+
+            if (lsb3 == 7)
+                lsb3 = 5;
+
+            if (msb9 % 2 == 1)
+                lsb3 = 6 - lsb3;
 
             int altitudeInFeet = lsb3 * 100 + msb9 * 500 - 1300;
             return Units.convertFrom(altitudeInFeet, FOOT);
@@ -123,7 +132,7 @@ public record AirbornePositionMessage(long timeStampNs,
      */
     private static int parity(RawMessage rawMessage) {
         long payload = rawMessage.payload();
-        return Bits.extractUInt(payload, 34, 1);
+        return Bits.extractUInt(payload, PARITY_INDEX, 1);
     }
 
     /**
@@ -134,7 +143,7 @@ public record AirbornePositionMessage(long timeStampNs,
      */
     private static double longitude(RawMessage rawMessage) {
         long payload = rawMessage.payload();
-        double longitude = Bits.extractUInt(payload, 0, 17);
+        double longitude = Bits.extractUInt(payload, LONGITUDE_INDEX, LONGITUDE_SIZE);
         return Math.scalb(longitude, -17);
     }
 
@@ -146,7 +155,7 @@ public record AirbornePositionMessage(long timeStampNs,
      */
     private static double latitude(RawMessage rawMessage) {
         long payload = rawMessage.payload();
-        double latitude = Bits.extractUInt(payload, 17, 17);
+        double latitude = Bits.extractUInt(payload, LATITUDE_INDEX, LATITUDE_SIZE);
         return Math.scalb(latitude, -17);
     }
 }

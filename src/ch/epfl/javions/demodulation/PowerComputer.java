@@ -15,9 +15,9 @@ import java.io.InputStream;
 public final class PowerComputer {
     private final int batchSize;
     private final SamplesDecoder samplesDecoder;
+    private int arrayHead;
     short[] powerArray;
     short[] circularTable;
-    private int arrayHead;
 
 
     /**
@@ -60,5 +60,4 @@ public final class PowerComputer {
         }
         return count / 2;
     }
-
 }

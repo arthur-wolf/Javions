@@ -6,8 +6,6 @@ import ch.epfl.javions.Crc24;
 import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
-//todo clean up with constants
-
 /**
  * Represents a raw ADS-B message (meaning its ME attribute has not been decoded yet).
  *
@@ -18,7 +16,17 @@ import ch.epfl.javions.aircraft.IcaoAddress;
  */
 public record RawMessage(long timeStampNs, ByteString bytes) {
     public static final int MESSAGE_LENGTH = 14;
-    public static final Crc24 crc24 = new Crc24(Crc24.GENERATOR);
+    private static final Crc24 crc24 = new Crc24(Crc24.GENERATOR);
+    private static final int DF_INDEX = 3;
+    private static final int DF_SIZE = 5;
+    private static final int TYPECODE_INDEX = 51;
+    private static final int TYPECODE_SIZE = 5;
+    private static final int ICAO_ADRESS_START_BYTE = 1;
+    private static final int ICAO_ADRESS_BYTE_SIZE = 3;
+    private static final int ICAO_ADRESS_LENGTH = 6;
+    private static final int PAYLOAD_START_BYTE = 4;
+    private static final int PAYLOAD_BYTE_SIZE = 7;
+    private static final int TYPECODE_IN_PAYLOAD_INDEX = 3;
 
 
     /**
@@ -50,7 +58,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the size of the message in bits
      */
     public static int size(byte byte0) {
-        byte extracted = (byte) Bits.extractUInt(byte0, 3, 5);
+        byte extracted = (byte) Bits.extractUInt(byte0, DF_INDEX, DF_SIZE);
         return (extracted == 17) ? MESSAGE_LENGTH : 0;
     }
 
@@ -61,7 +69,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the type code of the given message
      */
     public static int typeCode(long payload) {
-        return Bits.extractUInt(payload, 51, 5);
+        return Bits.extractUInt(payload, TYPECODE_INDEX, TYPECODE_SIZE);
     }
 
     /**
@@ -70,7 +78,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the downlink format of the message
      */
     public int downLinkFormat() {
-        return Bits.extractUInt(this.bytes.byteAt(0), 3, 5);
+        return Bits.extractUInt(this.bytes.byteAt(0), DF_INDEX, DF_SIZE);
     }
 
     /**
@@ -79,12 +87,12 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the ICAO address of the message
      */
     public IcaoAddress icaoAddress() {
-        long intIcaoAddres = bytes.bytesInRange(1, 4);
+        long intIcaoAddres = bytes.bytesInRange(ICAO_ADRESS_START_BYTE, ICAO_ADRESS_START_BYTE + ICAO_ADRESS_BYTE_SIZE);
         // If the address is not 6 characters long, we add 0s at the beginning
         StringBuilder icaoAddress = new StringBuilder(Long.toHexString(intIcaoAddres).toUpperCase());
-        if (icaoAddress.length() < 6) {
+        if (icaoAddress.length() < ICAO_ADRESS_LENGTH) {
             int length = icaoAddress.length();
-            for (int i = 0; i < 6 - length; i++) {
+            for (int i = 0; i < ICAO_ADRESS_LENGTH - length; i++) {
                 icaoAddress.insert(0, "0");
             }
         }
@@ -97,7 +105,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the payload of the message
      */
     public long payload() {
-        return bytes.bytesInRange(4, 11);
+        return bytes.bytesInRange(PAYLOAD_START_BYTE, PAYLOAD_START_BYTE + PAYLOAD_BYTE_SIZE);
     }
 
     /**
@@ -106,6 +114,6 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the type code of the message
      */
     public int typeCode() {
-        return Bits.extractUInt(bytes.byteAt(4), 3, 5);
+        return Bits.extractUInt(bytes.byteAt(PAYLOAD_START_BYTE), TYPECODE_IN_PAYLOAD_INDEX, TYPECODE_SIZE);
     }
 }

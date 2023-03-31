@@ -23,22 +23,22 @@ public record AirborneVelocityMessage(long timeStampNs,
                                       double trackOrHeading) implements Message {
     private static final int SUBSONIC = 1;
     private static final int SUPERSONIC = 4;
-    public static final int VELOCITY_VALUES_INDEX = 21;
-    public static final int VELOCITY_VALUES_SIZE = 22;
-    public static final int SUBTYPE_INDEX = 48;
+    private static final int VELOCITY_VALUES_INDEX = 21;
+    private static final int VELOCITY_VALUES_SIZE = 22;
+    private static final int SUBTYPE_INDEX = 48;
     private static final int SUBTYPE_SIZE = 3;
 
     private static final int VNS_INDEX = 0;
     private static final int DNS_INDEX = 10;
-    public static final int VEW_INDEX = 11;
-    public static final int DEW_INDEX = 21;
+    private static final int VEW_INDEX = 11;
+    private static final int DEW_INDEX = 21;
     private static final int GROUND_VALUES_SIZE = 10;
     private static final int GROUND_DIRECTION_SIZE = 1;
 
     private static final int SH_INDEX = 21;
     private static final int HDG_INDEX = 11;
     private static final int AS_INDEX = 0;
-    public static final int AIR_DATA_SIZE = 10;
+    private static final int AIR_DATA_SIZE = 10;
 
     /**
      * Returns an AirborneVelocityMessage if the raw message is valid, null otherwise

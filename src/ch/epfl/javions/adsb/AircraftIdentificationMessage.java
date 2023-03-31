@@ -6,8 +6,6 @@ import ch.epfl.javions.Bits;
 
 import java.util.Objects;
 
-//todo clean up
-
 /**
  * Represents an Aircraft Identification Message
  *
@@ -22,6 +20,16 @@ public record AircraftIdentificationMessage(long timeStampNs,
                                             IcaoAddress icaoAddress,
                                             int category,
                                             CallSign callSign) implements Message {
+
+    private static final int CA_FORMAT_INDEX = 48;
+    private static final int CA_FORMAT_SIZE = 3;
+    private static final int CALLSIGN_CHARACTER_SIZE = 6;
+    private static final int ASCII_ALPHABET_START_INDEX = 64;
+    private static final int ASCII_SPACE_INDEX = 32;
+    private static final int ASCII_DIGIT_START_INDEX = 48;
+    private static final int ASCII_DIGIT_END_INDEX = 57;
+    private static final int ASCII_LETTER_START_INDEX = 65;
+    private static final int ASCII_LETTER_END_INDEX = 90;
 
     public AircraftIdentificationMessage {
         Objects.requireNonNull(icaoAddress);
@@ -60,7 +68,7 @@ public record AircraftIdentificationMessage(long timeStampNs,
      * @return the CA attribute of the raw message
      */
     private static int caFormat(RawMessage rawMessage) {
-        return Bits.extractUInt(rawMessage.payload(), 48, 3);
+        return Bits.extractUInt(rawMessage.payload(), CA_FORMAT_INDEX, CA_FORMAT_SIZE);
     }
 
     /**
@@ -73,9 +81,9 @@ public record AircraftIdentificationMessage(long timeStampNs,
         long payload = rawMessage.payload();
         StringBuilder callSignSB = new StringBuilder();
         for (int i = 7; i >= 0; i--) {
-            int index = Bits.extractUInt(payload, i * 6, 6);
-            if (isLetter(index + 64)) {
-                callSignSB.append((char) (index + 64));
+            int index = Bits.extractUInt(payload, i * CALLSIGN_CHARACTER_SIZE, CALLSIGN_CHARACTER_SIZE);
+            if (isLetter(index + ASCII_ALPHABET_START_INDEX)) {
+                callSignSB.append((char) (index + ASCII_ALPHABET_START_INDEX));
             } else if (isDigitOrSpace(index)) {
                 callSignSB.append((char) index);
             } else {
@@ -92,7 +100,7 @@ public record AircraftIdentificationMessage(long timeStampNs,
      * @return true if the given index is a digit or a space
      */
     private static boolean isDigitOrSpace(int index) {
-        return (index >= 48 && index <= 57) || index == 32;
+        return (index >= ASCII_DIGIT_START_INDEX && index <= ASCII_DIGIT_END_INDEX) || index == ASCII_SPACE_INDEX;
     }
 
     /**
@@ -102,6 +110,6 @@ public record AircraftIdentificationMessage(long timeStampNs,
      * @return true if the given index is a letter
      */
     private static boolean isLetter(int index) {
-        return (index >= 65 && index <= 90);
+        return (index >= ASCII_LETTER_START_INDEX && index <= ASCII_LETTER_END_INDEX);
     }
 }
