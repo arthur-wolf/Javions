@@ -7,6 +7,9 @@ package ch.epfl.javions;
  * @author Oussama Ghali (341478)
  */
 public class WebMercator {
+
+    private static final int STANDARD_ZOOM_LEVEL = 8;
+
     private WebMercator() {
     }
 
@@ -18,7 +21,7 @@ public class WebMercator {
      * @return returns the x-coordinate corresponding to the given longitude (in radians) at the given zoom level
      */
     public static double x(int zoomLevel, double longitude) {
-        return Math.scalb((Units.convertTo(longitude, Units.Angle.TURN) + 0.5), 8 + zoomLevel);
+        return Math.scalb((Units.convertTo(longitude, Units.Angle.TURN) + 0.5), STANDARD_ZOOM_LEVEL + zoomLevel);
     }
 
     /**
@@ -30,7 +33,7 @@ public class WebMercator {
      */
     public static double y(int zoomLevel, double latitude) {
         double phi = -Math2.asinh(Math.tan(latitude));
-        return Math.scalb((Units.convertTo(phi, Units.Angle.TURN) + 0.5), 8 + zoomLevel);
+        return Math.scalb((Units.convertTo(phi, Units.Angle.TURN) + 0.5), STANDARD_ZOOM_LEVEL + zoomLevel);
     }
 
 }

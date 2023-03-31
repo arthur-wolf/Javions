@@ -8,6 +8,8 @@ package ch.epfl.javions;
  */
 public final class Units {
 
+    private static final int BASE_UNIT = 1;
+
     private Units() {
     }
 
@@ -19,7 +21,7 @@ public final class Units {
         private Angle() {
         }
 
-        public static final double RADIAN = 1;
+        public static final double RADIAN = BASE_UNIT;
         public static final double TURN = 2 * Math.PI * RADIAN;
         public static final double DEGREE = TURN / 360;
         public static final double T32 = Math.scalb(TURN, -32);
@@ -30,7 +32,7 @@ public final class Units {
         private Length() {
         }
 
-        public static final double METER = 1;
+        public static final double METER = BASE_UNIT;
         public static final double CENTIMETER = CENTI * METER;
         public static final double KILOMETER = KILO * METER;
         public static final double INCH = 2.54 * CENTIMETER;
@@ -43,7 +45,7 @@ public final class Units {
         private Time() {
         }
 
-        public static final double SECOND = 1;
+        public static final double SECOND = BASE_UNIT;
         public static final double MINUTE = 60 * SECOND;
         public static final double HOUR = 60 * MINUTE;
 
@@ -78,7 +80,7 @@ public final class Units {
      * @return the given value in the base unit
      */
     public static double convertFrom(double value, double fromUnit) {
-        return convert(value, fromUnit, 1);
+        return convert(value, fromUnit, BASE_UNIT);
     }
 
     /**
@@ -89,6 +91,6 @@ public final class Units {
      * @return the given value in the unit "toUnit"
      */
     public static double convertTo(double value, double toUnit) {
-        return convert(value, 1, toUnit);
+        return convert(value, BASE_UNIT, toUnit);
     }
 }
