@@ -16,8 +16,8 @@ public final class PowerComputer {
     private final int batchSize;
     private final SamplesDecoder samplesDecoder;
     private int arrayHead;
-    short[] powerArray;
-    short[] circularTable;
+    private final short[] powerArray;
+    private final short[] circularTable;
 
 
     /**
