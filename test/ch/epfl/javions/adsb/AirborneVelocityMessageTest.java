@@ -40,7 +40,8 @@ public class AirborneVelocityMessageTest {
         AirborneVelocityMessage message = AirborneVelocityMessage.of(new RawMessage(0,
                 new ByteString(HexFormat.of().parseHex("8DA05F219B06B6AF189400CBC33F"))));
         assertEquals(375, Units.convertTo(message.speed(), Units.Speed.KNOT));
-       // assertEquals(243.984375, Units.convertTo(message.trackOrHeading(), Units.Angle.DEGREE));
+        System.out.println(message.trackOrHeading());
+        assertEquals(243.984375, Units.convertTo(message.trackOrHeading(), Units.Angle.DEGREE));
     }
 
 
@@ -52,6 +53,4 @@ public class AirborneVelocityMessageTest {
         assertEquals(1061.4503686262444, message.speed());
         assertEquals(4.221861463749146, message.trackOrHeading());
     }
-
-
 }

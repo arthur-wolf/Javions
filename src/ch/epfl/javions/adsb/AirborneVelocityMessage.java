@@ -7,8 +7,11 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 
 import java.util.Objects;
 
+import static ch.epfl.javions.Units.Angle.TURN;
+import static ch.epfl.javions.Units.Speed.KNOT;
+
 /**
- * Represents an airborne velocity message of type.
+ * Represents an airborne velocity message
  *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
@@ -19,7 +22,23 @@ public record AirborneVelocityMessage(long timeStampNs,
                                       double speed,
                                       double trackOrHeading) implements Message {
     private static final int SUBSONIC = 1;
-    private static final int SUPERSONIC = 2;
+    private static final int SUPERSONIC = 4;
+    public static final int VELOCITY_VALUES_INDEX = 21;
+    public static final int VELOCITY_VALUES_SIZE = 22;
+    public static final int SUBTYPE_INDEX = 48;
+    private static final int SUBTYPE_SIZE = 3;
+
+    private static final int VNS_INDEX = 0;
+    private static final int DNS_INDEX = 10;
+    public static final int VEW_INDEX = 11;
+    public static final int DEW_INDEX = 21;
+    private static final int GROUND_VALUES_SIZE = 10;
+    private static final int GROUND_DIRECTION_SIZE = 1;
+
+    private static final int SH_INDEX = 21;
+    private static final int HDG_INDEX = 11;
+    private static final int AS_INDEX = 0;
+    public static final int AIR_DATA_SIZE = 10;
 
     /**
      * Returns an AirborneVelocityMessage if the raw message is valid, null otherwise
@@ -42,8 +61,8 @@ public record AirborneVelocityMessage(long timeStampNs,
      * @return an AirborneVelocityMessage if the raw message is valid, null otherwise
      */
     public static AirborneVelocityMessage of(RawMessage rawMessage) {
-        int velocityValues = Bits.extractUInt(rawMessage.payload(), 21, 22);
-        int subType = Bits.extractUInt(rawMessage.payload(), 48, 3);
+        int velocityValues = Bits.extractUInt(rawMessage.payload(), VELOCITY_VALUES_INDEX, VELOCITY_VALUES_SIZE);
+        int subType = Bits.extractUInt(rawMessage.payload(), SUBTYPE_INDEX, SUBTYPE_SIZE);
         // if the subtype is valid
         return switch (subType) {
             case 1 -> groundSpeed(rawMessage, velocityValues, SUBSONIC);
@@ -57,51 +76,47 @@ public record AirborneVelocityMessage(long timeStampNs,
     /**
      * Returns an AirborneVelocityMessage of a rawMessage whose subtype is 1 or 2
      *
-     * @param rawMessage the raw message to extract the data from
-     * @param payload    the payload of the raw message
-     * @param subOrSup   subsonic or supersonic speed
+     * @param rawMessage     the raw message to extract the data from
+     * @param velocityValues the payload of the raw message
+     * @param subOrSup       subsonic or supersonic speed
      * @return an AirborneVelocityMessage of a rawMessage whose subtype is 1 or 2
      */
-    private static AirborneVelocityMessage groundSpeed(RawMessage rawMessage, int payload, int subOrSup) {
-        int vns = Bits.extractUInt(payload, 0, 10) - 1;
-        int vew = Bits.extractUInt(payload, 11, 10) - 1;
+    private static AirborneVelocityMessage groundSpeed(RawMessage rawMessage, int velocityValues, int subOrSup) {
+        int vns = Bits.extractUInt(velocityValues, VNS_INDEX, GROUND_VALUES_SIZE);
+        int vew = Bits.extractUInt(velocityValues, VEW_INDEX, GROUND_VALUES_SIZE);
 
-        int dew = Bits.extractUInt(payload, 21, 1);
-        int dns = Bits.extractUInt(payload, 10, 1);
+        int dns = Bits.extractUInt(velocityValues, DNS_INDEX, GROUND_DIRECTION_SIZE);
+        int dew = Bits.extractUInt(velocityValues, DEW_INDEX, GROUND_DIRECTION_SIZE);
 
-        if (vns == -1 || vew == -1)return null;
+        if (vns == 0 || vew == 0)
+            return null;
 
-        vew = (dew == 0) ? vew : -vew;
-        vns = (dns == 0) ? vns : -vns;
+        vew = (dew == 0) ? (vew - 1) : -(vew - 1);
+        vns = (dns == 0) ? (vns - 1) : -(vns - 1);
 
-        double speed;
-        if(subOrSup == SUBSONIC) {
-             speed = subOrSup * Math.hypot(vew, vns);
-        }
-        else {
-             speed = subOrSup * Math.hypot(vew, vns) * 2;
-        }
+        double speed = subOrSup * Math.hypot(vew, vns);
         double trackOrHeading = Math.atan2(vew, vns) >= 0 ? Math.atan2(vew, vns) : Math.atan2(vew, vns) + (2 * Math.PI);
 
-        return new AirborneVelocityMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), Units.convertFrom(speed, Units.Speed.KNOT), trackOrHeading);
+        return new AirborneVelocityMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), Units.convertFrom(speed, KNOT), trackOrHeading);
     }
 
     /**
      * Returns an AirborneVelocityMessage of a rawMessage whose subtype is 3 or 4
      *
-     * @param rawMessage the raw message to extract the data from
-     * @param payload    the payload of the raw message
-     * @param subOrSup   subsonic or supersonic speed
+     * @param rawMessage     the raw message to extract the data from
+     * @param velocityValues the payload of the raw message
+     * @param subOrSup       subsonic or supersonic speed
      * @return an AirborneVelocityMessage of a rawMessage whose subtype is 3 or 4
      */
-    private static AirborneVelocityMessage airSpeed(RawMessage rawMessage, int payload, int subOrSup) {
-        if (Bits.testBit(payload, 21)) {
-            int hdg = Bits.extractUInt(payload, 11, 10) / (1 << 10);
-            int as = Bits.extractUInt(payload, 0, 10) - 1;
+    private static AirborneVelocityMessage airSpeed(RawMessage rawMessage, int velocityValues, int subOrSup) {
+        if (Bits.testBit(velocityValues, SH_INDEX)) {
+            double hdg = (double) Bits.extractUInt(velocityValues, HDG_INDEX, AIR_DATA_SIZE) / (1 << 10);
+            double as = Bits.extractUInt(velocityValues, AS_INDEX, AIR_DATA_SIZE);
 
-            if (as == -1) return null;
+            if (as == 0)
+                return null;
 
-            return new AirborneVelocityMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), Units.convertFrom(subOrSup * as, Units.Speed.KNOT), Units.convertFrom(hdg, Units.Angle.TURN));
+            return new AirborneVelocityMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), Units.convertFrom(subOrSup * (as - 1), KNOT), Units.convertFrom(hdg, TURN));
         }
         return null;
     }
