@@ -41,6 +41,8 @@ public final class PowerWindow {
     }
 
     /**
+     * Returns the size of the window
+     *
      * @return the size of the window
      */
     public int size() {
@@ -48,6 +50,8 @@ public final class PowerWindow {
     }
 
     /**
+     * Returns the current position of the window
+     *
      * @return the current position of the window
      */
     public long position() {
@@ -55,6 +59,8 @@ public final class PowerWindow {
     }
 
     /**
+     * Returns true if the window is full, false otherwise
+     *
      * @return true if the window is full, false otherwise
      */
     public boolean isFull() {
@@ -65,7 +71,7 @@ public final class PowerWindow {
      * Returns the power sample at index i in the window
      *
      * @param i the index of the sample to get
-     * @return returns the power sample at the given index
+     * @return the power sample at the given index
      */
     public int get(int i) {
         Objects.checkIndex(i, windowSize);

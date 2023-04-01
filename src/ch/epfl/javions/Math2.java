@@ -7,8 +7,7 @@ package ch.epfl.javions;
  * @author Oussama Ghali (341478)
  */
 public final class Math2 {
-    private Math2() {
-    }
+    private Math2() {}
 
     /**
      * Limits the value v to the interval defined by min and max
@@ -31,7 +30,5 @@ public final class Math2 {
      * @param x the parameter of the function
      * @return the value of arsinh(x)
      */
-    public static double asinh(double x) {
-        return Math.log(x + Math.sqrt(1 + Math.pow(x, 2)));
-    }
+    public static double asinh(double x) { return Math.log(x + Math.sqrt(1 + Math.pow(x, 2))); }
 }

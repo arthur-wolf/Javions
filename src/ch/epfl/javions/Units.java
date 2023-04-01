@@ -8,18 +8,14 @@ package ch.epfl.javions;
  */
 public final class Units {
 
+    private Units() {}
     private static final int BASE_UNIT = 1;
-
-    private Units() {
-    }
-
     public static final double CENTI = 1e-2;
     public static final double KILO = 1e3;
 
     public static class Angle {
 
-        private Angle() {
-        }
+        private Angle() {}
 
         public static final double RADIAN = BASE_UNIT;
         public static final double TURN = 2 * Math.PI * RADIAN;
@@ -29,8 +25,7 @@ public final class Units {
 
     public static class Length {
 
-        private Length() {
-        }
+        private Length() {}
 
         public static final double METER = BASE_UNIT;
         public static final double CENTIMETER = CENTI * METER;
@@ -42,8 +37,7 @@ public final class Units {
     }
 
     public static class Time {
-        private Time() {
-        }
+        private Time() {}
 
         public static final double SECOND = BASE_UNIT;
         public static final double MINUTE = 60 * SECOND;
@@ -52,8 +46,7 @@ public final class Units {
     }
 
     public static class Speed {
-        private Speed() {
-        }
+        private Speed() {}
 
         public static final double KNOT = Length.NAUTICAL_MILE / Time.HOUR;
         public static final double KILOMETER_PER_HOUR = Length.KILOMETER / Time.HOUR;

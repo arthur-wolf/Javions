@@ -89,7 +89,7 @@ public final class ByteString {
 
 
     /**
-     * returns the hash value of the ByteString
+     * Returns the hash value of the ByteString
      *
      * @return the hash value of the ByteString
      */

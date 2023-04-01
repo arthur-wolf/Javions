@@ -19,7 +19,5 @@ public record AircraftTypeDesignator(String string) {
      *
      * @param string The type designator to validate
      */
-    public AircraftTypeDesignator {
-        Preconditions.checkArgument(aircraftTypeDesignatorPattern.matcher(string).matches() || string.isEmpty());
-    }
+    public AircraftTypeDesignator { Preconditions.checkArgument(aircraftTypeDesignatorPattern.matcher(string).matches() || string.isEmpty()); }
 }

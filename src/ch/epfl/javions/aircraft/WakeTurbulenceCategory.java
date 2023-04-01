@@ -16,7 +16,7 @@ public enum WakeTurbulenceCategory {
      * Returns the turbulence level depending on the string s
      *
      * @param s String used to define the turbulence level
-     * @return returns the level of turbulence
+     * @return the level of turbulence
      */
     public static WakeTurbulenceCategory of(String s) {
         return switch (s) {

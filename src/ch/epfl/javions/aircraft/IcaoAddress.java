@@ -19,7 +19,5 @@ public record IcaoAddress(String string) {
      *
      * @param string The address to validate
      */
-    public IcaoAddress {
-        Preconditions.checkArgument(icaoAdressPattern.matcher(string).matches());
-    }
+    public IcaoAddress { Preconditions.checkArgument(icaoAdressPattern.matcher(string).matches()); }
 }

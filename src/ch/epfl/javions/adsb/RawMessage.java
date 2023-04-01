@@ -7,7 +7,7 @@ import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
 /**
- * Represents a raw ADS-B message (meaning its ME attribute has not been decoded yet).
+ * Represents a raw ADS-B message (i.e. the ME attribute has not been decoded yet).
  *
  * @param timeStampNs the time stamp of the message in nanoseconds
  * @param bytes       the bytes of the message
@@ -113,7 +113,5 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      *
      * @return the type code of the message
      */
-    public int typeCode() {
-        return Bits.extractUInt(bytes.byteAt(PAYLOAD_START_BYTE), TYPECODE_IN_PAYLOAD_INDEX, TYPECODE_SIZE);
-    }
+    public int typeCode() { return Bits.extractUInt(bytes.byteAt(PAYLOAD_START_BYTE), TYPECODE_IN_PAYLOAD_INDEX, TYPECODE_SIZE); }
 }

@@ -74,6 +74,7 @@ public final class AdsbDemodulator {
      * @return the computed sum
      */
     private int computeSigmaP1() {
+        // Given formula (2.3.1) : https://cs108.epfl.ch/p/04_demodulation.html
         return powerWindow.get(1) + powerWindow.get(11) + powerWindow.get(36) + powerWindow.get(46);
     }
 
@@ -83,6 +84,7 @@ public final class AdsbDemodulator {
      * @return the computed sum
      */
     private int computeSigmaV() {
+        // Given formula (2.3.1) : https://cs108.epfl.ch/p/04_demodulation.html
         return powerWindow.get(5) + powerWindow.get(15) + powerWindow.get(20) + powerWindow.get(25) + powerWindow.get(30) + powerWindow.get(40);
     }
 
@@ -93,6 +95,7 @@ public final class AdsbDemodulator {
      */
     private void fillFirstByte(byte[] bytes) {
         for (int i = 0; i < Byte.SIZE; i++) {
+            // Given formula (2.3.3) : https://cs108.epfl.ch/p/04_demodulation.html
             bytes[0] |= (powerWindow.get(80 + (10 * i)) < powerWindow.get(85 + (10 * i)) ? 0 : 1) << (7 - i);
         }
     }
@@ -104,6 +107,7 @@ public final class AdsbDemodulator {
      */
     private void fillOtherBytes(byte[] bytes) {
         for (int i = Byte.SIZE; i < 112; i++) {
+            // Given formula (2.3.4) : https://cs108.epfl.ch/p/04_demodulation.html
             bytes[i / 8] |= (powerWindow.get(80 + (10 * i)) < powerWindow.get(85 + (10 * i)) ? 0 : 1) << (7 - (i % Byte.SIZE));
         }
     }

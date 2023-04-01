@@ -8,8 +8,7 @@ import java.util.Objects;
  * @author Arthur Wolf (344200)
  */
 public class Bits {
-    private Bits() {
-    }
+    private Bits() {}
 
     /**
      * Extracts the range starting from start of length size as an unsigned value

@@ -19,7 +19,6 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     public AircraftStateAccumulator(T stateSetter) {
         Objects.requireNonNull(stateSetter);
         this.stateSetter = stateSetter;
-
     }
 
     /**
@@ -27,9 +26,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
      *
      * @return the state setter of the accumulator
      */
-    public T stateSetter() {
-        return stateSetter;
-    }
+    public T stateSetter() { return stateSetter; }
 
     /**
      * Must determine the exact type of the message passed to it as an argument,
@@ -59,9 +56,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 stateSetter.setVelocity(avm.speed());
                 stateSetter.setTrackOrHeading(avm.trackOrHeading());
             }
-
-            default -> {
-            }
+            default -> {}
         }
     }
 

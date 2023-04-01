@@ -14,8 +14,7 @@ public final class CprDecoder {
     private static final double ZPHI0 = 60;
     private static final double ZPHI1 = 59;
 
-    private CprDecoder() {
-    }
+    private CprDecoder() {}
 
     /**
      * Returns the geographical position corresponding to the given normalized local positions depending on different cases
@@ -69,7 +68,7 @@ public final class CprDecoder {
         }
 
         // Two cases can be distinguished for determining the corresponding longitude.
-        // First case is wherewhich corresponds to the polar zones in which there is only one zone of longitude. The longitude (zLambda0 and zLambda1) is then simply given by :
+        // First case is where which corresponds to the polar zones in which there is only one zone of longitude. The longitude (zLambda0 and zLambda1) is then simply given by :
         if (firstLongitudeEvenZoneNumber == 1) {
             evenLongitude = x0;
             oddLongitude = x1;
