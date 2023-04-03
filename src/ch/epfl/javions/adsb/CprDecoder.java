@@ -97,7 +97,9 @@ public final class CprDecoder {
 
 
         // Returns null if the latitude of the decoded position is not valid (i.e. within ±2^32)
+
         return GeoPos.isValidLatitudeT32((int) latitude) ? new GeoPos((int) longitude, (int) latitude) : null;
+
     }
 
     /**
