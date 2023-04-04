@@ -17,7 +17,6 @@ public final class SamplesDecoder {
     private static final int OFFSET = 2048;
     private final InputStream inputStream;
     private final int batchSize;
-    private final byte[] readTable;
 
     /**
      * Constructs a new samples decoder
@@ -30,7 +29,6 @@ public final class SamplesDecoder {
         Objects.requireNonNull(stream);
         this.inputStream = stream;
         this.batchSize = batchSize;
-        this.readTable = new byte[batchSize * 2];
     }
 
     /**
@@ -46,15 +44,11 @@ public final class SamplesDecoder {
         byte[] bytes = new byte[batchSize * 2];
         int size = inputStream.readNBytes(bytes, 0, batchSize * 2);
 
-        // Swap blocks of bytes two by two
         for (int i = 0; i < size; i += 2) {
-            readTable[i] = bytes[i + 1];
-            readTable[i + 1] = bytes[i];
-        }
+            byte msb = bytes[i + 1];
+            byte lsb = bytes[i];
 
-        // Convert the bytes into signed 12 bits samples
-        for (int i = 0; i < size / 2; i++) {
-            batch[i] = (short) (((readTable[i * 2] << 8) | (readTable[i * 2 + 1] & 0xFF)) - OFFSET);
+            batch[i / 2] = (short) (((Byte.toUnsignedInt(msb) << 8) | Byte.toUnsignedInt(lsb)) - OFFSET);
         }
 
         return size / 2;

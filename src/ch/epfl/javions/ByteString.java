@@ -77,7 +77,7 @@ public final class ByteString {
     }
 
     /**
-     * Overriden equals method
+     * Overridden equals method
      *
      * @param obj the object to compare the ByteString to
      * @return true if obj and the ByteString have the same bytes

@@ -87,7 +87,7 @@ public final class CprDecoder {
         }
 
         // The positions are always positive, which is contrary to convention.
-        // They must be re-centred around 0 by converting angles greater than or equal to ½ turn to their negative equivalent.
+        // They must be re-centered around 0 by converting angles greater than or equal to ½ turn to their negative equivalent.
         double longitude = mostRecent == 0 ? recenter(evenLongitude) : recenter(oddLongitude);
         double latitude = mostRecent == 0 ? recenter(evenLatitude) : recenter(oddLatitude);
 
@@ -95,14 +95,13 @@ public final class CprDecoder {
         latitude = Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32));
 
 
-        // Returns null if the latitude of the decoded position is not valid (i.e. within ±2^32)
-
+        // Returns null if the latitude of the decoded position is not valid (i.e. if it not within ±2^32)
         return GeoPos.isValidLatitudeT32((int) latitude) ? new GeoPos((int) longitude, (int) latitude) : null;
 
     }
 
     /**
-     * Check that we have the same values. If not, the aircraft has changed "latitude band", and it is therefore not possible to determine its position.
+     * Returns true if the values are the same, false otherwise
      *
      * @param x the first value
      * @param y the second value
@@ -113,7 +112,7 @@ public final class CprDecoder {
     }
 
     /**
-     * Allows to recenter around 0 by converting angles greater than or equal to ½ turn into their negative equivalent.
+     * Recenter the angle around 0 by converting angles greater than or equal to ½ turn into their negative equivalent.
      *
      * @param x the angle to convert
      * @return the converted angle
