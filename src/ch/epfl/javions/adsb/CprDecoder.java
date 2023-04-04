@@ -14,7 +14,8 @@ public final class CprDecoder {
     private static final double ZPHI0 = 60;
     private static final double ZPHI1 = 59;
 
-    private CprDecoder() {}
+    private CprDecoder() {
+    }
 
     /**
      * Returns the geographical position corresponding to the given normalized local positions depending on different cases
@@ -29,10 +30,9 @@ public final class CprDecoder {
     public static GeoPos decodePosition(double x0, double y0, double x1, double y1, int mostRecent) {
         Preconditions.checkArgument(mostRecent == 0 || mostRecent == 1);
 
-        // evenZoneLatitude = zPhi0  | firstLongitudeEvenZoneNumber = Zlambda0  | evenZoneLongitude = zLambda0
-        // oddZoneLatitude = zPhi1   | firstLatitudeEvenZoneNumber = Zlambda1   | oddZoneLongitude = zLambda1
-        double evenZoneLatitude, oddZoneLatitude, evenZoneLongitude, oddZoneLongitude,
-                latitudeZoneNumber, longitudeZoneNumber, firstLongitudeEvenZoneNumber, firstLatitudeEvenZoneNumber,
+
+        double zPhi0, zPhi1, zLambda0, zLambda1,
+                latitudeZoneNumber, longitudeZoneNumber, Zlambda0, Zlambda1,
                 secondLongitudeEvenZoneNumber, evenLatitude, oddLatitude, evenLongitude,
                 oddLongitude, A, B;
 
@@ -40,22 +40,21 @@ public final class CprDecoder {
         latitudeZoneNumber = Math.rint(y0 * ZPHI1 - y1 * ZPHI0);
 
         // With y0 and y1 , we can determine zPhi0 and zPhi1, which are the latitude zone numbers in which the aircraft is located in each of the two cutouts
-        evenZoneLatitude = latitudeZoneNumber < 0 ? latitudeZoneNumber + ZPHI0 : latitudeZoneNumber;
-        oddZoneLatitude = latitudeZoneNumber < 0 ? latitudeZoneNumber + ZPHI1 : latitudeZoneNumber;
+        zPhi0 = latitudeZoneNumber < 0 ? latitudeZoneNumber + ZPHI0 : latitudeZoneNumber;
+        zPhi1 = latitudeZoneNumber < 0 ? latitudeZoneNumber + ZPHI1 : latitudeZoneNumber;
 
         // The latitudes at which it was located when each of the messages was sent can be deduced from this:
-        evenLatitude = (evenZoneLatitude + y0) / ZPHI0;
-        oddLatitude = (oddZoneLatitude + y1) / ZPHI1;
+        evenLatitude = (zPhi0 + y0) / ZPHI0;
+        oddLatitude = (zPhi1 + y1) / ZPHI1;
 
         double tempEvenLat = Units.convert(evenLatitude, Units.Angle.TURN, Units.Angle.RADIAN);
         double tempOddLat = Units.convert(oddLatitude, Units.Angle.TURN, Units.Angle.RADIAN);
 
         // We can deduce the longitude zone numbers (Zlambda0) in the odd part from the latitude zone numbers (zPhi0)
-        A = Math.acos(1 - ((1 - Math.cos(2 * Math.PI / ZPHI0)) / (Math.cos(tempEvenLat) * Math.cos(tempEvenLat))));
-
         // If A is NaN, then the latitude is 0, and the longitude is 1
-        firstLongitudeEvenZoneNumber = Double.isNaN(A) ? 1 : Math.floor((2 * Math.PI) / A);
-        firstLatitudeEvenZoneNumber = firstLongitudeEvenZoneNumber - 1;
+        A = Math.acos(1 - ((1 - Math.cos(2 * Math.PI / ZPHI0)) / (Math.cos(tempEvenLat) * Math.cos(tempEvenLat))));
+        Zlambda0 = Double.isNaN(A) ? 1 : Math.floor((2 * Math.PI) / A);
+        Zlambda1 = Zlambda0 - 1;
 
         // We can deduce the longitude zone numbers in the even part from the latitude zone numbers (zPhi1)
         B = Math.acos(1 - ((1 - Math.cos(2 * Math.PI / ZPHI0)) / (Math.cos(tempOddLat) * Math.cos(tempOddLat))));
@@ -63,28 +62,28 @@ public final class CprDecoder {
 
         // Since there are two messages available, this formula can be calculated with two different latitudes. If two different values are obtained,
         // this means that between the two messages the aircraft has changed its "latitude band" and therefore its position cannot be determined.
-        if (!isValid(firstLongitudeEvenZoneNumber, secondLongitudeEvenZoneNumber)) {
+        if (!isValid(Zlambda0, secondLongitudeEvenZoneNumber)) {
             return null;
         }
 
         // Two cases can be distinguished for determining the corresponding longitude.
         // First case is where which corresponds to the polar zones in which there is only one zone of longitude. The longitude (zLambda0 and zLambda1) is then simply given by :
-        if (firstLongitudeEvenZoneNumber == 1) {
+        if (Zlambda0 == 1) {
             evenLongitude = x0;
             oddLongitude = x1;
         } else {
             // Outside the polar zones, as with latitude, the zone indexes corresponding to the two messages must be calculated:
-            longitudeZoneNumber = Math.rint(x0 * firstLatitudeEvenZoneNumber - x1 * firstLongitudeEvenZoneNumber);
+            longitudeZoneNumber = Math.rint(x0 * Zlambda1 - x1 * Zlambda0);
             if (longitudeZoneNumber < 0) {
-                evenZoneLongitude = longitudeZoneNumber + firstLongitudeEvenZoneNumber;
-                oddZoneLongitude = longitudeZoneNumber + firstLatitudeEvenZoneNumber;
+                zLambda0 = longitudeZoneNumber + Zlambda0;
+                zLambda1 = longitudeZoneNumber + Zlambda1;
             } else {
-                evenZoneLongitude = longitudeZoneNumber;
-                oddZoneLongitude = longitudeZoneNumber;
+                zLambda0 = longitudeZoneNumber;
+                zLambda1 = longitudeZoneNumber;
             }
             // The longitude at which it was located when each of the messages was sent can be deduced from this:
-            evenLongitude = (evenZoneLongitude + x0) / firstLongitudeEvenZoneNumber;
-            oddLongitude = (oddZoneLongitude + x1) / firstLatitudeEvenZoneNumber;
+            evenLongitude = (zLambda0 + x0) / Zlambda0;
+            oddLongitude = (zLambda1 + x1) / Zlambda1;
         }
 
         // The positions are always positive, which is contrary to convention.
