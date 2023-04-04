@@ -45,7 +45,9 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 stateSetter.setAltitude(apm.altitude());
                 if (isValid()) {
                     GeoPos position = CprDecoder.decodePosition(evenMessage.x(), evenMessage.y(), oddMessage.x(), oddMessage.y(), evenMessage.timeStampNs() - oddMessage.timeStampNs() > 0 ? 0 : 1);
+                    if(position != null){
                         stateSetter.setPosition(position);
+                    }
                 }
             }
             case AircraftIdentificationMessage aim -> {
