@@ -113,5 +113,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      *
      * @return the type code of the message
      */
-    public int typeCode() { return Bits.extractUInt(bytes.byteAt(PAYLOAD_START_BYTE), TYPECODE_IN_PAYLOAD_INDEX, TYPECODE_SIZE); }
+    public int typeCode() {
+        return Bits.extractUInt(bytes.byteAt(PAYLOAD_START_BYTE), TYPECODE_IN_PAYLOAD_INDEX, TYPECODE_SIZE);
+    }
 }

@@ -68,7 +68,9 @@ public record AircraftIdentificationMessage(long timeStampNs,
      * @param rawMessage the raw message to extract the CA attribute from
      * @return the CA attribute of the raw message
      */
-    private static int caFormat(RawMessage rawMessage) { return Bits.extractUInt(rawMessage.payload(), CA_FORMAT_INDEX, CA_FORMAT_SIZE); }
+    private static int caFormat(RawMessage rawMessage) {
+        return Bits.extractUInt(rawMessage.payload(), CA_FORMAT_INDEX, CA_FORMAT_SIZE);
+    }
 
     /**
      * Returns the call sign of the aircraft that sent the message
@@ -98,7 +100,9 @@ public record AircraftIdentificationMessage(long timeStampNs,
      * @param index the index to check
      * @return true if the given index is a digit or a space
      */
-    private static boolean isDigitOrSpace(int index) { return (index >= ASCII_DIGIT_START_INDEX && index <= ASCII_DIGIT_END_INDEX) || index == ASCII_SPACE_INDEX; }
+    private static boolean isDigitOrSpace(int index) {
+        return (index >= ASCII_DIGIT_START_INDEX && index <= ASCII_DIGIT_END_INDEX) || index == ASCII_SPACE_INDEX;
+    }
 
     /**
      * Returns true if the given index is a letter
@@ -106,5 +110,7 @@ public record AircraftIdentificationMessage(long timeStampNs,
      * @param index the index to check
      * @return true if the given index is a letter
      */
-    private static boolean isLetter(int index) { return (index >= ASCII_LETTER_START_INDEX && index <= ASCII_LETTER_END_INDEX); }
+    private static boolean isLetter(int index) {
+        return (index >= ASCII_LETTER_START_INDEX && index <= ASCII_LETTER_END_INDEX);
+    }
 }

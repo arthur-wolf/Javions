@@ -7,7 +7,8 @@ package ch.epfl.javions.adsb;
  * @author Oussama Ghali (341478)
  */
 public final class MessageParser {
-    private MessageParser() {}
+    private MessageParser() {
+    }
 
     /**
      * Returns the message corresponding to the given raw message

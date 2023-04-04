@@ -18,5 +18,7 @@ public record CallSign(String string) {
      *
      * @param string The address to validate
      */
-    public CallSign { Preconditions.checkArgument(callSignPattern.matcher(string).matches()); }
+    public CallSign {
+        Preconditions.checkArgument(callSignPattern.matcher(string).matches());
+    }
 }

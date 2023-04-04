@@ -7,7 +7,8 @@ package ch.epfl.javions;
  * @author Oussama Ghali (341478)
  */
 public final class Preconditions {
-    private Preconditions() {}
+    private Preconditions() {
+    }
 
     /**
      * Checks if a given argument is true or false

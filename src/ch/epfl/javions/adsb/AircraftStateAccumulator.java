@@ -26,7 +26,9 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
      *
      * @return the state setter of the accumulator
      */
-    public T stateSetter() { return stateSetter; }
+    public T stateSetter() {
+        return stateSetter;
+    }
 
     /**
      * Must determine the exact type of the message passed to it as an argument,
@@ -45,7 +47,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 stateSetter.setAltitude(apm.altitude());
                 if (isValid()) {
                     GeoPos position = CprDecoder.decodePosition(evenMessage.x(), evenMessage.y(), oddMessage.x(), oddMessage.y(), evenMessage.timeStampNs() - oddMessage.timeStampNs() > 0 ? 0 : 1);
-                    if(position != null){
+                    if (position != null) {
                         stateSetter.setPosition(position);
                     }
                 }
@@ -58,7 +60,8 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 stateSetter.setVelocity(avm.speed());
                 stateSetter.setTrackOrHeading(avm.trackOrHeading());
             }
-            default -> {}
+            default -> {
+            }
         }
     }
 

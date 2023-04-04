@@ -17,7 +17,9 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
      * @param longitudeT32 the longitude in t32
      * @param latitudeT32  the latitude in t32
      */
-    public GeoPos {Preconditions.checkArgument(isValidLatitudeT32(latitudeT32));}
+    public GeoPos {
+        Preconditions.checkArgument(isValidLatitudeT32(latitudeT32));
+    }
 
     /**
      * Checks if the given latitude expressed in t32 is indeed expressed as a correct t32 value
@@ -43,7 +45,9 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
      *
      * @return the value of the longitude in radians
      */
-    public double latitude() { return Units.convert(this.latitudeT32, T32, RADIAN); }
+    public double latitude() {
+        return Units.convert(this.latitudeT32, T32, RADIAN);
+    }
 
     /**
      * Creates a string from a GeoPos featuring its own longitude and latitude expressed in degrees

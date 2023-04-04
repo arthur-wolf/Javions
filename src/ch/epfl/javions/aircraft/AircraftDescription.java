@@ -19,5 +19,7 @@ public record AircraftDescription(String string) {
      *
      * @param string The description to validate
      */
-    public AircraftDescription { Preconditions.checkArgument(aircraftDescriptionPattern.matcher(string).matches() || string.isEmpty()); }
+    public AircraftDescription {
+        Preconditions.checkArgument(aircraftDescriptionPattern.matcher(string).matches() || string.isEmpty());
+    }
 }

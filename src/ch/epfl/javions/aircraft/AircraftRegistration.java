@@ -19,5 +19,7 @@ public record AircraftRegistration(String string) {
      *
      * @param string The registration to validate
      */
-    public AircraftRegistration { Preconditions.checkArgument(aircraftRegistrationPattern.matcher(string).matches()); }
+    public AircraftRegistration {
+        Preconditions.checkArgument(aircraftRegistrationPattern.matcher(string).matches());
+    }
 }
