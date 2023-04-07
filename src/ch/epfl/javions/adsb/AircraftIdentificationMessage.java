@@ -45,10 +45,7 @@ public record AircraftIdentificationMessage(long timeStampNs,
      */
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
         CallSign callSign1 = callSign(rawMessage);
-        return (callSign1 != null) ? new AircraftIdentificationMessage(rawMessage.timeStampNs(),
-                rawMessage.icaoAddress(),
-                category(rawMessage),
-                callSign1) : null;
+        return (callSign1 != null) ? new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category(rawMessage), callSign1) : null;
     }
 
 
@@ -94,10 +91,7 @@ public record AircraftIdentificationMessage(long timeStampNs,
                 return null;
             }
         }
-        return new CallSign(
-                callSignSB
-                .toString()
-                .stripTrailing());
+        return new CallSign(callSignSB.toString().stripTrailing());
     }
 
     /**
@@ -107,7 +101,9 @@ public record AircraftIdentificationMessage(long timeStampNs,
      * @return true if the given index is a digit or a space
      */
     private static boolean isDigitOrSpace(int index) {
-        return (index >= ASCII_DIGIT_START_INDEX && index <= ASCII_DIGIT_END_INDEX) || index == ASCII_SPACE_INDEX;
+        return (index >= ASCII_DIGIT_START_INDEX
+                && index <= ASCII_DIGIT_END_INDEX)
+                || index == ASCII_SPACE_INDEX;
     }
 
     /**
@@ -117,6 +113,7 @@ public record AircraftIdentificationMessage(long timeStampNs,
      * @return true if the given index is a letter
      */
     private static boolean isLetter(int index) {
-        return (index >= ASCII_LETTER_START_INDEX && index <= ASCII_LETTER_END_INDEX);
+        return (index >= ASCII_LETTER_START_INDEX
+                && index <= ASCII_LETTER_END_INDEX);
     }
 }

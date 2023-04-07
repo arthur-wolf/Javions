@@ -74,7 +74,8 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
         //timestamp in seconds
         double DELTA = 10e9;
 
-        return (evenMessage != null && oddMessage != null
+        return (evenMessage != null
+                && oddMessage != null
                 && Math.abs(evenMessage.timeStampNs() - oddMessage.timeStampNs()) <= DELTA);
     }
 }

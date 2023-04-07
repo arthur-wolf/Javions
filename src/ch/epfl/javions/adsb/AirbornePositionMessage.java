@@ -94,6 +94,7 @@ public record AirbornePositionMessage(long timeStampNs,
                 lsb3 = 6 - lsb3;
 
             int altitudeInFeet = lsb3 * 100 + msb9 * 500 - 1300;
+
             return Units.convertFrom(altitudeInFeet, FOOT);
         }
     }

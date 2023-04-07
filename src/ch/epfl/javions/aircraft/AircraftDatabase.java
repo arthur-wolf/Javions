@@ -32,9 +32,7 @@ public class AircraftDatabase {
      */
     public AircraftData get(IcaoAddress address) throws IOException {
         // store the last two digits of the address in a variable
-        String lastTwoDigits = address
-                .string()
-                .substring(4);
+        String lastTwoDigits = address.string().substring(4);
 
         try (ZipFile zip = new ZipFile(filename);
              InputStream inputStream = zip.getInputStream(zip.getEntry(lastTwoDigits + ".csv"));
