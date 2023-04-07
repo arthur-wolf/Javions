@@ -48,7 +48,8 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the raw ADS-B message corresponding to the given bytes
      */
     public static RawMessage of(long timeStampNs, byte[] bytes) {
-        return (bytes.length == LENGTH && crc24.crc(bytes) == 0) ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
+        return (bytes.length == LENGTH && crc24.crc(bytes) == 0) ?
+                new RawMessage(timeStampNs, new ByteString(bytes)) : null;
     }
 
     /**
@@ -89,7 +90,9 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     public IcaoAddress icaoAddress() {
         long intIcaoAddres = bytes.bytesInRange(ICAO_ADRESS_START_BYTE, ICAO_ADRESS_START_BYTE + ICAO_ADRESS_BYTE_SIZE);
         // If the address is not 6 characters long, we add 0s at the beginning
-        StringBuilder icaoAddress = new StringBuilder(Long.toHexString(intIcaoAddres).toUpperCase());
+        StringBuilder icaoAddress = new StringBuilder(Long
+                .toHexString(intIcaoAddres)
+                .toUpperCase());
         if (icaoAddress.length() < ICAO_ADRESS_LENGTH) {
             int length = icaoAddress.length();
             for (int i = 0; i < ICAO_ADRESS_LENGTH - length; i++) {

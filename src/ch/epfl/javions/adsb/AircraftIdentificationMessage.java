@@ -45,7 +45,10 @@ public record AircraftIdentificationMessage(long timeStampNs,
      */
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
         CallSign callSign1 = callSign(rawMessage);
-        return (callSign1 != null) ? new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category(rawMessage), callSign1) : null;
+        return (callSign1 != null) ? new AircraftIdentificationMessage(rawMessage.timeStampNs(),
+                rawMessage.icaoAddress(),
+                category(rawMessage),
+                callSign1) : null;
     }
 
 
@@ -91,7 +94,10 @@ public record AircraftIdentificationMessage(long timeStampNs,
                 return null;
             }
         }
-        return new CallSign(callSignSB.toString().stripTrailing());
+        return new CallSign(
+                callSignSB
+                .toString()
+                .stripTrailing());
     }
 
     /**

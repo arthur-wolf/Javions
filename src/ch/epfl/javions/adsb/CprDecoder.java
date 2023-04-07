@@ -25,7 +25,7 @@ public final class CprDecoder {
      * @param x1         longitude of an odd message
      * @param y1         latitude of an odd message
      * @param mostRecent the most recent position of the message
-     * @return returns the geographical position corresponding to the given normalized local positions
+     * @return the geographical position corresponding to the given normalized local positions
      */
     public static GeoPos decodePosition(double x0, double y0, double x1, double y1, int mostRecent) {
         Preconditions.checkArgument(mostRecent == 0 || mostRecent == 1);

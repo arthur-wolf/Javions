@@ -53,7 +53,13 @@ public record AirbornePositionMessage(long timeStampNs,
     public static AirbornePositionMessage of(RawMessage rawMessage) {
         double altitude = altitude(rawMessage);
         if (!Double.isNaN(altitude)) {
-            return new AirbornePositionMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), altitude, parity(rawMessage), longitude(rawMessage), latitude(rawMessage));
+            return new AirbornePositionMessage(
+                    rawMessage.timeStampNs(),
+                    rawMessage.icaoAddress(),
+                    altitude,
+                    parity(rawMessage),
+                    longitude(rawMessage),
+                    latitude(rawMessage));
         }
         return null;
     }

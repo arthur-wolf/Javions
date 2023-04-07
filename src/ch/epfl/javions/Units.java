@@ -7,30 +7,25 @@ package ch.epfl.javions;
  * @author Oussama Ghali (341478)
  */
 public final class Units {
-
-    private Units() {
-    }
-
     private static final int BASE_UNIT = 1;
     public static final double CENTI = 1e-2;
     public static final double KILO = 1e3;
 
+    private Units() {
+    }
+
     public static class Angle {
-
-        private Angle() {
-        }
-
         public static final double RADIAN = BASE_UNIT;
         public static final double TURN = 2 * Math.PI * RADIAN;
         public static final double DEGREE = TURN / 360;
         public static final double T32 = Math.scalb(TURN, -32);
+
+        private Angle() {
+        }
+
     }
 
     public static class Length {
-
-        private Length() {
-        }
-
         public static final double METER = BASE_UNIT;
         public static final double CENTIMETER = CENTI * METER;
         public static final double KILOMETER = KILO * METER;
@@ -38,24 +33,28 @@ public final class Units {
         public static final double FOOT = 12 * INCH;
         public static final double NAUTICAL_MILE = 1852 * METER;
 
+        private Length() {
+        }
+
     }
 
     public static class Time {
-        private Time() {
-        }
 
         public static final double SECOND = BASE_UNIT;
         public static final double MINUTE = 60 * SECOND;
         public static final double HOUR = 60 * MINUTE;
 
+        private Time() {
+        }
+
     }
 
     public static class Speed {
-        private Speed() {
-        }
-
         public static final double KNOT = Length.NAUTICAL_MILE / Time.HOUR;
         public static final double KILOMETER_PER_HOUR = Length.KILOMETER / Time.HOUR;
+
+        private Speed() {
+        }
 
     }
 

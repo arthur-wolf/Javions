@@ -97,7 +97,11 @@ public record AirborneVelocityMessage(long timeStampNs,
         double speed = subOrSup * Math.hypot(vew, vns);
         double trackOrHeading = Math.atan2(vew, vns) >= 0 ? Math.atan2(vew, vns) : Math.atan2(vew, vns) + (2 * Math.PI);
 
-        return new AirborneVelocityMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), Units.convertFrom(speed, KNOT), trackOrHeading);
+        return new AirborneVelocityMessage(
+                rawMessage.timeStampNs(),
+                rawMessage.icaoAddress(),
+                Units.convertFrom(speed, KNOT),
+                trackOrHeading);
     }
 
     /**
@@ -116,7 +120,11 @@ public record AirborneVelocityMessage(long timeStampNs,
             if (as == 0)
                 return null;
 
-            return new AirborneVelocityMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), Units.convertFrom(subOrSup * (as - 1), KNOT), Units.convertFrom(hdg, TURN));
+            return new AirborneVelocityMessage(
+                    rawMessage.timeStampNs(),
+                    rawMessage.icaoAddress(),
+                    Units.convertFrom(subOrSup * (as - 1), KNOT),
+                    Units.convertFrom(hdg, TURN));
         }
         return null;
     }

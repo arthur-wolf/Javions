@@ -105,6 +105,9 @@ public final class ByteString {
      */
     @Override
     public String toString() {
-        return HexFormat.of().withUpperCase().formatHex(bytes);
+        return HexFormat
+                .of()
+                .withUpperCase()
+                .formatHex(bytes);
     }
 }
