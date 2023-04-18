@@ -1,5 +1,85 @@
 package ch.epfl.javions.gui;
 
-public final class AircraftStateManager {
+import ch.epfl.javions.adsb.AircraftStateAccumulator;
+import ch.epfl.javions.adsb.Message;
+import ch.epfl.javions.aircraft.AircraftDatabase;
+import ch.epfl.javions.aircraft.IcaoAddress;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableSet;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+
+/**
+ * Represents a table of aircraft state accumulators
+ *
+ * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
+ */
+public final class AircraftStateManager {
+    private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> table;
+    private final ObservableSet<ObservableAircraftState> observableAircraftStates;
+    private final ObservableSet<ObservableAircraftState> observableAircraftStatesView;
+    private final AircraftDatabase database;
+    private long lastTimeStampsNs;
+
+    /**
+     * Constructs an aircraft state manager
+     *
+     * @param database the aircraft database
+     */
+    public AircraftStateManager(AircraftDatabase database) {
+        this.database = database;
+        table = new HashMap<>();
+        observableAircraftStates = FXCollections.observableSet();
+        observableAircraftStatesView = FXCollections.unmodifiableObservableSet(observableAircraftStates);
+    }
+
+    /**
+     * Returns the observable aircraft states
+     *
+     * @return the observable aircraft states
+     */
+    public ObservableSet<ObservableAircraftState> states() {
+        return observableAircraftStatesView;
+    }
+
+    /**
+     * Updates the aircraft state manager with a message
+     *
+     * @param message the message
+     * @throws IOException if an I/O error occurs
+     */
+    public void updateWithMessage(Message message) throws IOException {
+        IcaoAddress address = message.icaoAddress();
+        AircraftStateAccumulator<ObservableAircraftState> accumulator = table.get(address);
+        if (accumulator == null) {
+            accumulator = new AircraftStateAccumulator<>(new ObservableAircraftState(address, database.get(address)));
+            table.put(address, accumulator);
+        }
+        accumulator.update(message);
+
+        if (!(accumulator.stateSetter().getPosition() == null)) {
+            observableAircraftStates.add(accumulator.stateSetter());
+            lastTimeStampsNs = message.timeStampNs();
+        }
+    }
+
+    /**
+     * Purges the aircraft state manager
+     */
+    public void purge() {
+        final long dt = 60_000_000_000L; // 1 minute in nanoseconds
+        Iterator<ObservableAircraftState> iterator = observableAircraftStates.iterator();
+        while (iterator.hasNext()) {
+            ObservableAircraftState state = iterator.next();
+            if (lastTimeStampsNs - state.getLastMessageTimeStampNs() > dt) {
+                iterator.remove();
+                states().remove(state);
+            }
+        }
+    }
 }

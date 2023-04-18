@@ -18,6 +18,7 @@ import java.util.Objects;
  * @author Oussama Ghali (341478)
  */
 public final class ObservableAircraftState implements AircraftStateSetter {
+    private long lastMessageTimeStamps = -1L;
     private final IcaoAddress icaoAddress;
     private final AircraftData aircraftData;
     private final LongProperty lastMessageTimeStampsNs;    // ns
@@ -31,20 +32,36 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     ObservableList<AirbornePos> trajectoryView = FXCollections.unmodifiableObservableList(trajectory);    // unmodifiable list (view on trajectory)
 
     public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData aircraftData) {
-        this.icaoAddress = icaoAddress;
+        Objects.requireNonNull(icaoAddress);
 
-        //todo : is this right ? (ces dernières peuvent ne pas exister, la base de données mictronics n'étant pas exhaustive)
+        this.icaoAddress = icaoAddress;
         this.aircraftData = aircraftData;
 
-        lastMessageTimeStampsNs = new SimpleLongProperty();
-        category = new SimpleIntegerProperty();
-        callSign = new SimpleObjectProperty<>();
-        position = new SimpleObjectProperty<>();
-        altitude = new SimpleDoubleProperty();
-        velocity = new SimpleDoubleProperty();
-        trackOrHeading = new SimpleDoubleProperty();
+        lastMessageTimeStampsNs = new SimpleLongProperty(0);
+        category = new SimpleIntegerProperty(0);
+        callSign = new SimpleObjectProperty<>(null);
+        position = new SimpleObjectProperty<>(null);
+        altitude = new SimpleDoubleProperty(0);
+        velocity = new SimpleDoubleProperty(0);
+        trackOrHeading = new SimpleDoubleProperty(0);
+    }
 
-        //todo : anything else ?
+    /**
+     * Returns the aircraft ICAO address
+     *
+     * @return the aircraft ICAO address
+     */
+    public IcaoAddress address() {
+        return icaoAddress;
+    }
+
+    /**
+     * Returns the aircraft data
+     *
+     * @return the aircraft data
+     */
+    public AircraftData aircraftData() {
+        return aircraftData;
     }
 
     // ----------------- Timestamp -----------------
@@ -105,12 +122,22 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setPosition(GeoPos position) {
         this.position.set(position);
+        updateTrajectory();
     }
 
     // ----------------- Trajectory -----------------
 
     public ObservableList<AirbornePos> trajectory() {
         return trajectoryView;
+    }
+
+    public void updateTrajectory() {
+        if (trajectory.isEmpty() || !getPosition().equals(trajectory.get(trajectory.size() - 1).geoPos)) {
+            trajectory.add(new AirbornePos(getPosition(), getAltitude()));
+            lastMessageTimeStamps = getLastMessageTimeStampNs();
+        } else if (lastMessageTimeStamps == getLastMessageTimeStampNs()) {
+            trajectory.set(trajectory.size() - 1, new AirbornePos(getPosition(), getAltitude()));
+        }
     }
 
     // ----------------- Altitude -----------------
@@ -126,6 +153,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setAltitude(double altitude) {
         this.altitude.set(altitude);
+        updateTrajectory();
     }
 
     // ----------------- Velocity -----------------
