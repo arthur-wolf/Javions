@@ -15,7 +15,14 @@ import java.net.URLDecoder;
 import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+/*
+java --enable-preview `
+     -cp out/production/Javions/ `
+     --module-path C:\Users\oussa\Videos\Documents\Bureau\INF_BA2\PPOO\javafx-sdk-20\lib `
+     --add-modules javafx.controls `
+     ch.epfl.javions.TextUI
 
+ */
 public class TextUI {
     private static AircraftDatabase getDatabase() {
         // Try to get the database from the resources

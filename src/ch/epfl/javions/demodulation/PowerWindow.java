@@ -75,7 +75,8 @@ public final class PowerWindow {
      */
     public int get(int i) {
         Objects.checkIndex(i, windowSize);
-        return (positionInBatch + i < BATCH_SIZE) ? firstTab[positionInBatch + i] : secondTab[positionInBatch + i - BATCH_SIZE];
+        return (positionInBatch + i < BATCH_SIZE) ?
+                firstTab[positionInBatch + i] : secondTab[positionInBatch + i - BATCH_SIZE];
     }
 
     /**
