@@ -6,12 +6,10 @@ import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.adsb.MessageParser;
 import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftDatabase;
-import ch.epfl.javions.gui.AircraftStateManager;
-import ch.epfl.javions.gui.ObservableAircraftState;
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 
 import java.io.*;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
 
@@ -20,14 +18,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TextUI {
     private static AircraftDatabase getDatabase() {
         // Try to get the database from the resources
-        var aircraftResourceUrl = TextUI.class.getResource("resources/aircraft.zip");
-        if (aircraftResourceUrl != null)
-            return new AircraftDatabase(URLDecoder.decode(aircraftResourceUrl.getFile(), UTF_8));
-        // Try to get the database from the JAVIONS_AIRCRAFT_DATABASE environment variable
-        // (only meant to simplify testing of several projects with a single database)
-        var aircraftFileName = System.getenv("JAVIONS_AIRCRAFT_DATABASE");
-        if (aircraftFileName != null) return new AircraftDatabase(aircraftFileName);
-        throw new Error("Could not find aircraft database");
+        URL aircraftURL = TextUI.class.getResource("/aircraft.zip");
+        if (aircraftURL != null) {
+            String aircraftFileName = URLDecoder.decode(aircraftURL.getFile(), UTF_8);
+            return new AircraftDatabase(aircraftFileName);
+        }
+        throw new IllegalStateException("Could not find aircraft.zip in resources");
     }
 
     public static void main(String[] args) {
@@ -44,34 +40,32 @@ public class TextUI {
                 assert bytesRead == RawMessage.LENGTH;
                 ByteString message = new ByteString(bytes);
                 Message message1 = MessageParser.parse(new RawMessage(timeStampNs, message));
-                if (message1 != null) {                    /*if(message1.timeStampNs() < (System.nanoTime() - startTime)){
-                        Thread.sleep((long) (((System.nanoTime() - startTime) - message1.timeStampNs())/(9E6)));                    }*/
+                if (message1 != null) {
+                    /*if(message1.timeStampNs() < (System.nanoTime() - startTime)){
+                        Thread.sleep((long) (((System.nanoTime() - startTime) - message1.timeStampNs())/(9E6)));
+                    }*/
                     manager.updateWithMessage(message1);
                     cont++;
-                    manager.clean(); //purge methode ??
+                    manager.purge();
                 }
-                ObservableSet<ObservableAircraftState> states = manager.aircraftStates();
-                List<ObservableAircraftState> listStates = new ArrayList(List.copyOf(states));
+                ObservableSet<ObservableAircraftState> states = manager.states();
+                List<ObservableAircraftState> listStates = new ArrayList<>(List.copyOf(states));
                 listStates.sort(new AddressComparator());
                 String CSI = "\u001B[";
                 String CLEAR_SCREEN = CSI + "2J";
-                Thread.sleep((long) (100));
+                Thread.sleep(100);
                 System.out.print(CLEAR_SCREEN);
                 System.out.print(CSI + ";H");
                 System.out.println("OACI    Indicatif      Immat.  Modèle                        Longitude   Latitude   Alt.  Vit.");
                 for (ObservableAircraftState state : listStates) {
                     System.out.printf("%5s %10s %10s %32s  %f6 %6f %5f %5f %1s \n",
-                            state.icaoAddress().string(), Objects.isNull(state.callSignProperty().get()) ? " " : state.callSignProperty().get().string(),
-                            state.data().registration().string(), state.data().model(), //replace data by aircraftdata mehtod ?
+                            state.address().string(), Objects.isNull(state.callSignProperty().get()) ? " " : state.callSignProperty().get().string(),
+                            state.aircraftData().registration().string(), state.aircraftData().model(),
                             Units.convertTo(state.positionProperty().get().longitude(), Units.Angle.DEGREE), Units.convertTo(state.positionProperty().get().latitude(), Units.Angle.DEGREE),
                             state.altitudeProperty().get(), Units.convertTo(state.velocityProperty().get(), Units.Speed.KILOMETER_PER_HOUR), findArrow(Units.convertTo(state.trackOrHeadingProperty().get(), Units.Angle.DEGREE)));
                 }
             }
-        } catch (EOFException e) { /* nothing to do */ } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (EOFException e) { /* nothing to do */ } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -80,14 +74,14 @@ public class TextUI {
         @Override
         public int compare(ObservableAircraftState o1,
                            ObservableAircraftState o2) {
-            String s1 = o1.icaoAddress().string(); // address() method
-            String s2 = o2.icaoAddress().string(); // same here
+            String s1 = o1.address().string();
+            String s2 = o2.address().string();
             return s1.compareTo(s2);
         }
     }
 
     private static String findArrow(double trackOrHeading) {
-        if ((0 <= trackOrHeading && trackOrHeading <= 22.5) && (337.5 <= trackOrHeading && trackOrHeading <= 360)) {
+        if ((0 <= trackOrHeading && trackOrHeading <= 22.5) || (337.5 <= trackOrHeading && trackOrHeading <= 360)) {
             return "↑";
         }
         if (22.5 < trackOrHeading && trackOrHeading <= 67.5) {

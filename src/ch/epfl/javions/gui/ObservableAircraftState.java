@@ -31,6 +31,12 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();    // modifiable list
     ObservableList<AirbornePos> trajectoryView = FXCollections.unmodifiableObservableList(trajectory);    // unmodifiable list (view on trajectory)
 
+    /**
+     * Constructs an observable aircraft state
+     *
+     * @param icaoAddress the aircraft ICAO address
+     * @param aircraftData the aircraft data
+     */
     public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData aircraftData) {
         Objects.requireNonNull(icaoAddress);
 
@@ -66,14 +72,26 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     // ----------------- Timestamp -----------------
 
+    /**
+     * Returns the last message timestamp property
+     * @return the last message timestamp property
+     */
     public ReadOnlyLongProperty lastMessageTimeStampNsProperty() {
         return lastMessageTimeStampsNs;
     }
 
+    /**
+     * Returns the last message timestamp in nanoseconds
+     * @return the last message timestamp in nanoseconds
+     */
     public long getLastMessageTimeStampNs() {
         return lastMessageTimeStampsNs.get();
     }
 
+    /**
+     * Sets the last message timestamp in nanoseconds
+     * @param timeStampNs the time stamp of the last message received by the aircraft
+     */
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
         lastMessageTimeStampsNs.set(timeStampNs);
@@ -81,14 +99,26 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     // ----------------- Category -----------------
 
+    /**
+     * Returns the category property
+     * @return the category property
+     */
     public ReadOnlyIntegerProperty categoryProperty() {
         return category;
     }
 
+    /**
+     * Returns the category
+     * @return the category
+     */
     public int getCategory() {
         return category.get();
     }
 
+    /**
+     * Sets the category
+     * @param category the category
+     */
     @Override
     public void setCategory(int category) {
         this.category.set(category);
@@ -96,14 +126,26 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     // ----------------- Callsign -----------------
 
+    /**
+     * Returns the callsign property
+     * @return the callsign property
+     */
     public ReadOnlyObjectProperty<CallSign> callSignProperty() {
         return callSign;
     }
 
+    /**
+     * Returns the callsign
+     * @return the callsign
+     */
     public CallSign getCallSign() {
         return callSign.get();
     }
 
+    /**
+     * Sets the callsign
+     * @param callSign the callsign
+     */
     @Override
     public void setCallSign(CallSign callSign) {
         this.callSign.set(callSign);
@@ -111,14 +153,26 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     // ----------------- Position -----------------
 
+    /**
+     * Returns the position property
+     * @return the position property
+     */
     public ReadOnlyObjectProperty<GeoPos> positionProperty() {
         return position;
     }
 
+    /**
+     * Returns the position
+     * @return the position
+     */
     public GeoPos getPosition() {
         return position.get();
     }
 
+    /**
+     * Sets the position
+     * @param position the position
+     */
     @Override
     public void setPosition(GeoPos position) {
         this.position.set(position);
@@ -127,10 +181,17 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     // ----------------- Trajectory -----------------
 
+    /**
+     * Returns the trajectory
+     * @return the trajectory
+     */
     public ObservableList<AirbornePos> trajectory() {
         return trajectoryView;
     }
 
+    /**
+     * Updates the trajectory
+     */
     public void updateTrajectory() {
         if (trajectory.isEmpty() || !getPosition().equals(trajectory.get(trajectory.size() - 1).geoPos)) {
             trajectory.add(new AirbornePos(getPosition(), getAltitude()));
@@ -142,14 +203,26 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     // ----------------- Altitude -----------------
 
+    /**
+     * Returns the altitude property
+     * @return the altitude property
+     */
     public ReadOnlyDoubleProperty altitudeProperty() {
         return altitude;
     }
 
+    /**
+     * Returns the altitude
+     * @return the altitude
+     */
     public double getAltitude() {
         return altitude.get();
     }
 
+    /**
+     * Sets the altitude
+     * @param altitude the altitude
+     */
     @Override
     public void setAltitude(double altitude) {
         this.altitude.set(altitude);
@@ -158,14 +231,26 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     // ----------------- Velocity -----------------
 
+    /**
+     * Returns the velocity property
+     * @return the velocity property
+     */
     public ReadOnlyDoubleProperty velocityProperty() {
         return velocity;
     }
 
+    /**
+     * Returns the velocity
+     * @return the velocity
+     */
     public double getVelocity() {
         return velocity.get();
     }
 
+    /**
+     * Sets the velocity
+     * @param velocity the velocity
+     */
     @Override
     public void setVelocity(double velocity) {
         this.velocity.set(velocity);
@@ -173,14 +258,26 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     // ----------------- Track or Heading -----------------
 
+    /**
+     * Returns the track or heading property
+     * @return the track or heading property
+     */
     public ReadOnlyDoubleProperty trackOrHeadingProperty() {
         return trackOrHeading;
     }
 
+    /**
+     * Returns the track or heading
+     * @return the track or heading
+     */
     public double getTrackOrHeading() {
         return trackOrHeading.get();
     }
 
+    /**
+     * Sets the track or heading
+     * @param trackOrHeading the track or heading
+     */
     @Override
     public void setTrackOrHeading(double trackOrHeading) {
         this.trackOrHeading.set(trackOrHeading);
