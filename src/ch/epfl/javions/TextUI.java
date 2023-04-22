@@ -36,12 +36,10 @@ public class TextUI {
 
     public static void main(String[] args) {
         AircraftStateManager manager = new AircraftStateManager(getDatabase());
-        long startTime = System.nanoTime();
         try (DataInputStream s = new DataInputStream(
                 new BufferedInputStream(new FileInputStream("resources/messages_20230318_0915.bin")))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
             System.out.println("OACI    Indicatif      Immat.  Modèle                        Longitude   Latitude   Alt.  Vit.\n" + "――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――");
-            int cont = 0;
             while (true) {
                 long timeStampNs = s.readLong();
                 int bytesRead = s.readNBytes(bytes, 0, bytes.length);
@@ -53,7 +51,6 @@ public class TextUI {
                         Thread.sleep((long) (((System.nanoTime() - startTime) - message1.timeStampNs())/(9E6)));
                     }*/
                     manager.updateWithMessage(message1);
-                    cont++;
                     manager.purge();
                 }
                 ObservableSet<ObservableAircraftState> states = manager.states();
@@ -64,7 +61,6 @@ public class TextUI {
                 Thread.sleep(100);
                 System.out.print(CLEAR_SCREEN);
                 System.out.print(CSI + ";H");
-                System.out.println("OACI    Indicatif      Immat.  Modèle                        Longitude   Latitude   Alt.  Vit.");
                 for (ObservableAircraftState state : listStates) {
                     System.out.printf("%5s %10s %10s %32s  %f6 %6f %5f %5f %1s \n",
                             state.address().string(), Objects.isNull(state.callSignProperty().get()) ? " " : state.callSignProperty().get().string(),
