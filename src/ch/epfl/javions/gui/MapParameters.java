@@ -110,20 +110,10 @@ public final class MapParameters {
      * @param zoomDifference the difference to add to the current zoom level
      * @throws IllegalArgumentException if the new zoom level is not in the range [6,19]
      */
-    public void changeZoom(int zoomDifference) {
-        int newZoom = Math2.clamp(6, getZoom() + zoomDifference, 19);
+    public  void changeZoomLevel(int zoomDifference) {
+        int newZoom = Math2.clamp(8, getZoom() + zoomDifference, 19);
         zoom.set(newZoom);
     }
-
-    public MapParameters get() {
-        return this;
-    }
-
-  public void setValue(MapParameters value) {
-    zoom.set(value.getZoom());
-    minX.set(value.getMinX());
-    minY.set(value.getMinY());
-  }
 
 
     public void set(MapParameters newMapParametersWhenMoving) {

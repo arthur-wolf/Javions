@@ -1,6 +1,5 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.Math2;
 import javafx.application.Platform;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
@@ -39,11 +38,6 @@ public final class BaseMapController {
     //size of an OSM Tile in pixels
     private final static int OSM_TILE_SIZE = 256;
 
-    private final static int MINIMUM_ZOOM_LEVEL = 8;
-    private final static int MAXIMUM_ZOOM_LEVEL = 19;
-
-    private final static int SCALB_CONSTANT_FOR_ZOOM = 1;
-
     /**
      * BaseMapManager constructor
      *
@@ -77,6 +71,7 @@ public final class BaseMapController {
     public Pane pane() {
         return pane;
     }
+
    /* public GeoPos centerOn(GeoPos point){
 
     }
@@ -88,7 +83,7 @@ public final class BaseMapController {
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        MapParameters mapParameters = this.mapParameters.get();
+        MapParameters mapParameters = this.mapParameters;
 
         //index of the top left tile
         int topLeftXIndexTile = (int) (mapParameters.getMinX() / OSM_TILE_SIZE);
@@ -164,29 +159,26 @@ public final class BaseMapController {
 
 
         //event handler for movement of the map
-        pane.setOnMousePressed(mouseEvent -> mouseCoordinatesProperty.setValue(
-                new Point2D(mouseEvent.getX(), mouseEvent.getY())));
+        pane.setOnMousePressed(e -> mouseCoordinatesProperty.setValue(
+                new Point2D(e.getX(), e.getY())));
 
 
-        pane.setOnMouseDragged(mouseEvent -> {
-            Point2D delta = new Point2D(mouseEvent.getX(), mouseEvent.getY()).subtract(mouseCoordinatesProperty.get());
+        pane.setOnMouseDragged(e -> {
+            Point2D delta = new Point2D(e.getX(), e.getY()).subtract(mouseCoordinatesProperty.get());
 
-            mapParameters.set(newMapParametersWhenMoving(delta, mapParameters.get()));
+            mapParameters.set(newMapParametersWhenMoving(delta, mapParameters));
 
-            mouseCoordinatesProperty.setValue(new Point2D(mouseEvent.getX(), mouseEvent.getY()));
+            mouseCoordinatesProperty.setValue(new Point2D(e.getX(), e.getY()));
         });
-
 
         //if the mouse did not move since press, create waypoint
-        pane.setOnMouseReleased(mouseEvent -> {
-            Point2D delta = new Point2D(mouseEvent.getX(), mouseEvent.getY()).subtract(mouseCoordinatesProperty.get());
-            mapParameters.set(newMapParametersWhenMoving(delta, mapParameters.get()));
+        pane.setOnMouseReleased(e -> {
+            Point2D delta = new Point2D(e.getX(), e.getY()).subtract(mouseCoordinatesProperty.get());
+            mapParameters.set(newMapParametersWhenMoving(delta, mapParameters));
         });
-
 
         //even handler for zooming in and out by scrolling
         pane.setOnScroll(e -> {
-
             int zoomDelta = (int) Math.signum(e.getDeltaY());
             if (zoomDelta == 0) return;
 
@@ -194,26 +186,21 @@ public final class BaseMapController {
             if (currentTime < minScrollTime.get()) return;
             minScrollTime.set(currentTime + 200);
 
-            MapParameters oldMapViewParameters = mapParameters.get();
-            int newZoomLevel = Math2.clamp(MINIMUM_ZOOM_LEVEL,
-                    oldMapViewParameters.getZoom() + zoomDelta,
-                    MAXIMUM_ZOOM_LEVEL);
+            mapParameters.changeZoomLevel(zoomDelta);
 
-            if (!(oldMapViewParameters.getZoom() == newZoomLevel)) {
-                double multiplicativeFactorForZoom = Math.scalb(SCALB_CONSTANT_FOR_ZOOM
-                        , newZoomLevel - oldMapViewParameters.getZoom());
+            double newX = e.getX();
+            double newY = e.getY();
 
-                MapParameters newMapViewParameters = new MapParameters(
-                        newZoomLevel,
-                        multiplicativeFactorForZoom * (oldMapViewParameters.getMinX()
-                                + e.getX()) - e.getX(),
-                        multiplicativeFactorForZoom * (oldMapViewParameters.getMinY()
-                                + e.getY()) - e.getY()
-                );
+            mapParameters.scroll(newX,newY);
 
-                mapParameters.setValue(newMapViewParameters);
-            }
+            System.out.println(mapParameters.getZoom());
+            System.out.println(mapParameters.getMinX());
+            System.out.println(mapParameters.getMinY());
+
+            mapParameters.set(mapParameters);
+
         });
+
     }
 
 
