@@ -17,6 +17,8 @@ public final class MapParameters {
     private final IntegerProperty zoom;
     private final DoubleProperty minX;
     private final DoubleProperty minY;
+    private final static int MINIMUM_ZOOM_LEVEL = 6;
+    private final static int MAXIMUM_ZOOM_LEVEL = 19;
 
     /**
      * Creates a new MapParameters instance
@@ -27,7 +29,9 @@ public final class MapParameters {
      * @throws IllegalArgumentException if the initialZoom is not in the range [6,19]
      */
     public MapParameters(int initialZoom, double initialMinX, double initialMinY) {
-        Math2.clamp(6, initialZoom, 19);
+        if (initialZoom < MINIMUM_ZOOM_LEVEL || initialZoom > MAXIMUM_ZOOM_LEVEL) {
+            throw new IllegalArgumentException();
+        }
         zoom = new SimpleIntegerProperty(initialZoom);
         minX = new SimpleDoubleProperty(initialMinX);
         minY = new SimpleDoubleProperty(initialMinY);
@@ -110,9 +114,10 @@ public final class MapParameters {
      * @param zoomDifference the difference to add to the current zoom level
      * @throws IllegalArgumentException if the new zoom level is not in the range [6,19]
      */
-    public  void changeZoomLevel(int zoomDifference) {
-        int newZoom = Math2.clamp(8, getZoom() + zoomDifference, 19);
+    public int changeZoomLevel(int zoomDifference) {
+        int newZoom = Math2.clamp(MINIMUM_ZOOM_LEVEL, getZoom() + zoomDifference, MAXIMUM_ZOOM_LEVEL);
         zoom.set(newZoom);
+        return newZoom;
     }
 
 

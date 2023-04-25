@@ -1,5 +1,6 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.Math2;
 import javafx.application.Platform;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
@@ -37,6 +38,10 @@ public final class BaseMapController {
 
     //size of an OSM Tile in pixels
     private final static int OSM_TILE_SIZE = 256;
+    private final static int MINIMUM_ZOOM_LEVEL = 6;
+    private final static int MAXIMUM_ZOOM_LEVEL = 19;
+
+    private final static int SCALB_CONSTANT_FOR_ZOOM = 1;
 
     /**
      * BaseMapManager constructor
@@ -178,7 +183,7 @@ public final class BaseMapController {
         });
 
         //even handler for zooming in and out by scrolling
-        pane.setOnScroll(e -> {
+       pane.setOnScroll(e -> {
             int zoomDelta = (int) Math.signum(e.getDeltaY());
             if (zoomDelta == 0) return;
 
@@ -193,15 +198,44 @@ public final class BaseMapController {
 
             mapParameters.scroll(newX,newY);
 
-            System.out.println(mapParameters.getZoom());
-            System.out.println(mapParameters.getMinX());
-            System.out.println(mapParameters.getMinY());
-
             mapParameters.set(mapParameters);
+    });
 
+
+        /*
+        pane.setOnScroll(e -> {
+
+            int zoomDelta = (int) Math.signum(e.getDeltaY());
+            if (zoomDelta == 0) return;
+
+            long currentTime = System.currentTimeMillis();
+            if (currentTime < minScrollTime.get()) return;
+            minScrollTime.set(currentTime + 200);
+
+            MapParameters oldMapViewParameters = mapParameters;
+            int newZoomLevel = Math2.clamp(MINIMUM_ZOOM_LEVEL,
+                    oldMapViewParameters.getZoom() + zoomDelta,
+                    MAXIMUM_ZOOM_LEVEL);
+
+
+            if (!(oldMapViewParameters.getZoom() == newZoomLevel)) {
+                double multiplicativeFactorForZoom = Math.scalb(SCALB_CONSTANT_FOR_ZOOM
+                        , newZoomLevel - oldMapViewParameters.getZoom());
+
+                MapParameters newMapViewParameters = new MapParameters(
+                        newZoomLevel,
+                        multiplicativeFactorForZoom * (oldMapViewParameters.getMinX()
+                                + e.getX()) - e.getX(),
+                        multiplicativeFactorForZoom * (oldMapViewParameters.getMinY()
+                                + e.getY()) - e.getY()
+                );
+
+                mapParameters.set(newMapViewParameters);
+            }
         });
 
-    }
+         */
+}
 
 
     /**
@@ -230,6 +264,7 @@ public final class BaseMapController {
         //when map properties are changed, redraw
         mapParameters.minXProperty().addListener((p, o, n) -> redrawOnNextPulse());
         mapParameters.minYProperty().addListener((p, o, n) -> redrawOnNextPulse());
+
     }
 
 

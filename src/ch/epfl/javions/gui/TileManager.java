@@ -35,7 +35,7 @@ public final class TileManager {
 
     private static final String IMAGE_EXTENSION_FORMAT = ".png";
 
-    private static final String USER_AGENT_NAME = "JaVelo";
+    private static final String USER_AGENT_NAME = "Javions";
     private static final String PROTOCOL_NAME = "https";
     private static final int PORT_NUMBER = 443;
     private static final String URL_DELIMITER = "/";
