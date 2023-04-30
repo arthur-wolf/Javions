@@ -1,6 +1,7 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.Math2;
+import ch.epfl.javions.GeoPos;
+import ch.epfl.javions.WebMercator;
 import javafx.application.Platform;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
@@ -38,10 +39,7 @@ public final class BaseMapController {
 
     //size of an OSM Tile in pixels
     private final static int OSM_TILE_SIZE = 256;
-    private final static int MINIMUM_ZOOM_LEVEL = 6;
-    private final static int MAXIMUM_ZOOM_LEVEL = 19;
 
-    private final static int SCALB_CONSTANT_FOR_ZOOM = 1;
 
     /**
      * BaseMapManager constructor
@@ -77,11 +75,19 @@ public final class BaseMapController {
         return pane;
     }
 
-   /* public GeoPos centerOn(GeoPos point){
+
+    /**
+     * Moves the visible portion of the map so that it is centred at this point (e.g. centring the map on a particular aircraft)
+     *
+     * @param point a point on the Earth's surface, of type GeoPos
+     */
+   public void centerOn(GeoPos point){
+       mapParameters.scroll(WebMercator.x(mapParameters.getZoom(), point.longitude()) - mapParameters.getMinX() - canvas.getWidth() / 2
+       ,WebMercator.y(mapParameters.getZoom(),point.latitude())- mapParameters.getMinY() - canvas.getHeight() / 2);
+
 
     }
 
-    */
 
     private void draw() {
         //first clear the graphic context
@@ -183,7 +189,7 @@ public final class BaseMapController {
         });
 
         //even handler for zooming in and out by scrolling
-       pane.setOnScroll(e -> {
+        pane.setOnScroll(e -> {
             int zoomDelta = (int) Math.signum(e.getDeltaY());
             if (zoomDelta == 0) return;
 
@@ -191,52 +197,16 @@ public final class BaseMapController {
             if (currentTime < minScrollTime.get()) return;
             minScrollTime.set(currentTime + 200);
 
-            mapParameters.changeZoomLevel(zoomDelta);
 
             double newX = e.getX();
             double newY = e.getY();
 
-            mapParameters.scroll(newX,newY);
+            mapParameters.scroll(newX, newY);
+            mapParameters.changeZoomLevel(zoomDelta);
+            mapParameters.scroll(-newX, -newY);
 
-            mapParameters.set(mapParameters);
-    });
-
-
-        /*
-        pane.setOnScroll(e -> {
-
-            int zoomDelta = (int) Math.signum(e.getDeltaY());
-            if (zoomDelta == 0) return;
-
-            long currentTime = System.currentTimeMillis();
-            if (currentTime < minScrollTime.get()) return;
-            minScrollTime.set(currentTime + 200);
-
-            MapParameters oldMapViewParameters = mapParameters;
-            int newZoomLevel = Math2.clamp(MINIMUM_ZOOM_LEVEL,
-                    oldMapViewParameters.getZoom() + zoomDelta,
-                    MAXIMUM_ZOOM_LEVEL);
-
-
-            if (!(oldMapViewParameters.getZoom() == newZoomLevel)) {
-                double multiplicativeFactorForZoom = Math.scalb(SCALB_CONSTANT_FOR_ZOOM
-                        , newZoomLevel - oldMapViewParameters.getZoom());
-
-                MapParameters newMapViewParameters = new MapParameters(
-                        newZoomLevel,
-                        multiplicativeFactorForZoom * (oldMapViewParameters.getMinX()
-                                + e.getX()) - e.getX(),
-                        multiplicativeFactorForZoom * (oldMapViewParameters.getMinY()
-                                + e.getY()) - e.getY()
-                );
-
-                mapParameters.set(newMapViewParameters);
-            }
         });
-
-         */
-}
-
+    }
 
     /**
      * Installs the bindings for the map

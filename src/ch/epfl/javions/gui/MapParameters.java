@@ -17,6 +17,7 @@ public final class MapParameters {
     private final IntegerProperty zoom;
     private final DoubleProperty minX;
     private final DoubleProperty minY;
+    private final static int SCALB_CONSTANT_ZOOM = 1;
     private final static int MINIMUM_ZOOM_LEVEL = 6;
     private final static int MAXIMUM_ZOOM_LEVEL = 19;
 
@@ -66,6 +67,10 @@ public final class MapParameters {
         return minX;
     }
 
+    public void setMinX(double minX) {
+        this.minX.set(minX);
+    }
+
     /**
      * Returns the minimum X value
      *
@@ -84,6 +89,10 @@ public final class MapParameters {
         return minY;
     }
 
+    public void setMinY(double minY) {
+        this.minY.set(minY);
+    }
+
     /**
      * Returns the minimum Y value
      *
@@ -99,12 +108,8 @@ public final class MapParameters {
      * @param y the vertical component of the translation vector
      */
     public void scroll(double x, double y) {
-        double zoomLevel = zoom.get();
-        double scale = Math.pow(2, zoomLevel - 8);
-        double deltaX = x / scale;
-        double deltaY = y / scale;
-        double newMinX = minX.get() - deltaX;
-        double newMinY = minY.get() - deltaY;
+        double newMinX = minX.get() + x;
+        double newMinY = minY.get() + y;
         minX.set(newMinX);
         minY.set(newMinY);
     }
@@ -114,10 +119,13 @@ public final class MapParameters {
      * @param zoomDifference the difference to add to the current zoom level
      * @throws IllegalArgumentException if the new zoom level is not in the range [6,19]
      */
-    public int changeZoomLevel(int zoomDifference) {
+    public void changeZoomLevel(int zoomDifference) {
         int newZoom = Math2.clamp(MINIMUM_ZOOM_LEVEL, getZoom() + zoomDifference, MAXIMUM_ZOOM_LEVEL);
+        if (newZoom == getZoom()) {return;}
+
+        setMinX(getMinX() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
+        setMinY(getMinY() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
         zoom.set(newZoom);
-        return newZoom;
     }
 
 
