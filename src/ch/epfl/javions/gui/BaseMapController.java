@@ -82,10 +82,9 @@ public final class BaseMapController {
      * @param point a point on the Earth's surface, of type GeoPos
      */
    public void centerOn(GeoPos point){
-       mapParameters.scroll(WebMercator.x(mapParameters.getZoom(), point.longitude()) - mapParameters.getMinX() - canvas.getWidth() / 2
-       ,WebMercator.y(mapParameters.getZoom(),point.latitude())- mapParameters.getMinY() - canvas.getHeight() / 2);
-
-
+       mapParameters.scroll(
+               WebMercator.x(mapParameters.getZoom(), point.longitude()) - mapParameters.getMinX() - canvas.getWidth() / 2,
+               WebMercator.y(mapParameters.getZoom(),point.latitude())- mapParameters.getMinY() - canvas.getHeight() / 2);
     }
 
 
