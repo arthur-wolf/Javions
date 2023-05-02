@@ -1,10 +1,31 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.Preconditions;
-
-import java.awt.*;
+import javafx.scene.paint.Color;
 
 public final class ColorRamp {
+    private final Color[] colors;
+
+    public ColorRamp(Color... colors) {
+        if (colors.length < 2) {
+            throw new IllegalArgumentException();
+        }
+        this.colors = colors;
+    }
+
+    public Color at(double value) {
+        if (value < 0) {
+            return colors[0];
+        } else if (value > 1) {
+            return colors[colors.length - 1];
+        } else {
+            double interval = 1.0 / (colors.length - 1);
+            int index = (int) (value / interval);
+            double percent = (value - index * interval) / interval;
+            return colors[index].interpolate(colors[index + 1], percent);
+        }
+    }
+
+
     public static final ColorRamp PLASMA = new ColorRamp(
             Color.valueOf("0x0d0887ff"), Color.valueOf("0x220690ff"),
             Color.valueOf("0x320597ff"), Color.valueOf("0x40049dff"),
@@ -22,12 +43,4 @@ public final class ColorRamp {
             Color.valueOf("0xfdb52eff"), Color.valueOf("0xfdc229ff"),
             Color.valueOf("0xfccf25ff"), Color.valueOf("0xf9dd24ff"),
             Color.valueOf("0xf5eb27ff"), Color.valueOf("0xf0f921ff"));
-
-    public ColorRamp(Color... colors) {
-        Preconditions.checkArgument(colors.length >= 2);
-    }
-
-    public Color at(double level) {
-
-    }
 }

@@ -38,30 +38,48 @@ public final class AircraftController {
 
     }
 
+
     private SVGPath buildIcon() {
         return null;
     }
-    private Group buildAircraftGroup(ObservableAircraftState elementAdded) {
+    private Group buildAircraftGroup(ObservableAircraftState aircraftState) {
         Group aircraftGroup = new Group();
-        return null;
+        SVGPath icon = buildIcon();
+        aircraftGroup.getChildren().add(icon);
+        // Ajouter d'autres éléments visuels pour représenter l'état de l'avion si nécessaire
+       // aircraftGroup.setLayoutX(mapParameters.getMinX(aircraftState.position().x()));
+        //aircraftGroup.setLayoutY(mapParameters.getMinY(aircraftState.position().y()));
+        return aircraftGroup;
     }
 
-    private Group buildTrajectorygroup(ObservableAircraftState elementAdded) {
+
+    private Group buildTrajectorygroup(ObservableAircraftState aircraftState) {
         Group trajectoryGroup = new Group();
-        return null;
+        // Ajouter des éléments visuels représentant la trajectoire de l'avion
+        aircraftState.trajectory().forEach(trajectory -> {
+            SVGPath trajectoryPath = new SVGPath();
+           // trajectoryPath.setContent(trajectory.svgPath());
+            trajectoryGroup.getChildren().add(trajectoryPath);
+        });
+        trajectoryGroup.setLayoutX(mapParameters.getMinX());
+        trajectoryGroup.setLayoutY(mapParameters.getMinY());
+        return trajectoryGroup;
     }
+
+
 
     public Pane pane() {
-        return pane;
-    }
+        Pane paneWrapper = new Pane();
+        paneWrapper.getStylesheets().add("aircraft.css");
+        aircraftState.addListener((SetChangeListener<ObservableAircraftState>) change -> {
+            if (change.wasAdded()) {
+                Group oaciGroup = new Group();
+                oaciGroup.setId(change.getElementAdded().address().string());
 
-    private void rotate(AircraftIcon e, double degree){
-
-        if (e.canRotate()){
-
-        }
-        else {
-
-        }
+            } else if (change.wasRemoved()) {
+                pane.getChildren().remove(change.getElementRemoved().address().string());
+            }
+        });
+        return paneWrapper;
     }
 }
