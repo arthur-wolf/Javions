@@ -198,12 +198,12 @@ public final class BaseMapController {
             minScrollTime.set(currentTime + 200);
 
 
-            double newX = e.getX();
-            double newY = e.getY();
+            double oldX = e.getX();
+            double oldY = e.getY();
 
-            mapParameters.scroll(newX, newY);
+            mapParameters.scroll(oldX, oldY);
             mapParameters.changeZoomLevel(zoomDelta);
-            mapParameters.scroll(-newX, -newY);
+            mapParameters.scroll(-oldX, -oldY);
 
         });
     }
