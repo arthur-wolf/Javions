@@ -15,6 +15,15 @@ import java.net.URLDecoder;
 import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+
+/*
+java --enable-preview \
+        -cp out/production/Javions/ \
+        --module-path /Users/arthur/epfl/ba2/cs108/javafx-sdk-20/lib \
+        --add-modules javafx.controls \
+        ch.epfl.javions.TextUI
+*/
+
 /*
 java --enable-preview `
      -cp out/production/Javions/ `
