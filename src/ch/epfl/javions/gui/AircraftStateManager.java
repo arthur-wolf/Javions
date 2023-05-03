@@ -25,6 +25,7 @@ public final class AircraftStateManager {
     private final ObservableSet<ObservableAircraftState> observableAircraftStatesView;
     private final AircraftDatabase database;
     private long lastTimeStampsNs;
+    private static final long DT = 60_000_000_000L; // 1 minute in nanoseconds
 
     /**
      * Constructs an aircraft state manager
@@ -72,11 +73,10 @@ public final class AircraftStateManager {
      * Purges the aircraft state manager
      */
     public void purge() {
-        final long dt = 60_000_000_000L; // 1 minute in nanoseconds
         Iterator<ObservableAircraftState> iterator = observableAircraftStates.iterator();
         while (iterator.hasNext()) {
             ObservableAircraftState state = iterator.next();
-            if (lastTimeStampsNs - state.getLastMessageTimeStampNs() > dt) {
+            if (lastTimeStampsNs - state.getLastMessageTimeStampNs() > DT) {
                 iterator.remove();
                 states().remove(state);
             }
