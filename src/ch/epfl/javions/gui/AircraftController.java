@@ -1,8 +1,10 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.Units;
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -10,7 +12,11 @@ import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
+import javafx.scene.text.Text;
+
+import static ch.epfl.javions.Units.Angle.DEGREE;
 
 public final class AircraftController {
     private final MapParameters mapParameters;
@@ -26,6 +32,7 @@ public final class AircraftController {
         this.aircraftState = aircraftState;
         this.selectedAircraftState = selectedAircraftState;
         this.pane = createAircraftPane();
+        this.pane.setPickOnBounds(false);
         bindAircraftSetListeners();
     }
 
@@ -36,7 +43,7 @@ public final class AircraftController {
     private Pane createAircraftPane() {
         Pane aircraftPane = new Pane();
         aircraftPane.getStylesheets().add("aircraft.css");
-        aircraftPane.setPickOnBounds(false);
+        //aircraftPane.setPickOnBounds(false);
         return aircraftPane;
     }
 
@@ -44,10 +51,10 @@ public final class AircraftController {
         aircraftState.addListener((SetChangeListener<ObservableAircraftState>) change -> {
             if (change.wasAdded()) {
                 Group aircraftGroup = createAircraftGroup(change.getElementAdded());
-                System.out.println("Aircraft added: " + aircraftGroup.getId());
+                //System.out.println("Aircraft added: " + aircraftGroup.getId());
                 pane.getChildren().add(aircraftGroup);
             } else if (change.wasRemoved()) {
-                System.out.println("Aircraft removed: " + change.getElementRemoved().address().string());
+               // System.out.println("Aircraft removed: " + change.getElementRemoved().address().string());
                 ObservableAircraftState removedAircraft = change.getElementRemoved();
                 String aircraftId = removedAircraft.address().string();
                 pane.getChildren().removeIf(node -> node.getId().equals(aircraftId));
@@ -56,25 +63,18 @@ public final class AircraftController {
     }
 
     private Group createAircraftGroup(ObservableAircraftState aircraftState) {
-        ObservableAircraftState s = aircraftState;
-        Group aircraftGroup = new Group(iconAndLabelGroup(s));
+        Group iconAndLabelGroup = iconAndLabelGroup(aircraftState);
+        Group trajectoryGroup = buildTrajectoryGroup(aircraftState);
+        Group aircraftGroup = new Group(iconAndLabelGroup, trajectoryGroup);
 
         String aircraftId = aircraftState.address().string();
         aircraftGroup.setId(aircraftId);
 
-        SVGPath icon = buildIcon(aircraftState);
-        aircraftGroup.getChildren().add(icon);
-
-        Label label = buildLabel(aircraftState);
-        aircraftGroup.getChildren().add(label);
-
-        Group trajectoryGroup = buildTrajectoryGroup(aircraftState);
-        aircraftGroup.getChildren().add(trajectoryGroup);
-
         aircraftGroup.viewOrderProperty().bind(aircraftState.altitudeProperty().negate());
-        aircraftGroup.setPickOnBounds(false);
+        //aircraftGroup.setPickOnBounds(false);
 
         // Other configurations for the aircraft group
+
 
         return aircraftGroup;
     }
@@ -88,49 +88,80 @@ public final class AircraftController {
         );
 
         SVGPath icon = new SVGPath();
-        icon.setContent(aircraftIcon.svgPath());
-        icon.getStyleClass().add("aircraft-icon");
+        icon.getStyleClass().add("aircraft");
 
-        // Bind properties for icon appearance
-       // icon.rotateProperty().bind(aircraftState.canRotateProperty().conditional(aircraftState.headingProperty()).otherwise(0));
+        // Bind content property to the aircraftIcon's svgPath
+        icon.contentProperty().bind(Bindings.createStringBinding(() -> aircraftIcon.svgPath()));
+
+        // Bind rotate property conditionally to aircraftState's trackOrHeadingProperty
+            if (aircraftIcon.canRotate()) {
+                icon.rotateProperty().bind(Bindings.createDoubleBinding(() ->  Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE),
+                        aircraftState.trackOrHeadingProperty()));
+
+            } else {
+                icon.rotateProperty().bind(Bindings.createDoubleBinding(() -> 0.0));
+            }
+
+        // Bind fill property to the altitude-based color
         icon.fillProperty().bind(getFillProperty(aircraftState));
 
         return icon;
     }
 
-    private Label buildLabel(ObservableAircraftState aircraftState) {
-        Label label = new Label(aircraftState.address().string());
-        label.setId("aircraft-label");
+   private Group buildLabel(ObservableAircraftState aircraftState) {
+       Text labelText = new Text();
+       Rectangle labelBackground = new Rectangle();
 
-        // Other configurations for the label
+       String address = (aircraftState.getCallSign() == null) ? aircraftState.address().string() : aircraftState.getCallSign().string();
 
-        return label;
-    }
+       labelText.textProperty().bind(
+               Bindings.createStringBinding(() ->
+                               String.format("%s\n%.0f km/h %.0f m",
+                                       address,
+                                       Double.isNaN(Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)) ? "?" : Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR),
+                                       aircraftState.getAltitude()),
+                       aircraftState.altitudeProperty(), aircraftState.velocityProperty()));
+
+
+       labelText.getStyleClass().add("label-text");
+
+       labelBackground.widthProperty().bind(
+               labelText.layoutBoundsProperty().map(bounds -> bounds.getWidth() + 4));
+       labelBackground.heightProperty().bind(
+               labelText.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
+       labelBackground.getStyleClass().add("label-rectangle");
+
+       Group labelGroup = new Group(labelBackground, labelText);
+       labelGroup.getStyleClass().add("label");
+       labelGroup.visibleProperty().bind(
+               Bindings.createBooleanBinding(() ->
+                       (mapParameters.getZoom())>= 11));
+
+
+       return labelGroup;
+   }
+
+
+
     private Group iconAndLabelGroup(ObservableAircraftState aircraftState){
         SVGPath icon = buildIcon(aircraftState);
-        Label label = buildLabel(aircraftState);
+        Group label = buildLabel(aircraftState);
         Group iconAndLabelGroup = new Group(icon, label);
-        iconAndLabelGroup.layoutXProperty().bind(Bindings.createDoubleBinding(
-                () -> WebMercator.x(mapParameters.getZoom(),
-                        aircraftState.getPosition().longitude()) - mapParameters.getMinX()));
-        iconAndLabelGroup.layoutYProperty().bind(Bindings.createDoubleBinding(
-                () -> WebMercator.y(mapParameters.getZoom(),
-                        aircraftState.getPosition().latitude()) - mapParameters.getMinY()));
 
-        updateIconAndLabelGroup(iconAndLabelGroup, aircraftState);
+        iconAndLabelGroup.layoutXProperty().bind(Bindings.createObjectBinding(
+                () -> WebMercator.x(mapParameters.getZoom(),
+                        aircraftState.getPosition().longitude()) - mapParameters.getMinX(),
+                mapParameters.zoomProperty(), mapParameters.minXProperty(), aircraftState.positionProperty()));
+        iconAndLabelGroup.layoutYProperty().bind(Bindings.createObjectBinding(
+                () -> WebMercator.y(mapParameters.getZoom(),
+                        aircraftState.getPosition().latitude()) - mapParameters.getMinY(),
+                mapParameters.zoomProperty(), mapParameters.minYProperty(), aircraftState.positionProperty()));
+
         return iconAndLabelGroup;
     }
 
-    private void updateIconAndLabelGroup(Group iconAndLabelGroup, ObservableAircraftState aircraftState){
-        mapParameters.zoomProperty().addListener((observable, oldValue, newValue) -> {
-            iconAndLabelGroup.layoutXProperty().bind(Bindings.createDoubleBinding(
-                    () -> WebMercator.x(mapParameters.getZoom(),
-                            aircraftState.getPosition().longitude()) - mapParameters.getMinX()));
-            iconAndLabelGroup.layoutYProperty().bind(Bindings.createDoubleBinding(
-                    () -> WebMercator.y(mapParameters.getZoom(),
-                            aircraftState.getPosition().latitude()) - mapParameters.getMinY()));
-        });
-    }
+
+
 
     private ObjectProperty<Color> getFillProperty(ObservableAircraftState aircraftState) {
         // Calculate fill color based on aircraft altitude
@@ -150,7 +181,7 @@ public final class AircraftController {
             trajectoryPath.setContent(trajectory.toString());
 
             // Autres configurations du segment de trajectoire
-            trajectoryPath.setStroke(Color.BLUE);
+            trajectoryPath.setStroke(Color.RED);
             trajectoryPath.setStrokeWidth(2);
 
             trajectoryGroup.getChildren().add(trajectoryPath);
