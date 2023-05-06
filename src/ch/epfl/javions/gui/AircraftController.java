@@ -18,7 +18,6 @@ import javafx.scene.shape.*;
 import javafx.scene.text.Text;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static ch.epfl.javions.Units.Angle.DEGREE;
@@ -235,10 +234,12 @@ public final class AircraftController {
 
         // Bind the text property of the label to the formatted string based on altitude and velocity values
         labelText.textProperty().bind(Bindings.createStringBinding(() -> {
-            String velocity = Double.isNaN(Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR))
-                    ? "?"
-                    : String.format("%.0f", Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
-            String altitude = String.format("%.0f", aircraftState.getAltitude());
+            String velocity = aircraftState.getVelocity() == -1 ?
+                    "?" :
+                    String.format("%.0f", Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
+            String altitude = aircraftState.getAltitude() == -1 ?
+                    "?" :
+                    String.format("%.0f", aircraftState.getAltitude());
             return String.format("%s\n%s\u2002km/h %s\u2002m",
                     identification,
                     velocity,
