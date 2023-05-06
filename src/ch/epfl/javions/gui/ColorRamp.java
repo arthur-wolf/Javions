@@ -2,16 +2,36 @@ package ch.epfl.javions.gui;
 
 import javafx.scene.paint.Color;
 
+/**
+ * Represents a color ramp that interpolates between a series of colors.
+ * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
+ */
 public final class ColorRamp {
     private final Color[] colors;
 
+    /**
+     * Constructs a ColorRamp with the given colors.
+     *
+     * @param colors the colors of the ramp
+     * @throws IllegalArgumentException if the number of colors is less than 2
+     */
     public ColorRamp(Color... colors) {
         if (colors.length < 2) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("A color ramp must have at least two colors.");
         }
         this.colors = colors;
     }
 
+    /**
+     * Returns the color at the specified value in the range [0, 1].
+     * If the value is less than 0, the first color of the ramp is returned.
+     * If the value is greater than 1, the last color of the ramp is returned.
+     * Otherwise, the color is interpolated between the adjacent colors of the ramp.
+     *
+     * @param value the value in the range [0, 1]
+     * @return the interpolated color
+     */
     public Color at(double value) {
         if (value < 0) {
             return colors[0];
@@ -25,7 +45,9 @@ public final class ColorRamp {
         }
     }
 
-
+    /**
+     * A predefined ColorRamp with the "Plasma" color scheme.
+     */
     public static final ColorRamp PLASMA = new ColorRamp(
             Color.valueOf("0x0d0887ff"), Color.valueOf("0x220690ff"),
             Color.valueOf("0x320597ff"), Color.valueOf("0x40049dff"),
@@ -42,5 +64,6 @@ public final class ColorRamp {
             Color.valueOf("0xfa9d3bff"), Color.valueOf("0xfca935ff"),
             Color.valueOf("0xfdb52eff"), Color.valueOf("0xfdc229ff"),
             Color.valueOf("0xfccf25ff"), Color.valueOf("0xf9dd24ff"),
-            Color.valueOf("0xf5eb27ff"), Color.valueOf("0xf0f921ff"));
+            Color.valueOf("0xf5eb27ff"), Color.valueOf("0xf0f921ff")
+    );
 }

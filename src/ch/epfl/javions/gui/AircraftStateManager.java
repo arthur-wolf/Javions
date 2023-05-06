@@ -57,6 +57,7 @@ public final class AircraftStateManager {
     public void updateWithMessage(Message message) throws IOException {
         IcaoAddress address = message.icaoAddress();
         AircraftStateAccumulator<ObservableAircraftState> accumulator = table.get(address);
+        if(address == null || database.get(address) == null) return;
         if (accumulator == null) {
             accumulator = new AircraftStateAccumulator<>(new ObservableAircraftState(address, database.get(address)));
             table.put(address, accumulator);
@@ -72,13 +73,14 @@ public final class AircraftStateManager {
     /**
      * Purges the aircraft state manager
      */
+
     public void purge() {
-        Iterator<ObservableAircraftState> iterator = observableAircraftStates.iterator();
-        while (iterator.hasNext()) {
-            ObservableAircraftState state = iterator.next();
-            if (lastTimeStampsNs - state.getLastMessageTimeStampNs() > DT) {
-                iterator.remove();
-                states().remove(state);
+        Iterator<AircraftStateAccumulator<ObservableAircraftState>> it = table.values().iterator();
+        while (it.hasNext()) {
+            AircraftStateAccumulator<ObservableAircraftState> accumulator = it.next();
+            if (lastTimeStampsNs - accumulator.stateSetter().getLastMessageTimeStampNs() > DT) {
+                observableAircraftStates.remove(accumulator.stateSetter());
+                it.remove();
             }
         }
     }

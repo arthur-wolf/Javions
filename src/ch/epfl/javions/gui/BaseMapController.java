@@ -188,6 +188,7 @@ public final class BaseMapController {
         });
 
         //even handler for zooming in and out by scrolling
+
         pane.setOnScroll(e -> {
             int zoomDelta = (int) Math.signum(e.getDeltaY());
             if (zoomDelta == 0) return;
