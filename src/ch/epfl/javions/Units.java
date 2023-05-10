@@ -14,6 +14,9 @@ public final class Units {
     private Units() {
     }
 
+    /**
+     * Contains various units of angle
+     */
     public static class Angle {
         public static final double RADIAN = BASE_UNIT;
         public static final double TURN = 2 * Math.PI * RADIAN;
@@ -22,9 +25,11 @@ public final class Units {
 
         private Angle() {
         }
-
     }
 
+    /**
+     * Contains various units of length
+     */
     public static class Length {
         public static final double METER = BASE_UNIT;
         public static final double CENTIMETER = CENTI * METER;
@@ -35,9 +40,11 @@ public final class Units {
 
         private Length() {
         }
-
     }
 
+    /**
+     * Contains various units of time
+     */
     public static class Time {
 
         public static final double SECOND = BASE_UNIT;
@@ -46,16 +53,17 @@ public final class Units {
 
         private Time() {
         }
-
     }
 
+    /**
+     * Contains various units of speed
+     */
     public static class Speed {
         public static final double KNOT = Length.NAUTICAL_MILE / Time.HOUR;
         public static final double KILOMETER_PER_HOUR = Length.KILOMETER / Time.HOUR;
 
         private Speed() {
         }
-
     }
 
     /**

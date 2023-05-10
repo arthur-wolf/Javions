@@ -16,9 +16,14 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private AirbornePositionMessage evenMessage;
     private AirbornePositionMessage oddMessage;
 
+    /**
+     * Constructs a new aircraft state accumulator with the given state setter
+     *
+     * @param stateSetter the state setter of the accumulator
+     * @throws NullPointerException if the given state setter is null
+     */
     public AircraftStateAccumulator(T stateSetter) {
-        Objects.requireNonNull(stateSetter);
-        this.stateSetter = stateSetter;
+        this.stateSetter = Objects.requireNonNull(stateSetter);
     }
 
     /**
@@ -68,11 +73,11 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     /**
      * Returns true if the odd and even messages aren't null and the difference between them is less than or equal to 10 seconds.
      *
-     * @return true if the odd and even messages aren't null and the difference between them is less than or equal to 10 seconds.
+     * @return the corresponding boolean
      */
     private boolean isValid() {
         //timestamp in seconds
-        double DELTA = 10e9;
+        final double DELTA = 10e9;
 
         return (evenMessage != null
                 && oddMessage != null

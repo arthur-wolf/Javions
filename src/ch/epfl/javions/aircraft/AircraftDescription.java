@@ -12,14 +12,15 @@ import java.util.regex.Pattern;
  * @author Oussama Ghali (341478)
  */
 public record AircraftDescription(String string) {
-    private static final Pattern aircraftDescriptionPattern = Pattern.compile("[ABDGHLPRSTV-][0123468][EJPT-]");
+    private static final Pattern AIRCRAFT_DESCRIPTION_PATTERN = Pattern.compile("[ABDGHLPRSTV-][0123468][EJPT-]");
 
     /**
      * Validates the pattern of the given address if it matches the corresponding regular expression or if it is an empty string
      *
      * @param string The description to validate
+     * @throws IllegalArgumentException if the description does not match the regular expression and is not an empty string
      */
     public AircraftDescription {
-        Preconditions.checkArgument(aircraftDescriptionPattern.matcher(string).matches() || string.isEmpty());
+        Preconditions.checkArgument(AIRCRAFT_DESCRIPTION_PATTERN.matcher(string).matches() || string.isEmpty());
     }
 }

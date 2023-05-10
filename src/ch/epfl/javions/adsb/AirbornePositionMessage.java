@@ -36,6 +36,18 @@ public record AirbornePositionMessage(long timeStampNs,
     private static final int LATITUDE_INDEX = 17;
     private static final int LATITUDE_SIZE = 17;
 
+    /**
+     * Constructs a new AirbornePositionMessage
+     *
+     * @param timeStampNs the time stamp of the message in nanoseconds
+     * @param icaoAddress the ICAO address of the sender of the message
+     * @param altitude    the altitude of the aircraft in meters when the message was sent
+     * @param parity      the parity of the message (0 is even, 1 is odd)
+     * @param x           the normalised local longitude of the aircraft when the message was sent
+     * @param y           the normalised local latitude of the aircraft when the message was sent
+     * @throws NullPointerException     if the ICAO address is null
+     * @throws IllegalArgumentException if the time stamp is negative, the parity is not 0 or 1, or if x or y are not in [0, 1[
+     */
     public AirbornePositionMessage {
         Objects.requireNonNull(icaoAddress);
         Preconditions.checkArgument(timeStampNs >= 0);
@@ -71,11 +83,9 @@ public record AirbornePositionMessage(long timeStampNs,
      * @return the altitude of the aircraft that sent the message
      */
     private static double altitude(RawMessage rawMessage) {
-        long payload = rawMessage.payload();
-        int altitude = Bits.extractUInt(payload, ALTITUDE_INDEX, ALTITUDE_SIZE);
-        int qBit = Bits.extractUInt(altitude, QBIT_INDEX, 1);
+        int altitude = Bits.extractUInt(rawMessage.payload(), ALTITUDE_INDEX, ALTITUDE_SIZE);
 
-        if (qBit == 1) {
+        if (Bits.testBit(altitude, QBIT_INDEX)) {
             // Take the 4 last bits of the altitude and append them to the first 7 bits of the altitude
             int altitude1 = ((Bits.extractUInt(altitude, 5, 7) << 4) | Bits.extractUInt(altitude, 0, 4)) * 25 - 1000;
             return Units.convertFrom(altitude1, FOOT);
@@ -138,8 +148,7 @@ public record AirbornePositionMessage(long timeStampNs,
      * @return the parity of the message
      */
     private static int parity(RawMessage rawMessage) {
-        long payload = rawMessage.payload();
-        return Bits.extractUInt(payload, PARITY_INDEX, 1);
+        return Bits.extractUInt(rawMessage.payload(), PARITY_INDEX, 1);
     }
 
     /**
@@ -149,8 +158,7 @@ public record AirbornePositionMessage(long timeStampNs,
      * @return the normalised local longitude of the aircraft that sent the message
      */
     private static double longitude(RawMessage rawMessage) {
-        long payload = rawMessage.payload();
-        double longitude = Bits.extractUInt(payload, LONGITUDE_INDEX, LONGITUDE_SIZE);
+        double longitude = Bits.extractUInt(rawMessage.payload(), LONGITUDE_INDEX, LONGITUDE_SIZE);
         return Math.scalb(longitude, -17);
     }
 
@@ -161,8 +169,7 @@ public record AirbornePositionMessage(long timeStampNs,
      * @return the normalised local latitude of the aircraft that sent the message
      */
     private static double latitude(RawMessage rawMessage) {
-        long payload = rawMessage.payload();
-        double latitude = Bits.extractUInt(payload, LATITUDE_INDEX, LATITUDE_SIZE);
+        double latitude = Bits.extractUInt(rawMessage.payload(), LATITUDE_INDEX, LATITUDE_SIZE);
         return Math.scalb(latitude, -17);
     }
 }

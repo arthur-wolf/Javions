@@ -51,7 +51,9 @@ public record AirborneVelocityMessage(long timeStampNs,
 
     public AirborneVelocityMessage {
         Objects.requireNonNull(icaoAddress);
-        Preconditions.checkArgument(timeStampNs >= 0 && speed >= 0 && trackOrHeading >= 0);
+        Preconditions.checkArgument(timeStampNs >= 0);
+        Preconditions.checkArgument(speed >= 0);
+        Preconditions.checkArgument(trackOrHeading >= 0);
     }
 
     /**
@@ -95,7 +97,8 @@ public record AirborneVelocityMessage(long timeStampNs,
         vns = (dns == 0) ? (vns - 1) : -(vns - 1);
 
         double speed = subOrSup * Math.hypot(vew, vns);
-        double trackOrHeading = Math.atan2(vew, vns) >= 0 ? Math.atan2(vew, vns) : Math.atan2(vew, vns) + (2 * Math.PI);
+        double trackOrHeading = Math.atan2(vew, vns);
+        trackOrHeading = trackOrHeading < 0 ? trackOrHeading + TURN : trackOrHeading;
 
         return new AirborneVelocityMessage(
                 rawMessage.timeStampNs(),

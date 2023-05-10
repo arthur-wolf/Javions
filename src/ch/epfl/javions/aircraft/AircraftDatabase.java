@@ -18,6 +18,7 @@ public class AircraftDatabase {
      * Creates a new AircraftDatabase
      *
      * @param filename the name of the file containing the aircraft database
+     * @throws NullPointerException if the filename is null
      */
     public AircraftDatabase(String filename) {
         this.filename = Objects.requireNonNull(filename);

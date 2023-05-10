@@ -31,7 +31,7 @@ public final class PowerWindow {
      * @throws IOException if an I/O error occurs
      */
     public PowerWindow(InputStream stream, int windowSize) throws IOException {
-        Preconditions.checkArgument(windowSize > 0 && windowSize <= (1 << 16));
+        Preconditions.checkArgument(windowSize > 0 && windowSize <= BATCH_SIZE);
 
         this.windowSize = windowSize;
         this.firstTab = new int[BATCH_SIZE];

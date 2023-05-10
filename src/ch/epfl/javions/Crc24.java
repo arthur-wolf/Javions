@@ -8,6 +8,7 @@ package ch.epfl.javions;
  */
 
 public final class Crc24 {
+    // The generator used to compute the CRC24 checksum
     public static final int GENERATOR = 0xFFF409;
     private static final int GENERATOR_LENGTH = 24;
     private static final int TABLE_SIZE = 256;

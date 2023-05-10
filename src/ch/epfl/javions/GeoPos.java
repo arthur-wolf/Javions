@@ -10,12 +10,14 @@ import static ch.epfl.javions.Units.Angle.*;
  * @author Arthur Wolf (344200)
  */
 public record GeoPos(int longitudeT32, int latitudeT32) {
+    private final static int MAX_T32_VALUE = 1 << 30;
 
     /**
      * Constructs a GeoPos based on the given longitude and latitude expressed in t32
      *
      * @param longitudeT32 the longitude in t32
      * @param latitudeT32  the latitude in t32
+     * @throws IllegalArgumentException if the longitude or the latitude is not expressed as a correct t32 value
      */
     public GeoPos {
         Preconditions.checkArgument(isValidLatitudeT32(latitudeT32));
@@ -28,7 +30,7 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
      * @return true if it is a correct t32 value
      */
     public static boolean isValidLatitudeT32(int latitudeT32) {
-        return (latitudeT32 >= (-(1 << 30)) && latitudeT32 <= (1 << 30));
+        return (latitudeT32 >= -MAX_T32_VALUE && latitudeT32 <= MAX_T32_VALUE);
     }
 
     /**
@@ -37,7 +39,7 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
      * @return the value of the longitude in radians
      */
     public double longitude() {
-        return Units.convert(this.longitudeT32, T32, RADIAN);
+        return Units.convertFrom(this.longitudeT32, T32);
     }
 
     /**
@@ -46,7 +48,7 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
      * @return the value of the longitude in radians
      */
     public double latitude() {
-        return Units.convert(this.latitudeT32, T32, RADIAN);
+        return Units.convertFrom(this.latitudeT32, T32);
     }
 
     /**

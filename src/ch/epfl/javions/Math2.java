@@ -21,9 +21,8 @@ public final class Math2 {
      */
     public static int clamp(int min, int v, int max) {
         Preconditions.checkArgument(min <= max);
-        return v < min ? min : (Math.min(v, max));
+        return Math.max(min, Math.min(v, max));
     }
-
 
     /**
      * Computes the value of arsinh(x)
@@ -32,6 +31,6 @@ public final class Math2 {
      * @return the value of arsinh(x)
      */
     public static double asinh(double x) {
-        return Math.log(x + Math.sqrt(1 + Math.pow(x, 2)));
+        return Math.log(x + Math.hypot(1 , x));
     }
 }

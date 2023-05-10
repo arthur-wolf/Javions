@@ -16,7 +16,7 @@ import ch.epfl.javions.aircraft.IcaoAddress;
  */
 public record RawMessage(long timeStampNs, ByteString bytes) {
     public static final int LENGTH = 14;
-    private static final Crc24 crc24 = new Crc24(Crc24.GENERATOR);
+    private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR);
     private static final int DF_INDEX = 3;
     private static final int DF_SIZE = 5;
     private static final int TYPECODE_INDEX = 51;
@@ -48,7 +48,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the raw ADS-B message corresponding to the given bytes
      */
     public static RawMessage of(long timeStampNs, byte[] bytes) {
-        return (bytes.length == LENGTH && crc24.crc(bytes) == 0) ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
+        return (bytes.length == LENGTH && CRC_24.crc(bytes) == 0) ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
     }
 
     /**

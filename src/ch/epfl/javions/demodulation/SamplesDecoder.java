@@ -17,6 +17,7 @@ public final class SamplesDecoder {
     private static final int OFFSET = 2048;
     private final InputStream inputStream;
     private final int batchSize;
+    private final byte[] bytes;
 
     /**
      * Constructs a new samples decoder
@@ -26,9 +27,9 @@ public final class SamplesDecoder {
      */
     public SamplesDecoder(InputStream stream, int batchSize) {
         Preconditions.checkArgument(batchSize > 0);
-        Objects.requireNonNull(stream);
-        this.inputStream = stream;
+        this.inputStream = Objects.requireNonNull(stream);
         this.batchSize = batchSize;
+        this.bytes = new byte[Short.BYTES * batchSize];
     }
 
     /**
@@ -41,14 +42,13 @@ public final class SamplesDecoder {
      */
     public int readBatch(short[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
-        byte[] bytes = new byte[batchSize * 2];
         int size = inputStream.readNBytes(bytes, 0, batchSize * 2);
 
         for (int i = 0; i < size; i += 2) {
             byte msb = bytes[i + 1];
             byte lsb = bytes[i];
 
-            batch[i / 2] = (short) (((Byte.toUnsignedInt(msb) << 8) | Byte.toUnsignedInt(lsb)) - OFFSET);
+            batch[i / 2] = (short) (((Byte.toUnsignedInt(msb) << Byte.SIZE) | Byte.toUnsignedInt(lsb)) - OFFSET);
         }
 
         return size / 2;

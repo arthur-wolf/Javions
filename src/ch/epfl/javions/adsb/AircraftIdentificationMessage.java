@@ -31,6 +31,16 @@ public record AircraftIdentificationMessage(long timeStampNs,
     private static final int ASCII_LETTER_START_INDEX = 65;
     private static final int ASCII_LETTER_END_INDEX = 90;
 
+    /**
+     * Constructs a new AircraftIdentificationMessage
+     *
+     * @param timeStampNs the time stamp of the message in nanoseconds
+     * @param icaoAddress the ICAO address of the sender of the message
+     * @param category    the category of the aircraft
+     * @param callSign    the call sign of the aircraft
+     * @throws NullPointerException     if the ICAO address or the call sign is null
+     * @throws IllegalArgumentException if the time stamp is negative
+     */
     public AircraftIdentificationMessage {
         Objects.requireNonNull(icaoAddress);
         Objects.requireNonNull(callSign);
@@ -45,7 +55,13 @@ public record AircraftIdentificationMessage(long timeStampNs,
      */
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
         CallSign callSign1 = callSign(rawMessage);
-        return (callSign1 != null) ? new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category(rawMessage), callSign1) : null;
+        return (callSign1 != null)
+                ? new AircraftIdentificationMessage(
+                rawMessage.timeStampNs(),
+                rawMessage.icaoAddress(),
+                category(rawMessage),
+                callSign1)
+                : null;
     }
 
 
@@ -79,10 +95,9 @@ public record AircraftIdentificationMessage(long timeStampNs,
      * @return the call sign of the aircraft that sent the message
      */
     private static CallSign callSign(RawMessage rawMessage) {
-        long payload = rawMessage.payload();
         StringBuilder callSignSB = new StringBuilder();
         for (int i = 7; i >= 0; i--) {
-            int index = Bits.extractUInt(payload, i * CALLSIGN_CHARACTER_SIZE, CALLSIGN_CHARACTER_SIZE);
+            int index = Bits.extractUInt(rawMessage.payload(), i * CALLSIGN_CHARACTER_SIZE, CALLSIGN_CHARACTER_SIZE);
             if (isLetter(index + ASCII_ALPHABET_START_INDEX)) {
                 callSignSB.append((char) (index + ASCII_ALPHABET_START_INDEX));
             } else if (isDigitOrSpace(index)) {

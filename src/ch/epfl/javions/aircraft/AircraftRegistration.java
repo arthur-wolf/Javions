@@ -12,14 +12,15 @@ import java.util.regex.Pattern;
  * @author Oussama Ghali (341478)
  */
 public record AircraftRegistration(String string) {
-    private final static Pattern aircraftRegistrationPattern = Pattern.compile("[A-Z0-9 .?/_+-]+");
+    private final static Pattern AIRCRAFT_REGISTRATION_PATTERN = Pattern.compile("[A-Z0-9 .?/_+-]+");
 
     /**
      * Validates the pattern of the given address if it matches the corresponding regular expression
      *
      * @param string The registration to validate
+     * @throws IllegalArgumentException if the registration does not match the regular expression
      */
     public AircraftRegistration {
-        Preconditions.checkArgument(aircraftRegistrationPattern.matcher(string).matches());
+        Preconditions.checkArgument(AIRCRAFT_REGISTRATION_PATTERN.matcher(string).matches());
     }
 }

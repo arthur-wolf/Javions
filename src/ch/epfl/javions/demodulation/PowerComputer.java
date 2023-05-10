@@ -18,6 +18,7 @@ public final class PowerComputer {
     private int arrayHead;
     private final short[] powerArray;
     private final short[] circularTable;
+    private static final int WINDOW_SIZE = 8;
 
 
     /**
@@ -27,11 +28,11 @@ public final class PowerComputer {
      * @param batchSize the number of samples to read at once
      */
     public PowerComputer(InputStream stream, int batchSize) {
-        Preconditions.checkArgument((batchSize > 0) && (batchSize % Byte.SIZE == 0));
+        Preconditions.checkArgument((batchSize > 0) && (batchSize % WINDOW_SIZE == 0));
         this.batchSize = batchSize;
         samplesDecoder = new SamplesDecoder(stream, batchSize * 2);
         powerArray = new short[batchSize * 2];
-        circularTable = new short[Byte.SIZE];
+        circularTable = new short[WINDOW_SIZE];
         this.arrayHead = 0;
     }
 

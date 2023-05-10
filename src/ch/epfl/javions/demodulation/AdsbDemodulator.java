@@ -15,6 +15,7 @@ public final class AdsbDemodulator {
     private static final int MESSAGE_SIZE = 14;
     private static final int WINDOW_SIZE = 1200;
     private final PowerWindow powerWindow;
+    private final byte[] bytes = new byte[MESSAGE_SIZE];
 
     /**
      * Constructs a new ADS-B demodulator
@@ -46,7 +47,6 @@ public final class AdsbDemodulator {
                 sigmaV = computeSigmaV();
                 // If this condition as well as the two other one are true, we have found a message
                 if (sigmaP >= 2 * sigmaV) {
-                    byte[] bytes = new byte[MESSAGE_SIZE];
                     // We only fill the first byte since we want to know if the message we found is actually interesting for us (i.e. if its DF attribute is 17)
                     fillFirstByte(bytes);
                     // If the message is interesting, we fill the other bytes

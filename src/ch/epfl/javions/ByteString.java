@@ -12,6 +12,7 @@ import java.util.Objects;
  */
 public final class ByteString {
     private final byte[] bytes;
+    private static final HexFormat HEXFORMAT = HexFormat.of().withUpperCase();
 
     /**
      * Constructs a ByteString based on a byte array
@@ -31,8 +32,7 @@ public final class ByteString {
      * @throws NumberFormatException    if one of the character is not among ABCDEF
      */
     public static ByteString ofHexadecimalString(String hexString) {
-        HexFormat hf = HexFormat.of().withUpperCase();
-        byte[] bytesTemp = hf.parseHex(hexString);
+        byte[] bytesTemp = HEXFORMAT.parseHex(hexString);
 
         return new ByteString(bytesTemp);
     }
@@ -53,8 +53,6 @@ public final class ByteString {
      * @return the byte at the given index
      */
     public int byteAt(int index) {
-        Objects.checkIndex(index, bytes.length);
-
         return Byte.toUnsignedInt(bytes[index]);
     }
 
@@ -64,9 +62,10 @@ public final class ByteString {
      * @param fromIndex the beginning of the range (included)
      * @param toIndex   the end of the range (excluded)
      * @return a long value representing the bytes in the range
+     * @throws IllegalArgumentException if the range is bigger than 8 bytes
      */
     public long bytesInRange(int fromIndex, int toIndex) {
-        Preconditions.checkArgument(toIndex - fromIndex < Long.SIZE);
+        Preconditions.checkArgument(toIndex - fromIndex <= Long.BYTES);
         Objects.checkFromToIndex(fromIndex, toIndex, bytes.length);
 
         long temp = 0;
@@ -105,9 +104,6 @@ public final class ByteString {
      */
     @Override
     public String toString() {
-        return HexFormat
-                .of()
-                .withUpperCase()
-                .formatHex(bytes);
+        return HEXFORMAT.formatHex(bytes);
     }
 }
