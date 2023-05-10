@@ -16,6 +16,8 @@ import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.*;
 import javafx.scene.text.Text;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -35,6 +37,7 @@ public final class AircraftController {
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private final Pane pane;
     private final int MAX_ALTITUDE = 12000;
+    private final int UNKNOWN = -1;
 
     /**
      * Constructs a new AircraftController with the given map parameters, aircraft state set,
@@ -189,7 +192,7 @@ public final class AircraftController {
         // Bind the content property of the SVGPath to the SVG path of the aircraft icon
         icon.contentProperty().bind(Bindings.createStringBinding(aircraftIcon::svgPath));
 
-        // Bind the rotate property of the SVGPath to the track or heading of the aircraft
+        // Bind the rotation property of the SVGPath to the track or heading of the aircraft
         icon.rotateProperty().bind(Bindings.createDoubleBinding(() ->
                         aircraftIcon.canRotate() ? Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE) : 0.0,
                 aircraftState.trackOrHeadingProperty()));
@@ -219,25 +222,27 @@ public final class AircraftController {
         Text labelText = new Text();
         Rectangle labelBackground = new Rectangle();
 
-        // Determine the address, call sign, or registration of the aircraft
+        // Determine the registration or call sign or the ICAO of the aircraft
         String identification = Optional.ofNullable(aircraftState.
                         aircraftData().
                         registration().
                         string())
                 .orElse(Optional.ofNullable(aircraftState.
-                        getCallSign()).
+                                getCallSign()).
                         map(Object::toString).
-                orElse(aircraftState.
-                        address().
-                        string()));
+                        orElse(aircraftState.
+                                address().
+                                string()));
 
 
         // Bind the text property of the label to the formatted string based on altitude and velocity values
         labelText.textProperty().bind(Bindings.createStringBinding(() -> {
-            String velocity = aircraftState.getVelocity() == -1 ?
+            // Format the velocity and altitude values
+            // If the value is -1, then the value is unknown and a question mark is displayed
+            String velocity = aircraftState.getVelocity() == UNKNOWN ?
                     "?" :
                     String.format("%.0f", Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
-            String altitude = aircraftState.getAltitude() == -1 ?
+            String altitude = aircraftState.getAltitude() == UNKNOWN ?
                     "?" :
                     String.format("%.0f", aircraftState.getAltitude());
             return String.format("%s\n%s\u2002km/h %s\u2002m",
@@ -269,7 +274,10 @@ public final class AircraftController {
 
         // Bind the visible property of the label group based on the zoom level and selected state
         labelGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
-                        mapParameters.getZoom() >= 11 || (selectedAircraftState.get() != null && aircraftState.equals(selectedAircraftState.get())),
+                        mapParameters.getZoom() >= 11
+                                ||
+                                (selectedAircraftState.get() != null
+                                        && aircraftState.equals(selectedAircraftState.get())),
                 mapParameters.zoomProperty(), selectedAircraftState));
 
         return labelGroup;
@@ -279,24 +287,28 @@ public final class AircraftController {
     /**
      * Builds the trajectory group for an aircraft state.
      *
-     * @param state     the observable aircraft state
+     * @param aircraftState the observable aircraft state
      * @return the trajectory group
      */
-    private Group buildTrajectoryGroup(ObservableAircraftState state) {
+    private Group buildTrajectoryGroup(ObservableAircraftState aircraftState) {
         Group trajectoryGroup = new Group();
         trajectoryGroup.getStyleClass().add("trajectory");
         trajectoryGroup.setVisible(false);
 
         // Add a listener to the trajectory property of the aircraft state
-        state.trajectory().addListener((ListChangeListener<ObservableAircraftState.AirbornePos>) change -> {
+        aircraftState.trajectory().addListener((ListChangeListener<ObservableAircraftState.AirbornePos>) change -> {
             if (trajectoryGroup.isVisible()) {
                 trajectoryGroup.getChildren().clear();
-                List<ObservableAircraftState.AirbornePos> trajectory = state.trajectory();
+                List<ObservableAircraftState.AirbornePos> trajectory = aircraftState.trajectory();
+                int size = trajectory.size();
 
                 // Build the trajectory lines based on the positions in the trajectory list
-                List<Line> trajectoryLines = IntStream.range(0, trajectory.size() - 1)
-                        .mapToObj(i -> buildTrajectoryLine(trajectory.get(i), trajectory.get(i + 1)))
-                        .toList();
+                List<Line> trajectoryLines = new ArrayList<>();
+                for (int i = 0; i < size - 1; i++) {
+                    ObservableAircraftState.AirbornePos start = trajectory.get(i);
+                    ObservableAircraftState.AirbornePos end = trajectory.get(i + 1);
+                    trajectoryLines.add(buildTrajectoryLine(start, end));
+                }
 
                 // Add the trajectory lines to the trajectory group
                 trajectoryGroup.getChildren().addAll(trajectoryLines);
@@ -305,6 +317,7 @@ public final class AircraftController {
 
         return trajectoryGroup;
     }
+
 
     /**
      * Builds a trajectory line between two aircraft positions.

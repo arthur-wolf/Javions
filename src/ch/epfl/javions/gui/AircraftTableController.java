@@ -1,9 +1,10 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.adsb.CallSign;
-import ch.epfl.javions.aircraft.AircraftData;
+import ch.epfl.javions.Units;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -13,10 +14,25 @@ import javafx.scene.input.MouseButton;
 
 import java.util.function.Consumer;
 
+/**
+ * The AircraftTableController class represents a controller for a TableView of aircraft states.
+ * It manages the creation and configuration of the columns and also installs listeners and handlers for the table view.
+ *
+ * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
+ */
 public final class AircraftTableController {
     private final TableView<ObservableAircraftState> tableView;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
 
+    private final int UNKNOWN = -1;
+
+    /**
+     * Constructs an AircraftTableController object with the given set of aircraft states and object property of the selected aircraft state.
+     *
+     * @param states                the set of aircraft states to display in the table view
+     * @param selectedAircraftState the object property of the selected aircraft state
+     */
     public AircraftTableController(ObservableSet<ObservableAircraftState> states, ObjectProperty<ObservableAircraftState> selectedAircraftState) {
         tableView = getTableView();
         this.selectedAircraftState = selectedAircraftState;
@@ -26,16 +42,31 @@ public final class AircraftTableController {
         addListeners(states);
     }
 
+    /**
+     * Returns the table view managed by this controller.
+     *
+     * @return the table view managed by this controller
+     */
     public TableView<ObservableAircraftState> pane() {
         return tableView;
     }
 
+    /**
+     * Sets a consumer to be called when the table view is double-clicked.
+     *
+     * @param consumer the consumer to be called when the table view is double-clicked
+     */
     public void setOnDoubleClick(Consumer<ObservableAircraftState> consumer) {
         if (selectedAircraftState.get() != null) {
             consumer.accept(selectedAircraftState.get());
         }
     }
 
+    /**
+     * Adds listeners to the set of aircraft states and to the selected item property of the table view.
+     *
+     * @param states the set of aircraft states to add listeners to
+     */
     private void addListeners(ObservableSet<ObservableAircraftState> states) {
         states.addListener((SetChangeListener<ObservableAircraftState>) change -> {
             if (change.wasAdded()) {
@@ -46,12 +77,12 @@ public final class AircraftTableController {
             }
         });
 
-        tableView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends ObservableAircraftState> observable,
-                                                                          ObservableAircraftState oldValue,
-                                                                          ObservableAircraftState newValue) -> selectedAircraftState.set(newValue));
+        tableView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends ObservableAircraftState> observable, ObservableAircraftState oldValue, ObservableAircraftState newValue) -> selectedAircraftState.set(newValue));
     }
 
-
+    /**
+     * Installs handlers for mouse clicks on the table view.
+     */
     private void installHandlers() {
         tableView.setOnMouseClicked(event -> {
             if ((event.getClickCount() == 2) && (event.getButton() == MouseButton.PRIMARY)) {
@@ -60,14 +91,22 @@ public final class AircraftTableController {
         });
     }
 
+    /**
+     * Creates and returns a new TableView object with the appropriate settings.
+     *
+     * @return a new TableView object with the appropriate settings
+     */
     private TableView<ObservableAircraftState> getTableView() {
         TableView<ObservableAircraftState> tableView = new TableView<>();
-        tableView.getStyleClass().add("aircraft-table");
+        tableView.getStylesheets().add("table.css");
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_SUBSEQUENT_COLUMNS);
         tableView.setTableMenuButtonVisible(true);
         return tableView;
     }
 
+    /**
+     * Creates and configures the columns for the table view.
+     */
     private void createColumns() {
         // -------------------------------- ICAO address --------------------------------
         TableColumn<ObservableAircraftState, String> icaoColumn = new TableColumn<>("OACI");
@@ -77,20 +116,17 @@ public final class AircraftTableController {
         // -------------------------------- callSign ------------------------------------
         TableColumn<ObservableAircraftState, String> callSignColumn = new TableColumn<>("Callsign");
         callSignColumn.setPrefWidth(70);
-        callSignColumn.setCellValueFactory(cellData -> cellData.getValue().callSignProperty().map(CallSign::string));
+        callSignColumn.setCellValueFactory(cellData -> cellData.getValue().callSignProperty().map(callSign -> callSign != null ? callSign.string() : ""));
 
         // -------------------------------- registration --------------------------------
         TableColumn<ObservableAircraftState, String> registrationColumn = new TableColumn<>("Registration");
         registrationColumn.setPrefWidth(90);
-        registrationColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData()).map(
-                aircraftData -> aircraftData.registration().string())
-        );
+        registrationColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().registration() != null ? cellData.getValue().aircraftData().registration().string() : ""));
 
         // -------------------------------- model --------------------------------
         TableColumn<ObservableAircraftState, String> modelColumn = new TableColumn<>("Model");
         modelColumn.setPrefWidth(230);
-        modelColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData()).map(AircraftData::model)
-        );
+        modelColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().model() != null ? cellData.getValue().aircraftData().model() : ""));
 
         // -------------------------------- type designator --------------------------------
         TableColumn<ObservableAircraftState, String> typeColumn = new TableColumn<>("Type");
@@ -100,26 +136,50 @@ public final class AircraftTableController {
         // -------------------------------- description --------------------------------
         TableColumn<ObservableAircraftState, String> descriptionColumn = new TableColumn<>("Description");
         descriptionColumn.setPrefWidth(70);
-        descriptionColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData()).map(
-                aircraftData -> aircraftData.description().string())
-        );
+        descriptionColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().description() != null ? cellData.getValue().aircraftData().description().string() : ""));
+
 
         // -------------------------------- longitude (never null) --------------------------------
-        TableColumn<ObservableAircraftState, String> longitudeColumn = new TableColumn<>("Longitude");
+        TableColumn<ObservableAircraftState, String> longitudeColumn = new TableColumn<>("Longitude (°)");
         longitudeColumn.setPrefWidth(85);
+        setNumeric(longitudeColumn);
+        longitudeColumn.setCellValueFactory(cellData -> Bindings.createObjectBinding(() -> String.format("%.4f", Units.convertTo(cellData.getValue().getPosition().longitude(), Units.Angle.DEGREE)), cellData.getValue().positionProperty()));
 
         // -------------------------------- latitude (never null) --------------------------------
-        TableColumn<ObservableAircraftState, String> latitudeColumn = new TableColumn<>("Latitude");
+        TableColumn<ObservableAircraftState, String> latitudeColumn = new TableColumn<>("Latitude (°)");
         latitudeColumn.setPrefWidth(85);
+        setNumeric(latitudeColumn);
+        latitudeColumn.setCellValueFactory(cellData -> Bindings.createObjectBinding(() -> String.format("%.4f", Units.convertTo(cellData.getValue().getPosition().latitude(), Units.Angle.DEGREE)), cellData.getValue().positionProperty()));
+
 
         // -------------------------------- altitude --------------------------------
-        TableColumn<ObservableAircraftState, String> altitudeColumn = new TableColumn<>("Altitude");
+        TableColumn<ObservableAircraftState, String> altitudeColumn = new TableColumn<>("Altitude (m)");
         altitudeColumn.setPrefWidth(85);
+        setNumeric(altitudeColumn);
+        altitudeColumn.setCellValueFactory(cellData -> {
+            double altitude = cellData.getValue().getAltitude();
+            return altitude != UNKNOWN ? Bindings.createStringBinding(() -> String.format("%.0f", altitude), cellData.getValue().altitudeProperty()) : new SimpleStringProperty("");
+        });
+
 
         // -------------------------------- speed --------------------------------
-        TableColumn<ObservableAircraftState, String> speedColumn = new TableColumn<>("Speed");
+        TableColumn<ObservableAircraftState, String> speedColumn = new TableColumn<>("Speed (km/h)");
         speedColumn.setPrefWidth(85);
-
+        setNumeric(speedColumn);
+        speedColumn.setCellValueFactory(cellData -> {
+            double velocity = cellData.getValue().getVelocity();
+            return velocity != UNKNOWN ? Bindings.createStringBinding(() -> String.format("%.0f", Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)), cellData.getValue().velocityProperty()) : new SimpleStringProperty("");
+        });
         tableView.getColumns().addAll(icaoColumn, callSignColumn, registrationColumn, modelColumn, typeColumn, descriptionColumn, longitudeColumn, latitudeColumn, altitudeColumn, speedColumn);
     }
+
+    /**
+     * Sets the "numeric" style class on the given TableColumn object.
+     *
+     * @param column the TableColumn object to set the "numeric" style class on
+     */
+    private void setNumeric(TableColumn<ObservableAircraftState, String> column) {
+        column.getStyleClass().add("numeric");
+    }
+
 }

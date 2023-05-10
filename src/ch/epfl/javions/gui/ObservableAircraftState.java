@@ -28,6 +28,8 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitude;    // m
     private final DoubleProperty velocity;    // m/s
     private final DoubleProperty trackOrHeading; // radions
+
+    private final double UNKNOWN = -1.0; // value for unknown altitude, velocity
     ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();    // modifiable list
     ObservableList<AirbornePos> trajectoryView = FXCollections.unmodifiableObservableList(trajectory);    // unmodifiable list (view on trajectory)
 
@@ -47,8 +49,8 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         category = new SimpleIntegerProperty(0);
         callSign = new SimpleObjectProperty<>(null);
         position = new SimpleObjectProperty<>(null);
-        altitude = new SimpleDoubleProperty(-1);
-        velocity = new SimpleDoubleProperty(-1);
+        altitude = new SimpleDoubleProperty(UNKNOWN);
+        velocity = new SimpleDoubleProperty(UNKNOWN);
         trackOrHeading = new SimpleDoubleProperty(0);
     }
 
@@ -193,6 +195,21 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      * Updates the trajectory
      */
     private void updateTrajectory() {
+        GeoPos currentPosition = getPosition();
+        double currentAltitude = getAltitude();
+
+        // Add position and altitude to trajectory if both are known
+        if (currentPosition != null && currentAltitude != UNKNOWN) {
+            trajectory.add(new AirbornePos(currentPosition, currentAltitude));
+            lastMessageTimeStamps = getLastMessageTimeStampNs();
+        } else if (!trajectory.isEmpty()) { // Update altitude in last position if altitude is updated and position is known
+            if (currentAltitude != UNKNOWN && currentPosition != null &&
+                    lastMessageTimeStamps == getLastMessageTimeStampNs()) {
+                trajectory.set(trajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude));
+            }
+        }
+    }
+    /*private void updateTrajectory() {
 
         if(getPosition() != null) {
             if (trajectory.isEmpty() || !getPosition().equals(trajectory.get(trajectory.size() - 1).geoPos)) {
@@ -203,6 +220,8 @@ public final class ObservableAircraftState implements AircraftStateSetter {
             }
         }
     }
+
+     */
 
     // ----------------- Altitude -----------------
 

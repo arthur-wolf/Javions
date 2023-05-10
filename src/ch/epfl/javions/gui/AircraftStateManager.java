@@ -75,6 +75,18 @@ public final class AircraftStateManager {
      */
 
     public void purge() {
+        Iterator<Map.Entry<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>>> it = table.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> entry = it.next();
+            AircraftStateAccumulator<ObservableAircraftState> accumulator = entry.getValue();
+            if (lastTimeStampsNs - accumulator.stateSetter().getLastMessageTimeStampNs() > DT) {
+                observableAircraftStates.remove(accumulator.stateSetter());
+                it.remove();
+            }
+        }
+    }
+
+   /* public void purge() {
         Iterator<AircraftStateAccumulator<ObservableAircraftState>> it = table.values().iterator();
         while (it.hasNext()) {
             AircraftStateAccumulator<ObservableAircraftState> accumulator = it.next();
@@ -84,4 +96,6 @@ public final class AircraftStateManager {
             }
         }
     }
+
+    */
 }
