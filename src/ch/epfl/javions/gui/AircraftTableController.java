@@ -11,7 +11,7 @@ import javafx.collections.SetChangeListener;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
-
+import java.text.DecimalFormat;
 import java.util.function.Consumer;
 
 /**
@@ -27,6 +27,10 @@ public final class AircraftTableController {
 
     private final int UNKNOWN = -1;
 
+    private final static DecimalFormat dfWith4Digit = new DecimalFormat("#.####");
+    private final static DecimalFormat dfWith0Digit = new DecimalFormat("#");
+
+
     /**
      * Constructs an AircraftTableController object with the given set of aircraft states and object property of the selected aircraft state.
      *
@@ -40,7 +44,9 @@ public final class AircraftTableController {
         createColumns();
         installHandlers();
         addListeners(states);
+
     }
+
 
     /**
      * Returns the table view managed by this controller.
@@ -141,35 +147,36 @@ public final class AircraftTableController {
 
         // -------------------------------- longitude (never null) --------------------------------
         TableColumn<ObservableAircraftState, String> longitudeColumn = new TableColumn<>("Longitude (°)");
-        longitudeColumn.setPrefWidth(85);
-        setNumeric(longitudeColumn);
-        longitudeColumn.setCellValueFactory(cellData -> Bindings.createObjectBinding(() -> String.format("%.4f", Units.convertTo(cellData.getValue().getPosition().longitude(), Units.Angle.DEGREE)), cellData.getValue().positionProperty()));
+        setNumericFormat(longitudeColumn, 85);
+        longitudeColumn.setCellValueFactory(cellData -> {
+            double longitude = cellData.getValue().getPosition().longitude();
+            return Bindings.createObjectBinding(() -> dfWith4Digit.format(Units.convertTo(longitude, Units.Angle.DEGREE)), cellData.getValue().positionProperty());
+        });
 
-        // -------------------------------- latitude (never null) --------------------------------
+// -------------------------------- latitude (never null) --------------------------------
         TableColumn<ObservableAircraftState, String> latitudeColumn = new TableColumn<>("Latitude (°)");
-        latitudeColumn.setPrefWidth(85);
-        setNumeric(latitudeColumn);
-        latitudeColumn.setCellValueFactory(cellData -> Bindings.createObjectBinding(() -> String.format("%.4f", Units.convertTo(cellData.getValue().getPosition().latitude(), Units.Angle.DEGREE)), cellData.getValue().positionProperty()));
+        setNumericFormat(latitudeColumn, 85);
+        latitudeColumn.setCellValueFactory(cellData -> {
+            double latitude = cellData.getValue().getPosition().latitude();
+            return Bindings.createObjectBinding(() -> dfWith4Digit.format(Units.convertTo(latitude, Units.Angle.DEGREE)), cellData.getValue().positionProperty());
+        });
 
-
-        // -------------------------------- altitude --------------------------------
+// -------------------------------- altitude --------------------------------
         TableColumn<ObservableAircraftState, String> altitudeColumn = new TableColumn<>("Altitude (m)");
-        altitudeColumn.setPrefWidth(85);
-        setNumeric(altitudeColumn);
+        setNumericFormat(altitudeColumn,85);
         altitudeColumn.setCellValueFactory(cellData -> {
             double altitude = cellData.getValue().getAltitude();
-            return altitude != UNKNOWN ? Bindings.createStringBinding(() -> String.format("%.0f", altitude), cellData.getValue().altitudeProperty()) : new SimpleStringProperty("");
+            return altitude != UNKNOWN ? Bindings.createStringBinding(() -> dfWith0Digit.format(altitude), cellData.getValue().altitudeProperty()) : new SimpleStringProperty("");
         });
 
-
-        // -------------------------------- speed --------------------------------
+// -------------------------------- speed --------------------------------
         TableColumn<ObservableAircraftState, String> speedColumn = new TableColumn<>("Speed (km/h)");
-        speedColumn.setPrefWidth(85);
-        setNumeric(speedColumn);
+        setNumericFormat(speedColumn, 85);
         speedColumn.setCellValueFactory(cellData -> {
             double velocity = cellData.getValue().getVelocity();
-            return velocity != UNKNOWN ? Bindings.createStringBinding(() -> String.format("%.0f", Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)), cellData.getValue().velocityProperty()) : new SimpleStringProperty("");
+            return velocity != UNKNOWN ? Bindings.createStringBinding(() -> dfWith0Digit.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)), cellData.getValue().velocityProperty()) : new SimpleStringProperty("");
         });
+
         tableView.getColumns().addAll(icaoColumn, callSignColumn, registrationColumn, modelColumn, typeColumn, descriptionColumn, longitudeColumn, latitudeColumn, altitudeColumn, speedColumn);
     }
 
@@ -178,8 +185,11 @@ public final class AircraftTableController {
      *
      * @param column the TableColumn object to set the "numeric" style class on
      */
-    private void setNumeric(TableColumn<ObservableAircraftState, String> column) {
+    private void setNumericFormat(TableColumn<ObservableAircraftState, String> column, int width) {
+        // Set style class for numeric columns
         column.getStyleClass().add("numeric");
+        column.setPrefWidth(width);
+
     }
 
 }

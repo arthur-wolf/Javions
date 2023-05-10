@@ -78,5 +78,5 @@ public final class TestTableController extends Application {
     }.
 
     start();
-}
+ }
 }

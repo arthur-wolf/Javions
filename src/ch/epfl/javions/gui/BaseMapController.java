@@ -86,9 +86,6 @@ public final class BaseMapController {
                WebMercator.x(mapParameters.getZoom(), point.longitude()) - mapParameters.getMinX() - canvas.getWidth() / 2,
                WebMercator.y(mapParameters.getZoom(),point.latitude())- mapParameters.getMinY() - canvas.getHeight() / 2);
     }
-    public MapParameters getMapParameters() {
-        return mapParameters;
-    }
 
 
     private void draw() {
