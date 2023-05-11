@@ -42,9 +42,12 @@ public final class AircraftTableController {
         this.selectedAircraftState = selectedAircraftState;
 
         createColumns();
-        installHandlers();
+       // installHandlers();
         addListeners(states);
 
+    }
+    public ObjectProperty<ObservableAircraftState> selectedAircraftStateProperty() {
+        return selectedAircraftState;
     }
 
 
@@ -63,9 +66,13 @@ public final class AircraftTableController {
      * @param consumer the consumer to be called when the table view is double-clicked
      */
     public void setOnDoubleClick(Consumer<ObservableAircraftState> consumer) {
-        if (selectedAircraftState.get() != null) {
-            consumer.accept(selectedAircraftState.get());
-        }
+        tableView.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+                if (selectedAircraftState.get() != null){
+                    consumer.accept(selectedAircraftState.get());
+                }
+            }
+        });
     }
 
     /**
@@ -86,9 +93,9 @@ public final class AircraftTableController {
         tableView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends ObservableAircraftState> observable, ObservableAircraftState oldValue, ObservableAircraftState newValue) -> selectedAircraftState.set(newValue));
     }
 
-    /**
+    /*/**
      * Installs handlers for mouse clicks on the table view.
-     */
+
     private void installHandlers() {
         tableView.setOnMouseClicked(event -> {
             if ((event.getClickCount() == 2) && (event.getButton() == MouseButton.PRIMARY)) {
@@ -96,6 +103,9 @@ public final class AircraftTableController {
             }
         });
     }
+
+
+     */
 
     /**
      * Creates and returns a new TableView object with the appropriate settings.

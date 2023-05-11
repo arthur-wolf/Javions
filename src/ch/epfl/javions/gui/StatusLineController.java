@@ -1,6 +1,8 @@
 package ch.epfl.javions.gui;
 
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -9,12 +11,12 @@ import javafx.scene.text.Text;
 public final class StatusLineController {
 
     private final BorderPane pane;
-    private final LongProperty aircraftCountProperty;
+    private final IntegerProperty aircraftCountProperty;
     private final LongProperty messageCountProperty;
 
     public StatusLineController() {
         // Initialize properties
-        aircraftCountProperty = new SimpleLongProperty();
+        aircraftCountProperty = new SimpleIntegerProperty();
         messageCountProperty = new SimpleLongProperty();
 
         // Create nodes
@@ -22,12 +24,9 @@ public final class StatusLineController {
         aircraftCountText.textProperty().bind(aircraftCountProperty.asString());
         Label aircraftCountLabel = new Label("Aéronefs visibles : " + aircraftCountText.getText());
 
-        //todo add a listener to the property to update the label
-
         Text messageCountText = new Text();
-        messageCountText.textProperty().bind(messageCountProperty.asString());
+        messageCountText.textProperty().bind( messageCountProperty.asString());
         Label messageCountLabel = new Label("Messages reçus : " + messageCountText.getText());
-        //todo add a listener to the property to update the label
 
 
         // Build scene graph
@@ -37,12 +36,15 @@ public final class StatusLineController {
         pane.setLeft(aircraftCountLabel);
         pane.setRight(messageCountLabel);
     }
+    public void updateStatus(AircraftStateManager asm) {
+        aircraftCountProperty.set(asm.states().size());
+    }
 
     public BorderPane pane() {
         return pane;
     }
 
-    public LongProperty aircraftCountProperty() {
+    public IntegerProperty aircraftCountProperty() {
         return aircraftCountProperty;
     }
 

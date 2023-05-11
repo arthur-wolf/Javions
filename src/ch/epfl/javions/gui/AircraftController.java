@@ -20,6 +20,7 @@ import javafx.scene.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static ch.epfl.javions.Units.Angle.DEGREE;
@@ -201,6 +202,7 @@ public final class AircraftController {
         icon.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 selectedAircraftState.set(selectedAircraftState.get() == aircraftState ? null : aircraftState);
+
             }
         });
 

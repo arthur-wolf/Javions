@@ -6,7 +6,10 @@ import ch.epfl.javions.adsb.MessageParser;
 import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.animation.AnimationTimer;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
@@ -25,9 +28,12 @@ public class Main extends javafx.application.Application {
     private final int INITIAL_ZOOM = 8;
     private final double INITIAL_LONGITUDE = 33530;
     private final double INITIAL_LATITUDE = 23070;
+    private final IntegerProperty aircraftCountProperty = new SimpleIntegerProperty(0);
+    private final ObjectProperty<ObservableAircraftState> selectedAircraftStateProperty = new SimpleObjectProperty<>(null);
 
     public static void main(String[] args) {
         launch(args);
+
     }
 
     static List<RawMessage> readAllMessages(String fileName) throws IOException {
@@ -51,26 +57,22 @@ public class Main extends javafx.application.Application {
 
 
         Path tileCache = Path.of("tile-cache");
-
-        MapParameters mp = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
-        TileManager tm = new TileManager(tileCache, "tile.openstreetmap.org");
-        BaseMapController bmc = new BaseMapController(tm, mp);
-
         URL dbUrl = getClass().getResource("/aircraft.zip");
         assert dbUrl != null;
         String f = Path.of(dbUrl.toURI()).toString();
         var db = new AircraftDatabase(f);
-        AircraftStateManager asm = new AircraftStateManager(db);
 
-        // Création des gestionnaires de données
-        AircraftStateManager stateManager = new AircraftStateManager(db);
+        MapParameters mp = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
+        TileManager tm = new TileManager(tileCache, "tile.openstreetmap.org");
+        BaseMapController bmc = new BaseMapController(tm, mp);
+        AircraftStateManager asm = new AircraftStateManager(db);
         ObjectProperty<ObservableAircraftState> sap = new SimpleObjectProperty<>();
         AircraftController ac = new AircraftController(mp, asm.states(), sap);
         AircraftTableController atc = new AircraftTableController(asm.states(), sap);
         StatusLineController statusLineController = new StatusLineController();
 
+        sap.addListener((q, o, n) -> atc.setOnDoubleClick(event -> bmc.centerOn(event.getPosition())));
 
-        // Création du graphe de scène
         StackPane stackPane = new StackPane(bmc.pane(), ac.pane());
         BorderPane statusBar = new BorderPane(atc.pane(), statusLineController.pane(), null, null, null);
         SplitPane root = new SplitPane(stackPane, statusBar);
@@ -81,6 +83,13 @@ public class Main extends javafx.application.Application {
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(600);
         primaryStage.show();
+
+
+        // Lien entre la propriété aircraftCountProperty et la taille de l'ensemble d'états des avions
+        aircraftCountProperty.bind(Bindings.size(asm.states()));
+
+        // Lien entre la propriété selectedAircraftStateProperty et la propriété du même nom de l'AircraftTableController
+        selectedAircraftStateProperty.bind(atc.selectedAircraftStateProperty());
 
         var mi = readAllMessages("resources/messages_20230318_0915.bin").iterator();
 
@@ -100,5 +109,4 @@ public class Main extends javafx.application.Application {
             }
         }.start();
     }
-
 }
