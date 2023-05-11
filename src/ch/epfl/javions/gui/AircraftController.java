@@ -20,7 +20,6 @@ import javafx.scene.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static ch.epfl.javions.Units.Angle.DEGREE;
@@ -37,7 +36,6 @@ public final class AircraftController {
     private final ObservableSet<ObservableAircraftState> aircraftState;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private final Pane pane;
-    private final int MAX_ALTITUDE = 12000;
     private final int UNKNOWN = -1;
 
     /**
@@ -48,7 +46,6 @@ public final class AircraftController {
      * @param aircraftState          the set of aircraft states
      * @param selectedAircraftState  the property for the selected aircraft state
      */
-
     public AircraftController(MapParameters mapParameters,
                               ObservableSet<ObservableAircraftState> aircraftState,
                               ObjectProperty<ObservableAircraftState> selectedAircraftState) {
@@ -59,7 +56,6 @@ public final class AircraftController {
         this.pane = createAircraftPane();
         this.pane.setPickOnBounds(false);
         bindAircraftSetListeners();
-
     }
 
     /**
@@ -70,6 +66,7 @@ public final class AircraftController {
     public Pane pane() {
         return pane;
     }
+
     /**
      * Creates the pane for the aircraft.
      *
@@ -80,6 +77,7 @@ public final class AircraftController {
         aircraftPane.getStylesheets().add("aircraft.css");
         return aircraftPane;
     }
+
     /**
      * Binds the listeners to changes in the set of aircraft states.
      */
@@ -125,7 +123,6 @@ public final class AircraftController {
      * @param aircraftState     the observable aircraft state
      * @return the aircraft group
      */
-
     private Group createAircraftGroup(ObservableAircraftState aircraftState) {
         Group iconAndLabelGroup = iconAndLabelGroup(aircraftState);
         Group trajectoryGroup = buildTrajectoryGroup(aircraftState);
@@ -202,7 +199,6 @@ public final class AircraftController {
         icon.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 selectedAircraftState.set(selectedAircraftState.get() == aircraftState ? null : aircraftState);
-
             }
         });
 
@@ -211,8 +207,6 @@ public final class AircraftController {
 
         return icon;
     }
-
-
 
     /**
      * Builds the label for the aircraft.
@@ -225,28 +219,21 @@ public final class AircraftController {
         Rectangle labelBackground = new Rectangle();
 
         // Determine the registration or call sign or the ICAO of the aircraft
-        String identification = Optional.ofNullable(aircraftState.
-                        aircraftData().
-                        registration().
-                        string())
-                .orElse(Optional.ofNullable(aircraftState.
-                                getCallSign()).
-                        map(Object::toString).
-                        orElse(aircraftState.
-                                address().
-                                string()));
-
+        String identification = Optional.ofNullable(aircraftState.aircraftData().registration().string())
+                .orElse(Optional.ofNullable(aircraftState.getCallSign())
+                                .map(Object::toString).
+                        orElse(aircraftState.address().string()));
 
         // Bind the text property of the label to the formatted string based on altitude and velocity values
         labelText.textProperty().bind(Bindings.createStringBinding(() -> {
             // Format the velocity and altitude values
             // If the value is -1, then the value is unknown and a question mark is displayed
-            String velocity = aircraftState.getVelocity() == UNKNOWN ?
-                    "?" :
-                    String.format("%.0f", Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
-            String altitude = aircraftState.getAltitude() == UNKNOWN ?
-                    "?" :
-                    String.format("%.0f", aircraftState.getAltitude());
+            String velocity = aircraftState.getVelocity() == UNKNOWN
+                    ? "?"
+                    : String.format("%.0f", Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
+            String altitude = aircraftState.getAltitude() == UNKNOWN
+                    ? "?"
+                    : String.format("%.0f", aircraftState.getAltitude());
             return String.format("%s\n%s\u2002km/h %s\u2002m",
                     identification,
                     velocity,
@@ -277,9 +264,8 @@ public final class AircraftController {
         // Bind the visible property of the label group based on the zoom level and selected state
         labelGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
                         mapParameters.getZoom() >= 11
-                                ||
-                                (selectedAircraftState.get() != null
-                                        && aircraftState.equals(selectedAircraftState.get())),
+                                || (selectedAircraftState.get() != null
+                                && aircraftState.equals(selectedAircraftState.get())),
                 mapParameters.zoomProperty(), selectedAircraftState));
 
         return labelGroup;
@@ -356,6 +342,7 @@ public final class AircraftController {
      * @return the corresponding altitude color
      */
     private Color getAltitudeColor(double altitude) {
+        final int MAX_ALTITUDE = 12000;
         double c = Math.cbrt(altitude / MAX_ALTITUDE); //Given formula (2.2) for altitude color : https://cs108.epfl.ch/p/09_aircraft-view.html
         return ColorRamp.PLASMA.at(c);
     }
@@ -369,5 +356,4 @@ public final class AircraftController {
         double altitude = aircraftState.altitudeProperty().get();
         return new SimpleObjectProperty<>(getAltitudeColor(altitude));
     }
-
 }

@@ -12,6 +12,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
 import java.text.DecimalFormat;
+import java.util.Comparator;
 import java.util.function.Consumer;
 
 /**
@@ -22,14 +23,12 @@ import java.util.function.Consumer;
  * @author Oussama Ghali (341478)
  */
 public final class AircraftTableController {
+    public static final int NUMERIC_COLUMN_WIDTH = 85;
     private final TableView<ObservableAircraftState> tableView;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
-
     private final int UNKNOWN = -1;
-
     private final static DecimalFormat dfWith4Digit = new DecimalFormat("#.####");
     private final static DecimalFormat dfWith0Digit = new DecimalFormat("#");
-
 
     /**
      * Constructs an AircraftTableController object with the given set of aircraft states and object property of the selected aircraft state.
@@ -44,7 +43,6 @@ public final class AircraftTableController {
         createColumns();
        // installHandlers();
         addListeners(states);
-
     }
     public ObjectProperty<ObservableAircraftState> selectedAircraftStateProperty() {
         return selectedAircraftState;
@@ -125,63 +123,53 @@ public final class AircraftTableController {
      */
     private void createColumns() {
         // -------------------------------- ICAO address --------------------------------
-        TableColumn<ObservableAircraftState, String> icaoColumn = new TableColumn<>("OACI");
-        icaoColumn.setPrefWidth(60);
+        TableColumn<ObservableAircraftState, String> icaoColumn = createColumn("ICAO", 60);
         icaoColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().address().string()));
 
         // -------------------------------- callSign ------------------------------------
-        TableColumn<ObservableAircraftState, String> callSignColumn = new TableColumn<>("Callsign");
-        callSignColumn.setPrefWidth(70);
+        TableColumn<ObservableAircraftState, String> callSignColumn = createColumn("Indicatif", 70);
         callSignColumn.setCellValueFactory(cellData -> cellData.getValue().callSignProperty().map(callSign -> callSign != null ? callSign.string() : ""));
 
         // -------------------------------- registration --------------------------------
-        TableColumn<ObservableAircraftState, String> registrationColumn = new TableColumn<>("Registration");
-        registrationColumn.setPrefWidth(90);
+        TableColumn<ObservableAircraftState, String> registrationColumn = createColumn("Immatriculation", 90);
         registrationColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().registration() != null ? cellData.getValue().aircraftData().registration().string() : ""));
 
         // -------------------------------- model --------------------------------
-        TableColumn<ObservableAircraftState, String> modelColumn = new TableColumn<>("Model");
-        modelColumn.setPrefWidth(230);
+        TableColumn<ObservableAircraftState, String> modelColumn = createColumn("Modèle", 230);
         modelColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().model() != null ? cellData.getValue().aircraftData().model() : ""));
 
         // -------------------------------- type designator --------------------------------
-        TableColumn<ObservableAircraftState, String> typeColumn = new TableColumn<>("Type");
-        typeColumn.setPrefWidth(50);
+        TableColumn<ObservableAircraftState, String> typeColumn = createColumn("Type", 50);
         typeColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().address().string()));
 
         // -------------------------------- description --------------------------------
-        TableColumn<ObservableAircraftState, String> descriptionColumn = new TableColumn<>("Description");
-        descriptionColumn.setPrefWidth(70);
+        TableColumn<ObservableAircraftState, String> descriptionColumn = createColumn("Description", 70);
         descriptionColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().description() != null ? cellData.getValue().aircraftData().description().string() : ""));
 
 
         // -------------------------------- longitude (never null) --------------------------------
-        TableColumn<ObservableAircraftState, String> longitudeColumn = new TableColumn<>("Longitude (°)");
-        setNumericFormat(longitudeColumn, 85);
+        TableColumn<ObservableAircraftState, String> longitudeColumn = createColumn("Longitude (°)", -1);
         longitudeColumn.setCellValueFactory(cellData -> {
             double longitude = cellData.getValue().getPosition().longitude();
             return Bindings.createObjectBinding(() -> dfWith4Digit.format(Units.convertTo(longitude, Units.Angle.DEGREE)), cellData.getValue().positionProperty());
         });
 
 // -------------------------------- latitude (never null) --------------------------------
-        TableColumn<ObservableAircraftState, String> latitudeColumn = new TableColumn<>("Latitude (°)");
-        setNumericFormat(latitudeColumn, 85);
+        TableColumn<ObservableAircraftState, String> latitudeColumn = createColumn("Latitude (°)", -1);
         latitudeColumn.setCellValueFactory(cellData -> {
             double latitude = cellData.getValue().getPosition().latitude();
             return Bindings.createObjectBinding(() -> dfWith4Digit.format(Units.convertTo(latitude, Units.Angle.DEGREE)), cellData.getValue().positionProperty());
         });
 
 // -------------------------------- altitude --------------------------------
-        TableColumn<ObservableAircraftState, String> altitudeColumn = new TableColumn<>("Altitude (m)");
-        setNumericFormat(altitudeColumn,85);
+        TableColumn<ObservableAircraftState, String> altitudeColumn = createColumn("Altitude (m)", -1);
         altitudeColumn.setCellValueFactory(cellData -> {
             double altitude = cellData.getValue().getAltitude();
             return altitude != UNKNOWN ? Bindings.createStringBinding(() -> dfWith0Digit.format(altitude), cellData.getValue().altitudeProperty()) : new SimpleStringProperty("");
         });
 
 // -------------------------------- speed --------------------------------
-        TableColumn<ObservableAircraftState, String> speedColumn = new TableColumn<>("Speed (km/h)");
-        setNumericFormat(speedColumn, 85);
+        TableColumn<ObservableAircraftState, String> speedColumn = createColumn("Vitesse (km/h)", -1);
         speedColumn.setCellValueFactory(cellData -> {
             double velocity = cellData.getValue().getVelocity();
             return velocity != UNKNOWN ? Bindings.createStringBinding(() -> dfWith0Digit.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)), cellData.getValue().velocityProperty()) : new SimpleStringProperty("");
@@ -191,15 +179,48 @@ public final class AircraftTableController {
     }
 
     /**
+     * Creates a new TableColumn object with the given name and width.
+     *
+     * @param name the name of the column
+     * @param width the width of the column (-1 means the column should be applied the "numeric" style class)
+     * @return a new TableColumn object with the given name and width
+     */
+    private TableColumn<ObservableAircraftState, String> createColumn(String name, int width) {
+        TableColumn<ObservableAircraftState, String> column = new TableColumn<>(name);
+
+        if (width == -1) {
+            setNumericFormat(column);
+            column.setComparator(getComparator());
+        } else
+            column.setPrefWidth(width);
+
+        return column;
+    }
+
+    private static Comparator<String> getComparator() {
+        return (o1, o2) -> {
+            if (o1.isEmpty() || o2.isEmpty())
+                return o1.compareTo(o2);
+            else {
+                // If both strings are non-empty, try to parse them as numbers
+                try {
+                    Integer i1 = Integer.parseInt(o1);
+                    Integer i2 = Integer.parseInt(o1);
+                    return i1.compareTo(i2);
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
+
+    /**
      * Sets the "numeric" style class on the given TableColumn object.
      *
      * @param column the TableColumn object to set the "numeric" style class on
      */
-    private void setNumericFormat(TableColumn<ObservableAircraftState, String> column, int width) {
-        // Set style class for numeric columns
+    private void setNumericFormat(TableColumn<ObservableAircraftState, String> column) {
         column.getStyleClass().add("numeric");
-        column.setPrefWidth(width);
-
+        column.setPrefWidth(NUMERIC_COLUMN_WIDTH);
     }
-
 }
