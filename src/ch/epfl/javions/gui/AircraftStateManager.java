@@ -14,7 +14,18 @@ import java.util.Map;
 
 
 /**
- * Represents a table of aircraft state accumulators
+ * This class represents a manager for a collection of aircraft state accumulators.
+ *
+ * An AircraftStateManager is designed to manage a table of accumulators of observable aircraft states,
+ * identified by their IcaoAddress. It provides functionalities to update the state of an aircraft based
+ * on received messages and to purge old states based on timestamps.
+ *
+ * The class supports adding and removing accumulators from the table, updating an accumulator with a message,
+ * and purging the table of old aircraft states based on their last message timestamp. The purging process
+ * helps to maintain the efficiency of the system and avoid unnecessary memory usage.
+ *
+ * Typical usage involves creating an instance of AircraftStateManager and then invoking its update and purge methods
+ * as necessary based on incoming aircraft messages and the desired state retention duration.
  *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
@@ -49,53 +60,74 @@ public final class AircraftStateManager {
     }
 
     /**
-     * Updates the aircraft state manager with a message
+     * Updates the aircraft state manager with a given message.
      *
-     * @param message the message
+     * This method first retrieves the IcaoAddress from the message and attempts to get the associated
+     * AircraftStateAccumulator from the table. If the address is null or not found in the database,
+     * the method returns without making any changes.
+     *
+     * If the accumulator is not found in the table, a new one is created and added to the table.
+     * The accumulator is then updated with the message.
+     *
+     * If the accumulator's state setter's position is not null, the accumulator's state setter is
+     * added to the observable aircraft states and the last timestamp is updated with the message's timestamp.
+     *
+     * @param message the message used to update the aircraft state manager
      * @throws IOException if an I/O error occurs
      */
     public void updateWithMessage(Message message) throws IOException {
+        // Get the IcaoAddress from the message
         IcaoAddress address = message.icaoAddress();
+
+        // Attempt to get the AircraftStateAccumulator associated with the address from the table
         AircraftStateAccumulator<ObservableAircraftState> accumulator = table.get(address);
+
+        // If the address is null or not found in the database, return without making any changes
         if(address == null || database.get(address) == null) return;
+
+        // If the accumulator is not found in the table, create a new one and add it to the table
         if (accumulator == null) {
             accumulator = new AircraftStateAccumulator<>(new ObservableAircraftState(address, database.get(address)));
             table.put(address, accumulator);
         }
+
+        // Update the accumulator with the message
         accumulator.update(message);
 
+        // If the accumulator's state setter's position is not null, add the accumulator's state setter
+        // to the observable aircraft states and update the last timestamp with the message's timestamp
         if (!(accumulator.stateSetter().getPosition() == null)) {
             observableAircraftStates.add(accumulator.stateSetter());
             lastTimeStampsNs = message.timeStampNs();
         }
     }
 
-    /**
-     * Purges the aircraft state manager
-     */
 
+    /**
+     * Purges the aircraft state manager.
+     *
+     * This method iterates over the entries in the table. Each entry contains an IcaoAddress
+     * and an associated AircraftStateAccumulator. If the difference between the last
+     * timestamp and the last message timestamp of the accumulator is greater than DT,
+     * the accumulator is removed from the observable aircraft states and from the table.
+     *
+     * This method is typically used to remove stale entries from the table and observable
+     * aircraft states, thereby keeping the data up-to-date.
+     */
     public void purge() {
+        // Create an iterator for the entry set of the table
         Iterator<Map.Entry<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>>> it = table.entrySet().iterator();
+        // Iterate over the entries in the table
         while (it.hasNext()) {
+            // Get the AircraftStateAccumulator associated with the current entry
             Map.Entry<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> entry = it.next();
             AircraftStateAccumulator<ObservableAircraftState> accumulator = entry.getValue();
+            // If the difference between the last timestamp and the accumulator's last message
+            // timestamp is greater than DT, remove the accumulator from the observable aircraft states and the table
             if (lastTimeStampsNs - accumulator.stateSetter().getLastMessageTimeStampNs() > DT) {
                 observableAircraftStates.remove(accumulator.stateSetter());
                 it.remove();
             }
         }
     }
-
-   /* public void purge() {
-        Iterator<AircraftStateAccumulator<ObservableAircraftState>> it = table.values().iterator();
-        while (it.hasNext()) {
-            AircraftStateAccumulator<ObservableAircraftState> accumulator = it.next();
-            if (lastTimeStampsNs - accumulator.stateSetter().getLastMessageTimeStampNs() > DT) {
-                observableAircraftStates.remove(accumulator.stateSetter());
-                it.remove();
-            }
-        }
-    }
-
-    */
 }

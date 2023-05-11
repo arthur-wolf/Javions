@@ -37,14 +37,15 @@ public final class AircraftController {
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private final Pane pane;
     private final int UNKNOWN = -1;
+    private final int MAX_ZOOM_VISIBLE_LABEL = 11; //Maximum zoom level at which the label is visible
 
     /**
      * Constructs a new AircraftController with the given map parameters, aircraft state set,
      * and selected aircraft state property.
      *
-     * @param mapParameters          the map parameters
-     * @param aircraftState          the set of aircraft states
-     * @param selectedAircraftState  the property for the selected aircraft state
+     * @param mapParameters         the map parameters
+     * @param aircraftState         the set of aircraft states
+     * @param selectedAircraftState the property for the selected aircraft state
      */
     public AircraftController(MapParameters mapParameters,
                               ObservableSet<ObservableAircraftState> aircraftState,
@@ -120,7 +121,7 @@ public final class AircraftController {
     /**
      * Creates the aircraft group for an observable aircraft state.
      *
-     * @param aircraftState     the observable aircraft state
+     * @param aircraftState the observable aircraft state
      * @return the aircraft group
      */
     private Group createAircraftGroup(ObservableAircraftState aircraftState) {
@@ -146,7 +147,7 @@ public final class AircraftController {
     /**
      * Creates the group containing the aircraft icon and label.
      *
-     * @param aircraftState     the observable aircraft state
+     * @param aircraftState the observable aircraft state
      * @return the group containing the icon and label
      */
     private Group iconAndLabelGroup(ObservableAircraftState aircraftState) {
@@ -174,7 +175,7 @@ public final class AircraftController {
     /**
      * Builds the icon for the aircraft.
      *
-     * @param aircraftState     the observable aircraft state
+     * @param aircraftState the observable aircraft state
      * @return the aircraft icon
      */
     private SVGPath buildIcon(ObservableAircraftState aircraftState) {
@@ -198,7 +199,7 @@ public final class AircraftController {
         // Set a mouse click event handler to toggle the selected state of the aircraft
         icon.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
-                selectedAircraftState.set(selectedAircraftState.get() == aircraftState ? null : aircraftState);
+                selectedAircraftState.set(aircraftState);
             }
         });
 
@@ -211,7 +212,7 @@ public final class AircraftController {
     /**
      * Builds the label for the aircraft.
      *
-     * @param aircraftState     the observable aircraft state
+     * @param aircraftState the observable aircraft state
      * @return the aircraft label
      */
     private Group buildLabel(ObservableAircraftState aircraftState) {
@@ -221,7 +222,7 @@ public final class AircraftController {
         // Determine the registration or call sign or the ICAO of the aircraft
         String identification = Optional.ofNullable(aircraftState.aircraftData().registration().string())
                 .orElse(Optional.ofNullable(aircraftState.getCallSign())
-                                .map(Object::toString).
+                        .map(Object::toString).
                         orElse(aircraftState.address().string()));
 
         // Bind the text property of the label to the formatted string based on altitude and velocity values
@@ -263,7 +264,7 @@ public final class AircraftController {
 
         // Bind the visible property of the label group based on the zoom level and selected state
         labelGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
-                        mapParameters.getZoom() >= 11
+                        mapParameters.getZoom() >= MAX_ZOOM_VISIBLE_LABEL
                                 || (selectedAircraftState.get() != null
                                 && aircraftState.equals(selectedAircraftState.get())),
                 mapParameters.zoomProperty(), selectedAircraftState));
@@ -310,8 +311,8 @@ public final class AircraftController {
     /**
      * Builds a trajectory line between two aircraft positions.
      *
-     * @param start     the start position
-     * @param end       the end position
+     * @param start the start position
+     * @param end   the end position
      * @return the trajectory line
      */
     private Line buildTrajectoryLine(ObservableAircraftState.AirbornePos start, ObservableAircraftState.AirbornePos end) {
@@ -338,7 +339,7 @@ public final class AircraftController {
     /**
      * Returns the altitude color corresponding to a given altitude.
      *
-     * @param altitude     the altitude
+     * @param altitude the altitude
      * @return the corresponding altitude color
      */
     private Color getAltitudeColor(double altitude) {
@@ -346,10 +347,11 @@ public final class AircraftController {
         double c = Math.cbrt(altitude / MAX_ALTITUDE); //Given formula (2.2) for altitude color : https://cs108.epfl.ch/p/09_aircraft-view.html
         return ColorRamp.PLASMA.at(c);
     }
+
     /**
      * Returns the fill property for the aircraft state.
      *
-     * @param aircraftState     the observable aircraft state
+     * @param aircraftState the observable aircraft state
      * @return the fill property for the aircraft state
      */
     private ObjectProperty<Color> getFillProperty(ObservableAircraftState aircraftState) {

@@ -16,28 +16,23 @@ import javafx.scene.layout.Pane;
 import java.io.IOException;
 
 /**
- * BaseMapManager class
+ * BaseMapController class
  * Manages the display and interaction with the background map.
  *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
  */
-/// TODO: 23/04/2023 JavaDoc
 public final class BaseMapController {
 
     private final TileManager tileManager;
     private final MapParameters mapParameters;
-
-    //pane of the map
     private final Pane pane;
-
-    //canvas of the pane
     private final Canvas canvas;
 
-    //will be true if redraw is needed
+    // Will be true if redraw is needed
     private boolean redrawNeeded;
 
-    //size of an OSM Tile in pixels
+    // Size of an OSM Tile in pixels
     private final static int OSM_TILE_SIZE = 256;
 
 
@@ -61,7 +56,7 @@ public final class BaseMapController {
         installBindings();
         installListeners();
 
-        //initial draw
+        // Initial draw
         redrawOnNextPulse();
     }
 
@@ -89,17 +84,17 @@ public final class BaseMapController {
 
 
     private void draw() {
-        //first clear the graphic context
+        // First clear the graphic context
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         MapParameters mapParameters = this.mapParameters;
 
-        //index of the top left tile
+        // Index of the top left tile
         int topLeftXIndexTile = (int) (mapParameters.getMinX() / OSM_TILE_SIZE);
         int topLeftYIndexTile = (int) (mapParameters.getMinY() / OSM_TILE_SIZE);
 
-        //index of the bottom right tile
+        // Index of the bottom right tile
         int bottomRightXIndexTile = (int) ((mapParameters.getMinX() + canvas.getWidth()) / OSM_TILE_SIZE);
         int bottomRightYIndexTile = (int) ((mapParameters.getMinY() + canvas.getHeight()) / OSM_TILE_SIZE);
 
@@ -107,12 +102,12 @@ public final class BaseMapController {
             for (int yTileMap = topLeftYIndexTile; yTileMap <= bottomRightYIndexTile; yTileMap++) {
                 try {
                     if (TileManager.TileId.isValid(mapParameters.getZoom(), xTileMap, yTileMap)) {
-                        //get the image corresponding to each tile displayed (at least partially) on the map portion
+                        // Get the image corresponding to each tile displayed (at least partially) on the map portion
                         Image image = tileManager.imageForTileAt(new TileManager.TileId(mapParameters.getZoom(),
                                 xTileMap,
                                 yTileMap));
 
-                        //draw the image to the corresponding position using the topLeft point
+                        // Draw the image to the corresponding position using the topLeft point
                         graphicsContext.drawImage(image,
                                 xTileMap * OSM_TILE_SIZE - mapParameters.getMinX(),
                                 yTileMap * OSM_TILE_SIZE - mapParameters.getMinY());
@@ -168,26 +163,26 @@ public final class BaseMapController {
         LongProperty minScrollTime = new SimpleLongProperty();
 
 
-        //event handler for movement of the map
-        pane.setOnMousePressed(e -> mouseCoordinatesProperty.setValue(
-                new Point2D(e.getX(), e.getY())));
+        // Event handler for movement of the map
+        pane.setOnMousePressed(event -> mouseCoordinatesProperty.setValue(
+                new Point2D(event.getX(), event.getY())));
 
 
-        pane.setOnMouseDragged(e -> {
-            Point2D delta = new Point2D(e.getX(), e.getY()).subtract(mouseCoordinatesProperty.get());
+        pane.setOnMouseDragged(event -> {
+            Point2D delta = new Point2D(event.getX(), event.getY()).subtract(mouseCoordinatesProperty.get());
 
             mapParameters.set(newMapParametersWhenMoving(delta, mapParameters));
 
-            mouseCoordinatesProperty.setValue(new Point2D(e.getX(), e.getY()));
+            mouseCoordinatesProperty.setValue(new Point2D(event.getX(), event.getY()));
         });
 
-        //if the mouse did not move since press, create waypoint
-        pane.setOnMouseReleased(e -> {
-            Point2D delta = new Point2D(e.getX(), e.getY()).subtract(mouseCoordinatesProperty.get());
+        // If the mouse did not move since press, create waypoint
+        pane.setOnMouseReleased(event -> {
+            Point2D delta = new Point2D(event.getX(), event.getY()).subtract(mouseCoordinatesProperty.get());
             mapParameters.set(newMapParametersWhenMoving(delta, mapParameters));
         });
 
-        //even handler for zooming in and out by scrolling
+        // Even handler for zooming in and out by scrolling
 
         pane.setOnScroll(e -> {
             int zoomDelta = (int) Math.signum(e.getDeltaY());
@@ -212,7 +207,7 @@ public final class BaseMapController {
      * Installs the bindings for the map
      */
     private void installBindings() {
-        //when the pane width or height will change -> canvas width and height will update accordingly
+        // When the pane width or height will change -> canvas width and height will update accordingly
         canvas.widthProperty().bind(pane.widthProperty());
         canvas.heightProperty().bind(pane.heightProperty());
     }
@@ -227,11 +222,11 @@ public final class BaseMapController {
             newS.addPreLayoutPulseListener(this::redrawIfNeeded);
         });
 
-        //if the height or the width of the canvas change -> redraw
+        // If the height or the width of the canvas change -> redraw
         canvas.widthProperty().addListener((p, o, n) -> redrawOnNextPulse());
         canvas.heightProperty().addListener((p, o, n) -> redrawOnNextPulse());
 
-        //when map properties are changed, redraw
+        // When map properties are changed, redraw
         mapParameters.minXProperty().addListener((p, o, n) -> redrawOnNextPulse());
         mapParameters.minYProperty().addListener((p, o, n) -> redrawOnNextPulse());
 

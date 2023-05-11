@@ -22,6 +22,19 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This is the main class for the Javions application, which is a graphical
+ * interface to display aircraft positions and movements using ADS-B messages.
+ * The application uses JavaFX for its graphical user interface, and the
+ * aircraft positions are displayed on a map provided by OpenStreetMap.
+ * The class uses a number of other classes to manage aircraft states, parse
+ * messages, manage map parameters, and manage the tile cache for the map.
+ * The main entry points are the main() method, which launches the application,
+ * and the start() method, which sets up the application's initial state.
+ *
+ * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
+ */
 public class Main extends javafx.application.Application {
 
     public static final String AIRCRAFT_DATABASE = "/aircraft.zip";
@@ -34,11 +47,23 @@ public class Main extends javafx.application.Application {
     private final double INITIAL_LONGITUDE = 33530;
     private final double INITIAL_LATITUDE = 23070;
 
+    /**
+     * The main entry point for the application.
+     *
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }
 
-    static List<RawMessage> readAllMessages(String fileName) throws IOException {
+    /**
+     * Reads all ADS-B messages from a file.
+     *
+     * @param fileName the name of the file to read from
+     * @return a list of RawMessage containing all the read messages
+     * @throws IOException if a reading error occurs
+     */
+    private static List<RawMessage> readAllMessages(String fileName) throws IOException {
         List<RawMessage> rawMessages = new ArrayList<>();
         try (DataInputStream s = new DataInputStream(
                 new BufferedInputStream(new FileInputStream(fileName)))) {
@@ -55,6 +80,16 @@ public class Main extends javafx.application.Application {
         }
         return rawMessages;
     }
+
+    /**
+     * Starts the application. This method is called after the init() method has returned,
+     * and after the system is sufficiently initialized so that this method can use
+     * main features of the JavaFX library.
+     *
+     * @param primaryStage the primary stage for this application, onto which
+     *                     the application scene can be set.
+     * @throws Exception if an error occurs
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         Path tileCache = Path.of(TILE_CACHE);
@@ -69,7 +104,6 @@ public class Main extends javafx.application.Application {
         var db = new AircraftDatabase(f);
         AircraftStateManager asm = new AircraftStateManager(db);
 
-        // Création des gestionnaires de données
         ObjectProperty<ObservableAircraftState> sap = new SimpleObjectProperty<>();
         AircraftController ac = new AircraftController(mp, asm.states(), sap);
         AircraftTableController atc = new AircraftTableController(asm.states(), sap);
@@ -78,13 +112,12 @@ public class Main extends javafx.application.Application {
 
         sap.addListener((q, o, n) -> atc.setOnDoubleClick(event -> bmc.centerOn(event.getPosition())));
 
-        // Création du graphe de scène
         StackPane stackPane = new StackPane(bmc.pane(), ac.pane());
         BorderPane statusBar = new BorderPane(atc.pane(), statusLineController.pane(), null, null, null);
         SplitPane root = new SplitPane(stackPane, statusBar);
         root.setOrientation(Orientation.VERTICAL);
 
-        primaryStage.setScene(new Scene(new BorderPane(root,  null, null, null, null)));
+        primaryStage.setScene(new Scene(new BorderPane(root, null, null, null, null)));
         primaryStage.setTitle(APPLICATION_NAME);
         primaryStage.setMinWidth(MIN_WIDTH);
         primaryStage.setMinHeight(MIN_HEIGHT);
@@ -92,10 +125,9 @@ public class Main extends javafx.application.Application {
 
         var mi = readAllMessages("resources/messages_20230318_0915.bin").iterator();
 
-        // Animation des aéronefs
         new AnimationTimer() {
             @Override
-            public void handle ( long now){
+            public void handle(long now) {
                 try {
                     for (int i = 0; i < 10; i += 1) {
                         Message m = MessageParser.parse(mi.next());

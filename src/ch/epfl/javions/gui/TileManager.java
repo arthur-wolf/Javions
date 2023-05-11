@@ -32,9 +32,7 @@ public final class TileManager {
 
     //Memory cache capacity
     private static final int CACHE_CAPACITY = 100;
-
     private static final String IMAGE_EXTENSION_FORMAT = ".png";
-
     private static final String USER_AGENT_NAME = "Javions";
     private static final String PROTOCOL_NAME = "https";
     private static final int PORT_NUMBER = 443;
@@ -67,7 +65,7 @@ public final class TileManager {
 
     private void addToCache(TileId tileIdentity, Image image) {
         if (memoryCache.size() >= CACHE_CAPACITY) {
-            //complexity is 0(1)
+            //Complexity is 0(1)
             memoryCache.remove(memoryCache.entrySet().iterator().next().getKey());
         }
         memoryCache.put(tileIdentity, image);
@@ -93,22 +91,22 @@ public final class TileManager {
      */
 
     public Image imageForTileAt(TileId tileIdentity) throws IOException {
-        //look in memory cache first
+        //Look in memory cache first
         if (cacheContains(tileIdentity)) {
             return memoryCache.get(tileIdentity);
         } else {
-            //look in memory disk
+            //Look in memory disk
             Path pathToFile = pathToMemoryDisk.resolve(String.valueOf(tileIdentity.zoomLevel))
                     .resolve(String.valueOf(tileIdentity.indexX))
                     .resolve(tileIdentity.indexY + IMAGE_EXTENSION_FORMAT);
 
             if (Files.exists(pathToFile)) {
-                //we load the image and place it in the memory cache
+                //We load the image and place it in the memory cache
                 Image imageTile = new Image(pathToFile.toUri().toString());
                 addToCache(tileIdentity, imageTile);
                 return imageTile;
             } else {
-                //we are going to load the image from the tile server
+                //We are going to load the image from the tile server
                 URL u = new URL(PROTOCOL_NAME, tileServerName, PORT_NUMBER, URL_DELIMITER + tileIdentity.zoomLevel
                         + URL_DELIMITER + tileIdentity.indexX + URL_DELIMITER
                         + tileIdentity.indexY + IMAGE_EXTENSION_FORMAT);
@@ -119,16 +117,16 @@ public final class TileManager {
                 c.setConnectTimeout(TIMEOUT_IN_MS);
 
                 try (InputStream i = c.getInputStream()) {
-                    //create the directory in cache folder /zoomLevel/xIndex/
+                    //Create the directory in cache folder /zoomLevel/xIndex/
                     Files.createDirectories(pathToFile.getParent());
 
                     try (OutputStream outStream = new FileOutputStream(pathToFile.toFile())) {
-                        //save image to file
+                        //Save image to file
                         i.transferTo(outStream);
 
                         Image imageTile = new Image(pathToFile.toUri().toString());
 
-                        //save image in memory cache
+                        //Save image in memory cache
                         addToCache(tileIdentity, imageTile);
 
                         return imageTile;
@@ -169,8 +167,8 @@ public final class TileManager {
          */
 
         public static boolean isValid(int zoomLevel, int indexX, int indexY) {
-            // no restrictions concerning the zoom level (can be greater than 20) in TileId,
-            // will be restricted in the gui.
+            //No restrictions concerning the zoom level (can be greater than 20) in TileId,
+            //Will be restricted in the gui.
             double maxIndex_X_and_Y = Math.pow(2, zoomLevel);
             return ((indexX + 1) <= maxIndex_X_and_Y
                     && (indexY + 1) <= maxIndex_X_and_Y

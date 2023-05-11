@@ -27,11 +27,11 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final ObjectProperty<GeoPos> position;    // (lon, lat) rad
     private final DoubleProperty altitude;    // m
     private final DoubleProperty velocity;    // m/s
-    private final DoubleProperty trackOrHeading; // radions
-
-    private final double UNKNOWN = -1.0; // value for unknown altitude, velocity
-    ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();    // modifiable list
-    ObservableList<AirbornePos> trajectoryView = FXCollections.unmodifiableObservableList(trajectory);    // unmodifiable list (view on trajectory)
+    private final DoubleProperty trackOrHeading; // Radians
+    private final double UNKNOWN = -1.0; // Value for unknown altitude, velocity
+    private final int INITIAL_VALUE = 0;
+    ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
+    ObservableList<AirbornePos> trajectoryView = FXCollections.unmodifiableObservableList(trajectory);
 
     /**
      * Constructs an observable aircraft state
@@ -45,13 +45,13 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.icaoAddress = icaoAddress;
         this.aircraftData = aircraftData;
 
-        lastMessageTimeStampsNs = new SimpleLongProperty(0);
-        category = new SimpleIntegerProperty(0);
+        lastMessageTimeStampsNs = new SimpleLongProperty(INITIAL_VALUE);
+        category = new SimpleIntegerProperty(INITIAL_VALUE);
         callSign = new SimpleObjectProperty<>(null);
         position = new SimpleObjectProperty<>(null);
         altitude = new SimpleDoubleProperty(UNKNOWN);
         velocity = new SimpleDoubleProperty(UNKNOWN);
-        trackOrHeading = new SimpleDoubleProperty(0);
+        trackOrHeading = new SimpleDoubleProperty(INITIAL_VALUE);
     }
 
     /**
@@ -126,7 +126,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.category.set(category);
     }
 
-    // ----------------- Callsign -----------------
+    // ----------------- CallSign -----------------
 
     /**
      * Returns the callsign property
@@ -202,26 +202,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         if (currentPosition != null && currentAltitude != UNKNOWN) {
             trajectory.add(new AirbornePos(currentPosition, currentAltitude));
             lastMessageTimeStamps = getLastMessageTimeStampNs();
-        } else if (!trajectory.isEmpty()) { // Update altitude in last position if altitude is updated and position is known
-            if (currentAltitude != UNKNOWN && currentPosition != null &&
-                    lastMessageTimeStamps == getLastMessageTimeStampNs()) {
-                trajectory.set(trajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude));
-            }
+            // Update altitude in last position if altitude is updated and position is known
+            } else if (!trajectory.isEmpty()) {
+                if (currentAltitude != UNKNOWN && currentPosition != null &&
+                        lastMessageTimeStamps == getLastMessageTimeStampNs()) {
+                    trajectory.set(trajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude));
+                }
         }
     }
-    /*private void updateTrajectory() {
-
-        if(getPosition() != null) {
-            if (trajectory.isEmpty() || !getPosition().equals(trajectory.get(trajectory.size() - 1).geoPos)) {
-                trajectory.add(new AirbornePos(getPosition(), getAltitude()));
-                lastMessageTimeStamps = getLastMessageTimeStampNs();
-            } else if (lastMessageTimeStamps == getLastMessageTimeStampNs()) {
-                trajectory.set(trajectory.size() - 1, new AirbornePos(getPosition(), getAltitude()));
-            }
-        }
-    }
-
-     */
 
     // ----------------- Altitude -----------------
 
