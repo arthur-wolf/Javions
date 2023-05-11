@@ -98,6 +98,27 @@ public final class AircraftTableController {
 
         tableView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends ObservableAircraftState> observable, ObservableAircraftState oldValue, ObservableAircraftState newValue) -> selectedAircraftState.set(newValue));
     }
+    /*
+    private void addListeners(ObservableSet<ObservableAircraftState> states) {
+    states.addListener((SetChangeListener<ObservableAircraftState>) change -> {
+        if (change.wasAdded()) {
+            tableView.getItems().add(change.getElementAdded());
+            tableView.sort();
+        } else if (change.wasRemoved()) {
+            tableView.getItems().remove(change.getElementRemoved());
+        }
+    });
+
+    selectedAircraftState.addListener((observable, oldValue, newValue) -> {
+        tableView.getItems().clear(); // Clear the table first
+        if (newValue != null) {
+            tableView.getItems().add(newValue); // Add the selected state to the table
+        }
+    });
+}
+
+
+     */
 
     /*
     private void installHandlers() {
@@ -128,6 +149,7 @@ public final class AircraftTableController {
      * call sign, registration, model, type, description, longitude, latitude, altitude, and speed.
      * The cells of the columns are bound to the corresponding properties of the aircraft states.
      */
+    //TODO : ADD CONSTANT VALUE INSTED FOR WIDTH
     private void createColumns() {
         // ---------------------------------ICAO Address-----------------------------------
         TableColumn<ObservableAircraftState, String> icaoColumn = createColumn("ICAO", 60);
@@ -194,7 +216,7 @@ public final class AircraftTableController {
      */
     private TableColumn<ObservableAircraftState, String> createColumn(String name, int width) {
         TableColumn<ObservableAircraftState, String> column = new TableColumn<>(name);
-
+        //todo : add constante value for width
         if (width == -1) {
             setNumericFormat(column);
             column.setComparator(getComparator());

@@ -110,7 +110,14 @@ public class Main extends javafx.application.Application {
         StatusLineController statusLineController = new StatusLineController();
         statusLineController.aircraftCountProperty().bind(Bindings.size(asm.states()));
 
-        sap.addListener((q, o, n) -> atc.setOnDoubleClick(event -> bmc.centerOn(event.getPosition())));
+        sap.addListener((q, o, n) -> {
+            atc.setOnDoubleClick(event -> bmc.centerOn(event.getPosition()));
+            ac.pane().setOnMouseClicked(event -> {
+                atc.pane().getSelectionModel().select(n);
+                atc.pane().scrollTo(n);
+            });
+        });
+
 
         StackPane stackPane = new StackPane(bmc.pane(), ac.pane());
         BorderPane statusBar = new BorderPane(atc.pane(), statusLineController.pane(), null, null, null);
