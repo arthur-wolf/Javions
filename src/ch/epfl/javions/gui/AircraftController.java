@@ -229,11 +229,11 @@ public final class AircraftController {
         // Bind the text property of the label to the formatted string based on altitude and velocity values
         labelText.textProperty().bind(Bindings.createStringBinding(() -> {
             // Format the velocity and altitude values
-            // If the value is -1, then the value is unknown and a question mark is displayed
-            String velocity = aircraftState.getVelocity() == ObservableAircraftState.UNKNOWN
+            // If the value is Nane, then the value is unknown and a question mark is displayed
+            String velocity = Double.isNaN(aircraftState.getVelocity())
                     ? "?"
                     : String.format("%.0f", Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
-            String altitude = aircraftState.getAltitude() == ObservableAircraftState.UNKNOWN
+            String altitude = Double.isNaN(aircraftState.getAltitude())
                     ? "?"
                     : String.format("%.0f", aircraftState.getAltitude());
             return String.format("%s\n%s\u2002km/h %s\u2002m",

@@ -28,7 +28,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitude;    // m
     private final DoubleProperty velocity;    // m/s
     private final DoubleProperty trackOrHeading; // Radians
-    public static final double UNKNOWN = Double.NaN; // Value for unknown altitude, velocity
+    private final double UNKNOWN = Double.NaN; // Value for unknown altitude, velocity
     private final int INITIAL_VALUE = 0;
     ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
     ObservableList<AirbornePos> trajectoryView = FXCollections.unmodifiableObservableList(trajectory);
@@ -199,12 +199,12 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         double currentAltitude = getAltitude();
 
         // Add position and altitude to trajectory if both are known
-        if (currentPosition != null && currentAltitude != UNKNOWN) {
+        if (currentPosition != null && !Double.isNaN(currentAltitude)) {
             trajectory.add(new AirbornePos(currentPosition, currentAltitude));
             lastMessageTimeStamps = getLastMessageTimeStampNs();
             // Update altitude in last position if altitude is updated and position is known
             } else if (!trajectory.isEmpty()) {
-                if (currentAltitude != UNKNOWN && currentPosition != null &&
+                if (!Double.isNaN(currentAltitude) && currentPosition != null &&
                         lastMessageTimeStamps == getLastMessageTimeStampNs()) {
                     trajectory.set(trajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude));
                 }
