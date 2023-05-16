@@ -42,8 +42,6 @@ public final class AircraftController {
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private final Pane pane;
     private final int MAX_ZOOM_VISIBLE_LABEL = 11; //Maximum zoom level at which the label is visible
-    private final int MAX_ALTITUDE = 1200; //Maximum altitude in meters
-
 
     /**
      * Constructs a new AircraftController with the given map parameters, aircraft state set,
@@ -159,8 +157,12 @@ public final class AircraftController {
     private Group iconAndLabelGroup(ObservableAircraftState aircraftState) {
         SVGPath icon = buildIcon(aircraftState);
         Group label = buildLabel(aircraftState);
+
+        // The label is set behind the icon
+        icon.viewOrderProperty().bind(label.viewOrderProperty());
+
         // Create a group to contain the icon and label
-        Group iconAndLabelGroup = new Group(icon, label);
+        Group iconAndLabelGroup = new Group(label, icon);
 
         // Bind the layout X property of the group to the position of the aircraft (longitude)
         iconAndLabelGroup.layoutXProperty().bind(Bindings.createDoubleBinding(
@@ -278,8 +280,8 @@ public final class AircraftController {
         Group labelGroup = new Group(labelBackground, labelText);
         labelGroup.getStyleClass().add("label");
 
-        // Set the order of the label group to be behind the icon and trajectory
-        labelGroup.setViewOrder(-1);
+        // Set the order of the label group based on the altitude of the aircraft
+        labelGroup.viewOrderProperty().bind(aircraftState.altitudeProperty().negate());
 
 
         // Bind the visible property of the label group based on the zoom level and selected state
@@ -363,6 +365,7 @@ public final class AircraftController {
      * @return the corresponding altitude color
      */
     private Color getAltitudeColor(double altitude) {
+        double MAX_ALTITUDE = 12000; //Given max altitude : https://cs108.epfl.ch/p/09_aircraft-view.html
         double c = Math.cbrt(altitude / MAX_ALTITUDE); //Given formula (2.2) for altitude color : https://cs108.epfl.ch/p/09_aircraft-view.html
         return ColorRamp.PLASMA.at(c);
     }
