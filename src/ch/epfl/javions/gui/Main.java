@@ -47,6 +47,8 @@ public class Main extends javafx.application.Application {
     private final double INITIAL_LONGITUDE = 33530;
     private final double INITIAL_LATITUDE = 23070;
 
+
+
     /**
      * The main entry point for the application.
      *
@@ -81,6 +83,7 @@ public class Main extends javafx.application.Application {
         return rawMessages;
     }
 
+
     /**
      * Starts the application. This method is called after the init() method has returned,
      * and after the system is sufficiently initialized so that this method can use
@@ -92,6 +95,7 @@ public class Main extends javafx.application.Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
+
         Path tileCache = Path.of(TILE_CACHE);
 
         MapParameters mp = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
@@ -112,17 +116,16 @@ public class Main extends javafx.application.Application {
 
         sap.addListener((q, o, n) -> {
             atc.setOnDoubleClick(event -> bmc.centerOn(event.getPosition()));
-            ac.pane().setOnMouseClicked(event -> {
-                atc.pane().getSelectionModel().select(n);
-                atc.pane().scrollTo(n);
-            });
         });
-
 
         StackPane stackPane = new StackPane(bmc.pane(), ac.pane());
         BorderPane statusBar = new BorderPane(atc.pane(), statusLineController.pane(), null, null, null);
         SplitPane root = new SplitPane(stackPane, statusBar);
         root.setOrientation(Orientation.VERTICAL);
+
+        BorderPane rootPane = new BorderPane();
+        rootPane.setCenter(root);
+        primaryStage.setScene(new Scene(rootPane));
 
         primaryStage.setScene(new Scene(new BorderPane(root, null, null, null, null)));
         primaryStage.setTitle(APPLICATION_NAME);
@@ -140,8 +143,9 @@ public class Main extends javafx.application.Application {
                         Message m = MessageParser.parse(mi.next());
                         if (m != null) asm.updateWithMessage(m);
                         if (i == 9) asm.purge();
-                        statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().get() + 1);
                     }
+                    statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().get() + 1);
+
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }

@@ -19,7 +19,6 @@ import javafx.scene.text.Text;
  * @author Oussama Ghali (341478)
  */
 public final class StatusLineController {
-
     private final BorderPane pane;
     private final IntegerProperty aircraftCountProperty;
     private final LongProperty messageCountProperty;
@@ -47,8 +46,8 @@ public final class StatusLineController {
     /**
      * Builds the scene graph for the status line.
      *
-     * @param aircraftCountText
-     * @param messageCountText
+     * @param aircraftCountText the text node for the aircraft count.
+     * @param messageCountText the text node for the message count.
      */
     private void buildScene(Text aircraftCountText, Text messageCountText) {
         pane.getStylesheets().add("status.css");

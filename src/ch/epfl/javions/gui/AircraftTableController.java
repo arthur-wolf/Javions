@@ -5,7 +5,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.control.TableColumn;
@@ -49,7 +48,6 @@ public final class AircraftTableController {
         this.selectedAircraftState = selectedAircraftState;
 
         createColumns();
-        //installHandlers();
         addListeners(states);
     }
 
@@ -93,40 +91,24 @@ public final class AircraftTableController {
                 tableView.sort();
             } else if (change.wasRemoved()) {
                 tableView.getItems().remove(change.getElementRemoved());
+                tableView.sort(); //todo : check with arthur why this method is not called
+                //this method is sus and might be the problem why some airplane make the table crash
             }
         });
 
-        tableView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends ObservableAircraftState> observable, ObservableAircraftState oldValue, ObservableAircraftState newValue) -> selectedAircraftState.set(newValue));
+        selectedAircraftState.addListener((observable, oldValue, newValue) -> {
+            tableView.getSelectionModel().select(selectedAircraftState.get());
+            if(newValue != null) {
+                tableView.scrollTo(newValue);
+
+            }
+        });
+        tableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                selectedAircraftState.set(newValue);
+            }
+        });
     }
-    /*
-    private void addListeners(ObservableSet<ObservableAircraftState> states) {
-    states.addListener((SetChangeListener<ObservableAircraftState>) change -> {
-        if (change.wasAdded()) {
-            tableView.getItems().add(change.getElementAdded());
-            tableView.sort();
-        } else if (change.wasRemoved()) {
-            tableView.getItems().remove(change.getElementRemoved());
-        }
-    });
-
-    selectedAircraftState.addListener((observable, oldValue, newValue) -> {
-        tableView.getItems().clear(); // Clear the table first
-        if (newValue != null) {
-            tableView.getItems().add(newValue); // Add the selected state to the table
-        }
-    });
-}
-
-
-     */
-
-    /*
-    private void installHandlers() {
-        tableView.setOnMouseClicked(event -> {
-            if ((event.getClickCount() == 2) && (event.getButton() == MouseButton.PRIMARY)) {
-                setOnDoubleClick(selectedAircraftState::set);
-            }});}
-     */
 
     /**
      * Creates and returns a new TableView object with the appropriate settings.
@@ -174,7 +156,6 @@ public final class AircraftTableController {
         // ---------------------------------Description-------------------------------------
         TableColumn<ObservableAircraftState, String> descriptionColumn = createColumn("Description", 70);
         descriptionColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().description() != null ? cellData.getValue().aircraftData().description().string() : ""));
-
 
         // ---------------------------------Longitude (never null)--------------------------
         TableColumn<ObservableAircraftState, String> longitudeColumn = createColumn("Longitude (°)", -1);
@@ -240,8 +221,8 @@ public final class AircraftTableController {
             else {
                 // If both strings are non-empty, try to parse them as numbers
                 try {
-                    Integer i1 = Integer.parseInt(o1);
-                    Integer i2 = Integer.parseInt(o2); // Fixed: parse o2 instead of o1
+                    Double i1 = Double.parseDouble(o1);
+                    Double i2 = Double.parseDouble(o2); // Fixed: parse o2 instead of o1
                     return i1.compareTo(i2);
                 } catch (NumberFormatException e) {
                     // If either string cannot be parsed as an integer, compare them as strings

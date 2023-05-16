@@ -3,7 +3,8 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.*;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -14,8 +15,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
-import javafx.scene.shape.*;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +31,6 @@ import static ch.epfl.javions.Units.Angle.DEGREE;
 /**
  * The AircraftController class is responsible for managing and displaying aircrafts on a map.
  * It binds the aircraft state to the graphical representation in the GUI.
- *
- * @author Arthur Wolf (344200)
- * @author Oussama Ghali (341478)
  */
 public final class AircraftController {
     private final MapParameters mapParameters;
@@ -38,6 +39,7 @@ public final class AircraftController {
     private final Pane pane;
     private final int UNKNOWN = -1;
     private final int MAX_ZOOM_VISIBLE_LABEL = 11; //Maximum zoom level at which the label is visible
+
 
     /**
      * Constructs a new AircraftController with the given map parameters, aircraft state set,
@@ -255,12 +257,6 @@ public final class AircraftController {
         // Set the order of the label group to be behind the icon and trajectory
         labelGroup.setViewOrder(-1);
 
-        // Set a mouse click event handler to select the aircraft
-        labelGroup.setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.PRIMARY) {
-                selectedAircraftState.set(aircraftState);
-            }
-        });
 
         // Bind the visible property of the label group based on the zoom level and selected state
         labelGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
@@ -359,3 +355,4 @@ public final class AircraftController {
         return new SimpleObjectProperty<>(getAltitudeColor(altitude));
     }
 }
+
