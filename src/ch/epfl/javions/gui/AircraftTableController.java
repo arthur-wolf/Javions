@@ -232,7 +232,6 @@ public final class AircraftTableController {
         };
     }
 
-
     /**
      * Sets the "numeric" style class on the given TableColumn object and assigns it a default width.
      * This method is used to apply the "numeric" style class and a default width to numeric columns in the table view.

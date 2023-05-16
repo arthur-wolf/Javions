@@ -2,9 +2,13 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.Units;
 import ch.epfl.javions.WebMercator;
+import ch.epfl.javions.aircraft.AircraftDescription;
+import ch.epfl.javions.aircraft.AircraftTypeDesignator;
+import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -38,6 +42,7 @@ public final class AircraftController {
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private final Pane pane;
     private final int MAX_ZOOM_VISIBLE_LABEL = 11; //Maximum zoom level at which the label is visible
+    private final int MAX_ALTITUDE = 1200; //Maximum altitude in meters
 
 
     /**
@@ -180,22 +185,42 @@ public final class AircraftController {
      * @return the aircraft icon
      */
     private SVGPath buildIcon(ObservableAircraftState aircraftState) {
-        AircraftIcon aircraftIcon = AircraftIcon.iconFor(
-                aircraftState.aircraftData().typeDesignator(),
-                aircraftState.aircraftData().description(),
-                aircraftState.getCategory(),
-                aircraftState.aircraftData().wakeTurbulenceCategory()
-        );
+        ObservableValue<AircraftIcon> aircraftIcon =
+                aircraftState.categoryProperty().map(
+                        category -> AircraftIcon.iconFor(
+                                aircraftState.
+                                        aircraftData().
+                                        typeDesignator() == null ?
+                                        new AircraftTypeDesignator("") : aircraftState.
+                                                                               aircraftData().
+                                                                               typeDesignator(),
+                                aircraftState.
+                                        aircraftData().
+                                        description() == null ?
+                                        new AircraftDescription("") : aircraftState.
+                                                                            aircraftData().
+                                                                            description(),
+                                category.intValue(),
+                                aircraftState.
+                                        aircraftData().
+                                        wakeTurbulenceCategory() == null ?
+                                        WakeTurbulenceCategory.of("") : aircraftState.
+                                                                           aircraftData().
+                                                                           wakeTurbulenceCategory())
+                );
+
         SVGPath icon = new SVGPath();
         icon.getStyleClass().add("aircraft");
 
         // Bind the content property of the SVGPath to the SVG path of the aircraft icon
-        icon.contentProperty().bind(Bindings.createStringBinding(aircraftIcon::svgPath));
+        icon.contentProperty().bind(aircraftIcon.map(AircraftIcon::svgPath));
 
         // Bind the rotation property of the SVGPath to the track or heading of the aircraft
         icon.rotateProperty().bind(Bindings.createDoubleBinding(() ->
-                        aircraftIcon.canRotate() ? Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE) : 0.0,
-                aircraftState.trackOrHeadingProperty()));
+                        aircraftIcon.
+                        getValue().
+                        canRotate() ? Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE) : 0.0,
+                        aircraftState.trackOrHeadingProperty()));
 
         // Set a mouse click event handler to toggle the selected state of the aircraft
         icon.setOnMouseClicked(event -> {
@@ -338,7 +363,6 @@ public final class AircraftController {
      * @return the corresponding altitude color
      */
     private Color getAltitudeColor(double altitude) {
-        final int MAX_ALTITUDE = 12000;
         double c = Math.cbrt(altitude / MAX_ALTITUDE); //Given formula (2.2) for altitude color : https://cs108.epfl.ch/p/09_aircraft-view.html
         return ColorRamp.PLASMA.at(c);
     }
