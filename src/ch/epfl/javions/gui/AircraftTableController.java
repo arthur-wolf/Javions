@@ -118,7 +118,6 @@ public final class AircraftTableController {
      *
      * @return a new TableView object with the appropriate settings
      */
-
     private TableView<ObservableAircraftState> getTableView() {
         TableView<ObservableAircraftState> tableView = new TableView<>();
         tableView.getStylesheets().add("table.css");
@@ -133,7 +132,6 @@ public final class AircraftTableController {
      * call sign, registration, model, type, description, longitude, latitude, altitude, and speed.
      * The cells of the columns are bound to the corresponding properties of the aircraft states.
      */
-    //TODO : ADD CONSTANT VALUE INSTED FOR WIDTH
     private void createColumns() {
         // ---------------------------------ICAO Address-----------------------------------
         TableColumn<ObservableAircraftState, String> icaoColumn = createColumn("ICAO", ICAO_ADDRESS_COLUMN_WIDTH);
@@ -193,13 +191,15 @@ public final class AircraftTableController {
      * Creates a new TableColumn object with the given name and width.
      *
      * @param name  the name of the column
-     * @param width the width of the column (-1 means the column should be applied the "numeric" style class)
+     * @param width the width of the column
      * @return a new TableColumn object with the given name and width
      */
     private TableColumn<ObservableAircraftState, String> createColumn(String name, int width) {
         TableColumn<ObservableAircraftState, String> column = new TableColumn<>(name);
         if (width == NUMERIC_COLUMN_WIDTH) {
-            setNumericFormat(column);
+            // Set the numeric style class for the column
+            column.getStyleClass().add("numeric");
+            column.setPrefWidth(NUMERIC_COLUMN_WIDTH);
             column.setComparator(getComparator());
         } else
             column.setPrefWidth(width);
@@ -232,14 +232,4 @@ public final class AircraftTableController {
         };
     }
 
-    /**
-     * Sets the "numeric" style class on the given TableColumn object and assigns it a default width.
-     * This method is used to apply the "numeric" style class and a default width to numeric columns in the table view.
-     *
-     * @param column the TableColumn object to set the "numeric" style class on
-     */
-    private void setNumericFormat(TableColumn<ObservableAircraftState, String> column) {
-        column.getStyleClass().add("numeric");
-        column.setPrefWidth(NUMERIC_COLUMN_WIDTH);
-    }
 }
