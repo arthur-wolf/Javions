@@ -4,7 +4,6 @@ import ch.epfl.javions.Units;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.control.TableColumn;
@@ -30,7 +29,6 @@ public final class AircraftTableController {
     public static final int NUMERIC_COLUMN_WIDTH = 85;
     private final TableView<ObservableAircraftState> tableView;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
-    private final int UNKNOWN = -1; // UNKNOWN is used to represent unknown values in the table view
     private final static DecimalFormat dfWith4Digit = new DecimalFormat("#.####");
     private final static DecimalFormat dfWith0Digit = new DecimalFormat("#");
 
@@ -91,8 +89,6 @@ public final class AircraftTableController {
                 tableView.sort();
             } else if (change.wasRemoved()) {
                 tableView.getItems().remove(change.getElementRemoved());
-                tableView.sort(); //todo : check with arthur why this method is not called
-                //this method is sus and might be the problem why some airplane make the table crash
             }
         });
 
@@ -175,15 +171,14 @@ public final class AircraftTableController {
         TableColumn<ObservableAircraftState, String> altitudeColumn = createColumn("Altitude (m)", -1);
         altitudeColumn.setCellValueFactory(cellData -> {
             double altitude = cellData.getValue().getAltitude();
-            return altitude != UNKNOWN ? Bindings.createStringBinding(() -> dfWith0Digit.format(altitude), cellData.getValue().altitudeProperty()) : new SimpleStringProperty("");
+            return Bindings.createObjectBinding(() -> altitude != ObservableAircraftState.UNKNOWN ?  dfWith4Digit.format(altitude) : "", cellData.getValue().altitudeProperty());
         });
 
         // ----------------------------------Speed-------------------------------------------
         TableColumn<ObservableAircraftState, String> speedColumn = createColumn("Vitesse (km/h)", -1);
         speedColumn.setCellValueFactory(cellData -> {
             double velocity = cellData.getValue().getVelocity();
-            return velocity != UNKNOWN ? Bindings.createStringBinding(() -> dfWith0Digit.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)), cellData.getValue().velocityProperty()) : new SimpleStringProperty("");
-        });
+            return Bindings.createStringBinding(() -> velocity != ObservableAircraftState.UNKNOWN ?  dfWith0Digit.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)) : "" , cellData.getValue().velocityProperty()) ;  });
 
         tableView.getColumns().addAll(icaoColumn, callSignColumn, registrationColumn, modelColumn, typeColumn, descriptionColumn, longitudeColumn, latitudeColumn, altitudeColumn, speedColumn);
     }

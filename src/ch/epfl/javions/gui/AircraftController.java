@@ -37,7 +37,6 @@ public final class AircraftController {
     private final ObservableSet<ObservableAircraftState> aircraftState;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private final Pane pane;
-    private final int UNKNOWN = -1;
     private final int MAX_ZOOM_VISIBLE_LABEL = 11; //Maximum zoom level at which the label is visible
 
 
@@ -231,10 +230,10 @@ public final class AircraftController {
         labelText.textProperty().bind(Bindings.createStringBinding(() -> {
             // Format the velocity and altitude values
             // If the value is -1, then the value is unknown and a question mark is displayed
-            String velocity = aircraftState.getVelocity() == UNKNOWN
+            String velocity = aircraftState.getVelocity() == ObservableAircraftState.UNKNOWN
                     ? "?"
                     : String.format("%.0f", Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
-            String altitude = aircraftState.getAltitude() == UNKNOWN
+            String altitude = aircraftState.getAltitude() == ObservableAircraftState.UNKNOWN
                     ? "?"
                     : String.format("%.0f", aircraftState.getAltitude());
             return String.format("%s\n%s\u2002km/h %s\u2002m",

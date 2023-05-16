@@ -28,7 +28,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitude;    // m
     private final DoubleProperty velocity;    // m/s
     private final DoubleProperty trackOrHeading; // Radians
-    private final double UNKNOWN = -1.0; // Value for unknown altitude, velocity
+    public static final double UNKNOWN = Double.NaN; // Value for unknown altitude, velocity
     private final int INITIAL_VALUE = 0;
     ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
     ObservableList<AirbornePos> trajectoryView = FXCollections.unmodifiableObservableList(trajectory);
@@ -307,5 +307,8 @@ public final class ObservableAircraftState implements AircraftStateSetter {
          * @param geoPos   the position in the air
          * @param altitude the altitude of the position
          */
+        public AirbornePos {
+            Objects.requireNonNull(geoPos);
+        }
     }
 }
