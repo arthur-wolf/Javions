@@ -1,9 +1,12 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.Units;
+import ch.epfl.javions.adsb.CallSign;
+import ch.epfl.javions.aircraft.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.control.TableColumn;
@@ -34,9 +37,10 @@ public final class AircraftTableController {
     private final int MODEL_COLUMN_WIDTH = 230;
     private final int DESCRIPTION_COLUMN_WIDTH = 70;
     private final TableView<ObservableAircraftState> tableView;
+    private Consumer<ObservableAircraftState> consumer;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
-    private final static DecimalFormat dfWith4Digit = new DecimalFormat("#.####");
-    private final static DecimalFormat dfWith0Digit = new DecimalFormat("#");
+    private final DecimalFormat dfWith4Digit = new DecimalFormat("#.####");
+    private final DecimalFormat dfWith0Digit = new DecimalFormat("#");
 
 
     /**
@@ -67,18 +71,11 @@ public final class AircraftTableController {
 
     /**
      * Sets a consumer to be called when the table view is double-clicked.
-     * The consumer is called with the currently selected aircraft state as the argument.
      *
      * @param consumer the consumer to be called when the table view is double-clicked
      */
     public void setOnDoubleClick(Consumer<ObservableAircraftState> consumer) {
-        tableView.setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
-                if (selectedAircraftState.get() != null) {
-                    consumer.accept(selectedAircraftState.get());
-                }
-            }
-        });
+        this.consumer = consumer;
     }
 
     /**
@@ -97,17 +94,23 @@ public final class AircraftTableController {
                 tableView.getItems().remove(change.getElementRemoved());
             }
         });
-
         selectedAircraftState.addListener((observable, oldValue, newValue) -> {
-            tableView.getSelectionModel().select(selectedAircraftState.get());
-            if(newValue != null) {
+            if (newValue != null && tableView.getSelectionModel().getSelectedItem() != newValue) {
                 tableView.scrollTo(newValue);
-
             }
+            tableView.getSelectionModel().select(selectedAircraftState.get());
+
         });
         tableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 selectedAircraftState.set(newValue);
+            }
+        });
+        tableView.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+                if (selectedAircraftState.get() != null) {
+                    consumer.accept(selectedAircraftState.get());
+                }
             }
         });
     }
@@ -128,43 +131,43 @@ public final class AircraftTableController {
 
     /**
      * Creates and configures the columns for the table view.
-     * This method creates and configures all the columns for the aircraft states, including the ICAO address,
-     * call sign, registration, model, type, description, longitude, latitude, altitude, and speed.
+     * This method creates and configures all the columns for the aircraft states, including the ICAOAddress,
+     * CallSign, Registration, Model, Type Designator, Description, Longitude, Latitude, Altitude, and Speed.
      * The cells of the columns are bound to the corresponding properties of the aircraft states.
      */
     private void createColumns() {
         // ---------------------------------ICAO Address-----------------------------------
         TableColumn<ObservableAircraftState, String> icaoColumn = createColumn("ICAO", ICAO_ADDRESS_COLUMN_WIDTH);
-        icaoColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().address().string()));
+        icaoColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getIcaoAddress()).map(IcaoAddress::string));
 
         // ---------------------------------CallSign---------------------------------------
         TableColumn<ObservableAircraftState, String> callSignColumn = createColumn("Indicatif", CALLSIGN_COLUMN_WIDTH);
-        callSignColumn.setCellValueFactory(cellData -> cellData.getValue().callSignProperty().map(callSign -> callSign != null ? callSign.string() : ""));
+        callSignColumn.setCellValueFactory(cellData -> cellData.getValue().callSignProperty().map(CallSign::string));
 
         // ---------------------------------Registration-----------------------------------
         TableColumn<ObservableAircraftState, String> registrationColumn = createColumn("Immatriculation", REGISTRATION_COLUMN_WIDTH);
-        registrationColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().registration() != null ? cellData.getValue().aircraftData().registration().string() : ""));
+        registrationColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getAircraftData().registration()).map(AircraftRegistration::string));
 
         // ---------------------------------Model------------------------------------------
         TableColumn<ObservableAircraftState, String> modelColumn = createColumn("Modèle", MODEL_COLUMN_WIDTH);
-        modelColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().model() != null ? cellData.getValue().aircraftData().model() : ""));
+        modelColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getAircraftData().model() != null ? cellData.getValue().getAircraftData().model() : ""));
 
         // ---------------------------------Type Designator---------------------------------
         TableColumn<ObservableAircraftState, String> typeColumn = createColumn("Type", DESIGNATOR_COLUMN_WIDTH);
-        typeColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().address().string()));
+        typeColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getAircraftData().typeDesignator()).map(AircraftTypeDesignator::string));
 
         // ---------------------------------Description-------------------------------------
         TableColumn<ObservableAircraftState, String> descriptionColumn = createColumn("Description", DESCRIPTION_COLUMN_WIDTH);
-        descriptionColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().aircraftData().description() != null ? cellData.getValue().aircraftData().description().string() : ""));
+        descriptionColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getAircraftData().description()).map(AircraftDescription::string));
 
-        // ---------------------------------Longitude (never null)--------------------------
+        // ---------------------------------Longitude --------------------------------------
         TableColumn<ObservableAircraftState, String> longitudeColumn = createColumn("Longitude (°)", NUMERIC_COLUMN_WIDTH);
         longitudeColumn.setCellValueFactory(cellData -> {
             double longitude = cellData.getValue().getPosition().longitude();
             return Bindings.createObjectBinding(() -> dfWith4Digit.format(Units.convertTo(longitude, Units.Angle.DEGREE)), cellData.getValue().positionProperty());
         });
 
-        // ---------------------------------Latitude (never null)----------------------------
+        // ---------------------------------Latitude-----------------------------------------
         TableColumn<ObservableAircraftState, String> latitudeColumn = createColumn("Latitude (°)", NUMERIC_COLUMN_WIDTH);
         latitudeColumn.setCellValueFactory(cellData -> {
             double latitude = cellData.getValue().getPosition().latitude();
@@ -175,7 +178,7 @@ public final class AircraftTableController {
         TableColumn<ObservableAircraftState, String> altitudeColumn = createColumn("Altitude (m)", NUMERIC_COLUMN_WIDTH);
         altitudeColumn.setCellValueFactory(cellData -> {
             double altitude = cellData.getValue().getAltitude();
-            return Bindings.createObjectBinding(() -> !Double.isNaN(altitude) ? dfWith0Digit.format(altitude) :  "", cellData.getValue().altitudeProperty());
+            return Bindings.createObjectBinding(() -> !Double.isNaN(altitude) ? dfWith0Digit.format(altitude) : "", cellData.getValue().altitudeProperty());
         });
 
         // ----------------------------------Speed-------------------------------------------
@@ -186,6 +189,19 @@ public final class AircraftTableController {
         });
         tableView.getColumns().addAll(icaoColumn, callSignColumn, registrationColumn, modelColumn, typeColumn, descriptionColumn, longitudeColumn, latitudeColumn, altitudeColumn, speedColumn);
     }
+
+    /**
+     * Wraps the given value into a ReadOnlyObjectWrapper.
+     * This provides a way to make any object observable.
+     *
+     * @param <E> the type of the value
+     * @param value the value to be wrapped in the ReadOnlyObjectWrapper
+     * @return an ObservableValue wrapping the given value
+     */
+    private <E> ObservableValue<E> wrap(E value) {
+        return new ReadOnlyObjectWrapper<>(value);
+    }
+
 
     /**
      * Creates a new TableColumn object with the given name and width.

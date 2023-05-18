@@ -10,8 +10,6 @@ import javafx.beans.property.*;
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
  */
-
-/// TODO: 23/04/2023 JavaDoc
 public final class MapParameters {
 
     private final IntegerProperty zoom;
@@ -128,7 +126,11 @@ public final class MapParameters {
         zoom.set(newZoom);
     }
 
-
+    /**
+     * Sets the map parameters to the given ones
+     * This method is called when the map is moved
+     * @param newMapParametersWhenMoving the new map parameters
+     */
     public void set(MapParameters newMapParametersWhenMoving) {
         zoom.set(newMapParametersWhenMoving.getZoom());
         minX.set(newMapParametersWhenMoving.getMinX());

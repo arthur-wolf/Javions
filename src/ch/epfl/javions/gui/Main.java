@@ -5,11 +5,10 @@ import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.adsb.MessageParser;
 import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftDatabase;
-import javafx.animation.AnimationTimer;
-import javafx.beans.binding.Bindings;
+import ch.epfl.javions.demodulation.AdsbDemodulator;
+import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
@@ -19,38 +18,33 @@ import javafx.stage.Stage;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
+
+import javafx.animation.AnimationTimer;
 
 /**
- * This is the main class for the Javions application, which is a graphical
- * interface to display aircraft positions and movements using ADS-B messages.
- * The application uses JavaFX for its graphical user interface, and the
- * aircraft positions are displayed on a map provided by OpenStreetMap.
- * The class uses a number of other classes to manage aircraft states, parse
- * messages, manage map parameters, and manage the tile cache for the map.
- * The main entry points are the main() method, which launches the application,
- * and the start() method, which sets up the application's initial state.
+ * This is the main class for the Javions application.
+ * It sets up the graphical user interface and starts the application.
  *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
  */
-public class Main extends javafx.application.Application {
+public class Main extends Application {
 
-    public static final String AIRCRAFT_DATABASE = "/aircraft.zip";
-    public static final String TILE_SERVER = "tile.openstreetmap.org";
-    public static final String TILE_CACHE = "tile-cache";
-    public static final String APPLICATION_NAME = "Javions";
-    public static final int MIN_WIDTH = 800;
-    public static final int MIN_HEIGHT = 600;
-    private final int INITIAL_ZOOM = 8;
-    private final double INITIAL_LONGITUDE = 33530;
-    private final double INITIAL_LATITUDE = 23070;
-
-
+    private static final int INITIAL_ZOOM = 8;
+    private static final double INITIAL_LONGITUDE = 33530;
+    private static final double INITIAL_LATITUDE = 23070;
+    private static final long TO_MILLISECONDS = 10000000;
 
     /**
-     * The main entry point for the application.
+     * This is a thread-safe queue used for storing raw ADS-B messages received from aircraft.
+     */
+    private final ConcurrentLinkedQueue<RawMessage> messageQueue = new ConcurrentLinkedQueue<>();
+
+    /**
+     * This is the main method which launches the application.
      *
      * @param args the command line arguments
      */
@@ -59,97 +53,158 @@ public class Main extends javafx.application.Application {
     }
 
     /**
-     * Reads all ADS-B messages from a file.
+     * This method reads a raw ADS-B message from an input stream.
      *
-     * @param fileName the name of the file to read from
-     * @return a list of RawMessage containing all the read messages
-     * @throws IOException if a reading error occurs
+     * @param inputStream the input stream to read from
+     * @return the raw ADS-B message
+     * @throws IOException if an I/O error occurs
      */
-    private static List<RawMessage> readAllMessages(String fileName) throws IOException {
-        List<RawMessage> rawMessages = new ArrayList<>();
-        try (DataInputStream s = new DataInputStream(
-                new BufferedInputStream(new FileInputStream(fileName)))) {
-            byte[] bytes = new byte[RawMessage.LENGTH];
-            long timeStampNs;
-            while (true) {
-                timeStampNs = s.readLong();
-                int bytesRead = s.readNBytes(bytes, 0, bytes.length);
-                assert bytesRead == RawMessage.LENGTH;
-                rawMessages.add(new RawMessage(timeStampNs, new ByteString(bytes)));
-            }
-        } catch (EOFException exception) {
-            System.out.println("End of file reached.");
+    static RawMessage readMessage(DataInputStream inputStream) throws IOException {
+        byte[] bytes = new byte[RawMessage.LENGTH];
+        long timeStampNs = inputStream.readLong();
+        int bytesRead = inputStream.readNBytes(bytes, 0, bytes.length);
+        if (bytesRead == RawMessage.LENGTH) {
+            return new RawMessage(timeStampNs, new ByteString(bytes));
         }
-        return rawMessages;
+        return null;
     }
 
-
     /**
-     * Starts the application. This method is called after the init() method has returned,
-     * and after the system is sufficiently initialized so that this method can use
-     * main features of the JavaFX library.
+     * This method initializes the JavaFX application. It sets up the map, aircraft database, status line,
+     * and starts the message handling threads.
      *
-     * @param primaryStage the primary stage for this application, onto which
-     *                     the application scene can be set.
-     * @throws Exception if an error occurs
+     * @param primaryStage the primary stage for this application, onto which the application scene is set.
+     * @throws Exception if an error occurs during initialization
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
-
-        Path tileCache = Path.of(TILE_CACHE);
-
-        MapParameters mp = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
-        TileManager tm = new TileManager(tileCache, TILE_SERVER);
-        BaseMapController bmc = new BaseMapController(tm, mp);
-
-        URL dbUrl = getClass().getResource(AIRCRAFT_DATABASE);
+        long startTime = System.nanoTime();
+        Path tileCachePath = Path.of("tile-cache");
+        URL dbUrl = getClass().getResource("/aircraft.zip");
         assert dbUrl != null;
-        String f = Path.of(dbUrl.toURI()).toString();
-        var db = new AircraftDatabase(f);
-        AircraftStateManager asm = new AircraftStateManager(db);
+        String dbFilePath = Path.of(dbUrl.toURI()).toString();
 
-        ObjectProperty<ObservableAircraftState> sap = new SimpleObjectProperty<>();
-        AircraftController ac = new AircraftController(mp, asm.states(), sap);
-        AircraftTableController atc = new AircraftTableController(asm.states(), sap);
-        StatusLineController statusLineController = new StatusLineController();
-        statusLineController.aircraftCountProperty().bind(Bindings.size(asm.states()));
+        // We're setting up several key components here:
+        // - selectedAircraftProperty: which aircraft is currently selected by the user
+        // - mapParameters: the parameters for our map, such as zoom level and initial coordinates
+        // - tileManager: responsible for managing the map's tiles
+        // - baseMapController: controls the base map
+        // - aircraftDatabase: a database of all the aircraft
+        // - aircraftStateManager: manages the state of all the aircraft
+        // - aircraftController: controls the aircraft, including movement and selection
+        // - aircraftTableController: controls the table that displays the list of aircraft
+        // - statusLineController: controls the line that displays the status of the application
+        ObjectProperty<ObservableAircraftState> selectedAircraftProperty = new SimpleObjectProperty<>();
+        var mapParameters = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
+        var tileManager = new TileManager(tileCachePath, "tile.openstreetmap.org");
+        var baseMapController = new BaseMapController(tileManager, mapParameters);
+        var aircraftDatabase = new AircraftDatabase(dbFilePath);
+        var aircraftStateManager = new AircraftStateManager(aircraftDatabase);
+        var aircraftController = new AircraftController(mapParameters, aircraftStateManager.states(), selectedAircraftProperty);
+        var aircraftTableController = new AircraftTableController(aircraftStateManager.states(), selectedAircraftProperty);
+        var statusLineController = new StatusLineController();
 
-        sap.addListener((q, o, n) -> {
-            atc.setOnDoubleClick(event -> bmc.centerOn(event.getPosition()));
-        });
+        // We're setting up our GUI layout here, with a split pane for the map and the status bar
+        var stackPane = new StackPane(baseMapController.pane(), aircraftController.pane());
+        var statusBar = new BorderPane(aircraftTableController.pane(), statusLineController.pane(), null, null, null);
+        var root = new SplitPane(stackPane, statusBar);
 
-        StackPane stackPane = new StackPane(bmc.pane(), ac.pane());
-        BorderPane statusBar = new BorderPane(atc.pane(), statusLineController.pane(), null, null, null);
-        SplitPane root = new SplitPane(stackPane, statusBar);
-        root.setOrientation(Orientation.VERTICAL);
+        // Setting up event handling for when the user double-clicks on an aircraft in the table
+        aircraftTableController.setOnDoubleClick(event -> baseMapController.centerOn(event.getPosition()));
 
-        BorderPane rootPane = new BorderPane();
-        rootPane.setCenter(root);
-        primaryStage.setScene(new Scene(rootPane));
-
+        root.setOrientation(javafx.geometry.Orientation.VERTICAL);
         primaryStage.setScene(new Scene(new BorderPane(root, null, null, null, null)));
-        primaryStage.setTitle(APPLICATION_NAME);
-        primaryStage.setMinWidth(MIN_WIDTH);
-        primaryStage.setMinHeight(MIN_HEIGHT);
+        primaryStage.setTitle("Javions");
+        primaryStage.setMinWidth(800);
+        primaryStage.setMinHeight(600);
         primaryStage.show();
 
-        var mi = readAllMessages("resources/messages_20230318_0915.bin").iterator();
+        // Setting up a supplier of raw ADS-B messages
+        Supplier<RawMessage> messageSupplier;
+        if (!getParameters().getRaw().isEmpty()) {
+            try {
+                var finished = new AtomicBoolean(false);
+                var inputStream = new DataInputStream(
+                        new BufferedInputStream(new FileInputStream(getParameters().getRaw().get(0))));
+                messageSupplier = () -> {
+                    try {
+                        if (finished.get() || inputStream.available() == 0) {
+                            finished.set(true);
+                            return null;
+                        }
+                        RawMessage currentMessage = readMessage(inputStream);
+                        long currentTime = currentMessage.timeStampNs() - (System.nanoTime() - startTime);
+                        if (currentTime >= 0) {
+                            Thread.sleep(currentTime / TO_MILLISECONDS);
+                        }
+                        return currentMessage;
+                    } catch (IOException e) {
+                        throw new RuntimeException();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                };
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            messageSupplier = () -> {
+                try {
+                    var adsbDemodulator = new AdsbDemodulator(System.in);
+                    return adsbDemodulator.nextMessage();
+                } catch (IOException e) {
+                    throw new RuntimeException();
+                }
+            };
+        }
 
+        // We're starting a new thread that continuously reads in raw ADS-B messages and adds them to our queue
+        Thread messageThread = createMessageThread(messageSupplier);
+        messageThread.setDaemon(true);
+        messageThread.start();
+
+        // We're starting an animation timer that periodically updates the aircraft states and the application status
         new AnimationTimer() {
             @Override
             public void handle(long now) {
+                if (messageQueue.isEmpty()) return;
                 try {
-                    for (int i = 0; i < 10; i += 1) {
-                        Message m = MessageParser.parse(mi.next());
-                        if (m != null) asm.updateWithMessage(m);
-                        if (i == 9) asm.purge();
+                    for (int i = 0; i < 10; i++) {
+                        if (messageQueue.peek() != null) {
+                            Message message = MessageParser.parse(messageQueue.poll());
+                            if (message != null) {
+                                aircraftStateManager.updateWithMessage(message);
+                            }
+                            if (i == 9) {
+                                aircraftStateManager.purge();
+                            }
+                            statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().getValue() + 1);
+                            statusLineController.aircraftCountProperty().set(aircraftStateManager.states().size());
+                        }
                     }
-                    statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().get() + 1);
-
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
             }
         }.start();
+    }
+
+    /**
+     * This method creates a new thread for handling raw ADS-B messages.
+     * It continuously reads messages from a supplier and adds them to a queue.
+     *
+     * @param messageSupplier the supplier of raw ADS-B messages
+     * @return the new thread
+     */
+    private Thread createMessageThread(Supplier<RawMessage> messageSupplier) {
+        return new Thread(() -> {
+            while (true) {
+                RawMessage message = messageSupplier.get();
+                if (message == null) {
+                    break;
+                }
+                messageQueue.add(message);
+            }
+        });
     }
 }

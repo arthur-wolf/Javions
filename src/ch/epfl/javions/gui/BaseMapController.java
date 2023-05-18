@@ -157,7 +157,7 @@ public final class BaseMapController {
     /**
      * Installs the handlers for the map
      */
-    //installs the handlers in the constructor
+    // Installs the handlers in the constructor
     private void installHandlers() {
         ObjectProperty<Point2D> mouseCoordinatesProperty = new SimpleObjectProperty<>(Point2D.ZERO);
         LongProperty minScrollTime = new SimpleLongProperty();

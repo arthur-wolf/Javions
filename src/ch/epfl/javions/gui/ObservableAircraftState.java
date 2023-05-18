@@ -59,7 +59,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      *
      * @return the aircraft ICAO address
      */
-    public IcaoAddress address() {
+    public IcaoAddress getIcaoAddress() {
         return icaoAddress;
     }
 
@@ -68,7 +68,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      *
      * @return the aircraft data
      */
-    public AircraftData aircraftData() {
+    public AircraftData getAircraftData() {
         return aircraftData;
     }
 
@@ -187,7 +187,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      * Returns the trajectory
      * @return the trajectory
      */
-    public ObservableList<AirbornePos> trajectory() {
+    public ObservableList<AirbornePos> getTrajectory() {
         return trajectoryView;
     }
 

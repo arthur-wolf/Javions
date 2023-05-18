@@ -56,9 +56,6 @@ public class TextUI {
                 ByteString message = new ByteString(bytes);
                 Message message1 = MessageParser.parse(new RawMessage(timeStampNs, message));
                 if (message1 != null) {
-                    /*if(message1.timeStampNs() < (System.nanoTime() - startTime)){
-                        Thread.sleep((long) (((System.nanoTime() - startTime) - message1.timeStampNs())/(9E6)));
-                    }*/
                     manager.updateWithMessage(message1);
                     manager.purge();
                 }
@@ -72,8 +69,8 @@ public class TextUI {
                 System.out.print(CSI + ";H");
                 for (ObservableAircraftState state : listStates) {
                     System.out.printf("%5s %10s %10s %32s  %f6 %6f %5f %5f %1s \n",
-                            state.address().string(), Objects.isNull(state.callSignProperty().get()) ? " " : state.callSignProperty().get().string(),
-                            state.aircraftData().registration().string(), state.aircraftData().model(),
+                            state.getIcaoAddress().string(), Objects.isNull(state.callSignProperty().get()) ? " " : state.callSignProperty().get().string(),
+                            state.getAircraftData().registration().string(), state.getAircraftData().model(),
                             Units.convertTo(state.positionProperty().get().longitude(), Units.Angle.DEGREE), Units.convertTo(state.positionProperty().get().latitude(), Units.Angle.DEGREE),
                             state.altitudeProperty().get(), Units.convertTo(state.velocityProperty().get(), Units.Speed.KILOMETER_PER_HOUR), findArrow(Units.convertTo(state.trackOrHeadingProperty().get(), Units.Angle.DEGREE)));
                 }
@@ -87,8 +84,8 @@ public class TextUI {
         @Override
         public int compare(ObservableAircraftState o1,
                            ObservableAircraftState o2) {
-            String s1 = o1.address().string();
-            String s2 = o2.address().string();
+            String s1 = o1.getIcaoAddress().string();
+            String s2 = o2.getIcaoAddress().string();
             return s1.compareTo(s2);
         }
     }

@@ -2,6 +2,7 @@ package ch.epfl.javions.aircraft;
 
 import ch.epfl.javions.Preconditions;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -21,6 +22,6 @@ public record IcaoAddress(String string) {
      * @throws IllegalArgumentException if the address does not match the regular expression
      */
     public IcaoAddress {
-        Preconditions.checkArgument(ICAO_ADRESS_PATTERN.matcher(string).matches());
+        Preconditions.checkArgument(ICAO_ADRESS_PATTERN.matcher(Objects.requireNonNull(string)).matches());
     }
 }
