@@ -11,9 +11,9 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 
 /**
- * TileManager Class
- * Represents an OSM tile manager.
- * Its role is to get tiles from a tile server and store them in a memory cache and a disk cache.
+ * Represents an OpenStreetMap (OSM) tile manager. Its role is to get tiles from a tile server
+ * and store them in a memory cache and a disk cache. It manages fetching and caching of map tiles
+ * with some degree of thread safety.
  *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
@@ -31,36 +31,35 @@ public final class TileManager {
     private final String tileServerName;
 
     //Memory cache capacity
-    private static final int CACHE_CAPACITY = 100;
-    private static final String IMAGE_EXTENSION_FORMAT = ".png";
-    private static final String USER_AGENT_NAME = "Javions";
-    private static final String PROTOCOL_NAME = "https";
-    private static final int PORT_NUMBER = 443;
-    private static final String URL_DELIMITER = "/";
-    private static final int TIMEOUT_IN_MS = 5000;
-    private static final float LOAD_FACTOR = 0.75f;
+    private final int CACHE_CAPACITY = 100;
+    private final String IMAGE_EXTENSION_FORMAT = ".png";
+    private final String USER_AGENT_NAME = "Javions";
+    private final String PROTOCOL_NAME = "https";
+    private final int PORT_NUMBER = 443;
+    private final String URL_DELIMITER = "/";
+    private final int TIMEOUT_IN_MS = 5000;
+    private final float LOAD_FACTOR = 0.75f;
 
     /**
-     * Constructor of TileManager
+     * Constructs a TileManager with the specified disk cache path and tile server name.
      *
-     * @param pathFolder  path of the disk cache
-     * @param tileServerN name of the tile server
+     * @param pathFolder  The path of the disk cache.
+     * @param tileServerN The name of the tile server.
      */
 
     public TileManager(Path pathFolder, String tileServerN) {
         pathToMemoryDisk = pathFolder;
         tileServerName = tileServerN;
 
-        memoryCache = new LinkedHashMap<>(CACHE_CAPACITY,
-                LOAD_FACTOR, true);
+        memoryCache = new LinkedHashMap<>(CACHE_CAPACITY, LOAD_FACTOR, true);
     }
 
     /**
-     * Add a pair of tileId and its corresponding image to the memory cache
-     * If the memory cache is at maximum capacity, we remove the first pair
+     * Adds a pair of tile ID and its corresponding image to the memory cache.
+     * If the memory cache is at maximum capacity, removes the least recently used pair.
      *
-     * @param tileIdentity identity of the tile associated to the image
-     * @param image        image of the tile
+     * @param tileIdentity The ID of the tile associated with the image.
+     * @param image        The image of the tile.
      */
 
     private void addToCache(TileId tileIdentity, Image image) {
@@ -72,10 +71,10 @@ public final class TileManager {
     }
 
     /**
-     * Returns true if the memory cache contains the image corresponding to the given tile identity
+     * Returns true if the memory cache contains the image corresponding to the given tile ID.
      *
-     * @param tileIdentity identity of the tile
-     * @return if the memory cache contains the image of this tile
+     * @param tileIdentity The ID of the tile.
+     * @return True if the memory cache contains the image of this tile; false otherwise.
      */
 
     private boolean cacheContains(TileId tileIdentity) {
@@ -83,11 +82,12 @@ public final class TileManager {
     }
 
     /**
-     * Returns the image associated to a tile identity
+     * Returns the image associated with a tile ID.
+     * This method first looks in the memory cache, then in the disk cache, and finally on the tile server.
      *
-     * @param tileIdentity identity of the tile
-     * @return the image associated to the tile identity
-     * @throws IOException if something went wrong while getting the corresponding image from the tile server
+     * @param tileIdentity The ID of the tile.
+     * @return The image associated with the tile ID.
+     * @throws IOException if an error occurs while getting the image from the tile server.
      */
 
     public Image imageForTileAt(TileId tileIdentity) throws IOException {
@@ -137,20 +137,20 @@ public final class TileManager {
     }
 
     /**
-     * TileId Record
-     * Represents the identity of an OSM Tile
+     * Represents the ID of an OSM Tile.
      *
-     * @param zoomLevel level of zoom
-     * @param indexX    index x of the tile
-     * @param indexY    index y of the tile
+     * @param zoomLevel The zoom level of the tile.
+     * @param indexX    The x-index of the tile.
+     * @param indexY    The y-index of the tile.
      */
 
     public record TileId(int zoomLevel, int indexX, int indexY) {
 
         /**
-         * Check if tile is valid at construction
+         * Constructs a TileId with the specified zoom level, x-index, and y-index.
+         * Checks if tile parameters are valid.
          *
-         * @throws IllegalArgumentException if the tile parameters aren't valid
+         * @throws IllegalArgumentException if the tile parameters aren't valid.
          */
 
         public TileId {
@@ -158,12 +158,12 @@ public final class TileManager {
         }
 
         /**
-         * Checks if the parameters are a valid tile identity
+         * Checks if the specified parameters constitute a valid tile ID.
          *
-         * @param zoomLevel level of zoom of the tile to check
-         * @param indexX    index x of the tile to check
-         * @param indexY    index y of the tile to check
-         * @return if the tile is valid or not
+         * @param zoomLevel The zoom level of the tile to check.
+         * @param indexX    The x-index of the tile to check.
+         * @param indexY    The y-index of the tile to check.
+         * @return True if the parameters form a valid tile ID; false otherwise.
          */
 
         public static boolean isValid(int zoomLevel, int indexX, int indexY) {

@@ -29,19 +29,18 @@ import java.util.function.Consumer;
  * @author Oussama Ghali (341478)
  */
 public final class AircraftTableController {
-    private final int NUMERIC_COLUMN_WIDTH = 85;
-    private final int CALLSIGN_COLUMN_WIDTH = 70;
     private final int DESIGNATOR_COLUMN_WIDTH = 50;
-    private final int REGISTRATION_COLUMN_WIDTH = 90;
     private final int ICAO_ADDRESS_COLUMN_WIDTH = 60;
-    private final int MODEL_COLUMN_WIDTH = 230;
+    private final int CALLSIGN_COLUMN_WIDTH = 70;
     private final int DESCRIPTION_COLUMN_WIDTH = 70;
+    private final int NUMERIC_COLUMN_WIDTH = 85;
+    private final int REGISTRATION_COLUMN_WIDTH = 90;
+    private final int MODEL_COLUMN_WIDTH = 230;
     private final TableView<ObservableAircraftState> tableView;
     private Consumer<ObservableAircraftState> consumer;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
-    private final DecimalFormat dfWith4Digit = new DecimalFormat("#.####");
-    private final DecimalFormat dfWith0Digit = new DecimalFormat("#");
-
+    private final DecimalFormat DECIMAL_FORMAT_4_DIGITS = new DecimalFormat("#.####");
+    private final DecimalFormat DECIMAL_FORMAT_0_DIGIT = new DecimalFormat("#");
 
     /**
      * Constructs an AircraftTableController object with the given set of aircraft states
@@ -94,23 +93,23 @@ public final class AircraftTableController {
                 tableView.getItems().remove(change.getElementRemoved());
             }
         });
+
         selectedAircraftState.addListener((observable, oldValue, newValue) -> {
             if (newValue != null && tableView.getSelectionModel().getSelectedItem() != newValue) {
                 tableView.scrollTo(newValue);
             }
             tableView.getSelectionModel().select(selectedAircraftState.get());
-
         });
+
         tableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 selectedAircraftState.set(newValue);
             }
         });
+
         tableView.setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
-                if (selectedAircraftState.get() != null) {
-                    consumer.accept(selectedAircraftState.get());
-                }
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && selectedAircraftState.get() != null) {
+                consumer.accept(selectedAircraftState.get());
             }
         });
     }
@@ -164,31 +163,32 @@ public final class AircraftTableController {
         TableColumn<ObservableAircraftState, String> longitudeColumn = createColumn("Longitude (°)", NUMERIC_COLUMN_WIDTH);
         longitudeColumn.setCellValueFactory(cellData -> {
             double longitude = cellData.getValue().getPosition().longitude();
-            return Bindings.createObjectBinding(() -> dfWith4Digit.format(Units.convertTo(longitude, Units.Angle.DEGREE)), cellData.getValue().positionProperty());
+            return Bindings.createObjectBinding(() -> DECIMAL_FORMAT_4_DIGITS.format(Units.convertTo(longitude, Units.Angle.DEGREE)), cellData.getValue().positionProperty());
         });
 
         // ---------------------------------Latitude-----------------------------------------
         TableColumn<ObservableAircraftState, String> latitudeColumn = createColumn("Latitude (°)", NUMERIC_COLUMN_WIDTH);
         latitudeColumn.setCellValueFactory(cellData -> {
             double latitude = cellData.getValue().getPosition().latitude();
-            return Bindings.createObjectBinding(() -> dfWith4Digit.format(Units.convertTo(latitude, Units.Angle.DEGREE)), cellData.getValue().positionProperty());
+            return Bindings.createObjectBinding(() -> DECIMAL_FORMAT_4_DIGITS.format(Units.convertTo(latitude, Units.Angle.DEGREE)), cellData.getValue().positionProperty());
         });
 
         // ---------------------------------Altitude-----------------------------------------
         TableColumn<ObservableAircraftState, String> altitudeColumn = createColumn("Altitude (m)", NUMERIC_COLUMN_WIDTH);
         altitudeColumn.setCellValueFactory(cellData -> {
             double altitude = cellData.getValue().getAltitude();
-            return Bindings.createObjectBinding(() -> !Double.isNaN(altitude) ? dfWith0Digit.format(altitude) : "", cellData.getValue().altitudeProperty());
+            return Bindings.createObjectBinding(() -> !Double.isNaN(altitude) ? DECIMAL_FORMAT_0_DIGIT.format(altitude) : "", cellData.getValue().altitudeProperty());
         });
 
         // ----------------------------------Speed-------------------------------------------
         TableColumn<ObservableAircraftState, String> speedColumn = createColumn("Vitesse (km/h)", NUMERIC_COLUMN_WIDTH);
         speedColumn.setCellValueFactory(cellData -> {
             double velocity = cellData.getValue().getVelocity();
-            return Bindings.createStringBinding(() -> !Double.isNaN(velocity) ? dfWith0Digit.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)) : "", cellData.getValue().velocityProperty());
+            return Bindings.createStringBinding(() -> !Double.isNaN(velocity) ? DECIMAL_FORMAT_0_DIGIT.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)) : "", cellData.getValue().velocityProperty());
         });
         tableView.getColumns().addAll(icaoColumn, callSignColumn, registrationColumn, modelColumn, typeColumn, descriptionColumn, longitudeColumn, latitudeColumn, altitudeColumn, speedColumn);
     }
+
 
     /**
      * Wraps the given value into a ReadOnlyObjectWrapper.
@@ -201,7 +201,6 @@ public final class AircraftTableController {
     private <E> ObservableValue<E> wrap(E value) {
         return new ReadOnlyObjectWrapper<>(value);
     }
-
 
     /**
      * Creates a new TableColumn object with the given name and width.
@@ -238,7 +237,7 @@ public final class AircraftTableController {
                 // If both strings are non-empty, try to parse them as numbers
                 try {
                     Double i1 = Double.parseDouble(o1);
-                    Double i2 = Double.parseDouble(o2); // Fixed: parse o2 instead of o1
+                    Double i2 = Double.parseDouble(o2);
                     return i1.compareTo(i2);
                 } catch (NumberFormatException e) {
                     // If either string cannot be parsed as an integer, compare them as strings
@@ -247,5 +246,4 @@ public final class AircraftTableController {
             }
         };
     }
-
 }

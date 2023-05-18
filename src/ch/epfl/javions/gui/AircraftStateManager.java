@@ -21,8 +21,6 @@ import java.util.Map;
  * The class supports adding and removing accumulators from the table, updating an accumulator with a message,
  * and purging the table of old aircraft states based on their last message timestamp. The purging process
  * helps to maintain the efficiency of the system and avoid unnecessary memory usage.
- * Typical usage involves creating an instance of AircraftStateManager and then invoking its update and purge methods
- * as necessary based on incoming aircraft messages and the desired state retention duration.
  *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
@@ -33,7 +31,7 @@ public final class AircraftStateManager {
     private final ObservableSet<ObservableAircraftState> observableAircraftStatesView;
     private final AircraftDatabase database;
     private long lastTimeStampsNs;
-    private static final long DT = 60_000_000_000L; // 1 minute in nanoseconds
+    private final long DT = 60_000_000_000L; // 1 minute in nanoseconds
 
     /**
      * Constructs an aircraft state manager
@@ -97,12 +95,10 @@ public final class AircraftStateManager {
 
     /**
      * Purges the aircraft state manager.
-     *
      * This method iterates over the entries in the table. Each entry contains an IcaoAddress
      * and an associated AircraftStateAccumulator. If the difference between the last
      * timestamp and the last message timestamp of the accumulator is greater than DT,
      * the accumulator is removed from the observable aircraft states and from the table.
-     *
      * This method is keeping the data up-to-date.
      */
     public void purge() {

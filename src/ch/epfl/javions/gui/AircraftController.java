@@ -24,8 +24,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -35,6 +33,8 @@ import static ch.epfl.javions.Units.Angle.DEGREE;
 /**
  * The AircraftController class is responsible for managing and displaying aircrafts on a map.
  * It binds the aircraft state to the graphical representation in the GUI.
+ * @author Arthur Wolf (344200)
+ * @author Oussama Ghali (341478)
  */
 public final class AircraftController {
     private final MapParameters mapParameters;
@@ -98,14 +98,12 @@ public final class AircraftController {
                 pane.getChildren().removeIf(node -> node.getId().equals(aircraftId));
             }
         });
-
         mapParameters.zoomProperty().addListener((observable, oldValue, newValue) -> {
             for (ObservableAircraftState aircraft : aircraftState) {
                 // Look up the aircraft group by its ID
                 Group aircraftGroup = (Group) pane.lookup("#" + aircraft.getIcaoAddress().string());
-                if (aircraftGroup != null) {
-                    // Get the trajectory group from the aircraft group
-                    Group trajectoryGroup = (Group) aircraftGroup.getChildren().get(0);
+                // Get the trajectory group from the aircraft group
+                if (aircraftGroup != null && aircraftGroup.getChildren().get(0) instanceof Group trajectoryGroup) {
                     if (trajectoryGroup.isVisible()) {
                         // Clear the existing trajectory lines
                         trajectoryGroup.getChildren().clear();
@@ -134,7 +132,8 @@ public final class AircraftController {
         Group trajectoryGroup = buildTrajectoryGroup(aircraftState);
 
         // Bind the visibility of the trajectory group to the selected aircraft state
-        trajectoryGroup.visibleProperty().bind(Bindings.createBooleanBinding(() -> selectedAircraftState.get() == aircraftState, selectedAircraftState));
+        trajectoryGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
+                selectedAircraftState.get() == aircraftState, selectedAircraftState));
 
         // Create the aircraft group with the trajectory group and icon/label group
         Group aircraftGroup = new Group(trajectoryGroup, iconAndLabelGroup);
@@ -192,26 +191,14 @@ public final class AircraftController {
      */
     private SVGPath buildIcon(ObservableAircraftState aircraftState) {
         ObservableValue<AircraftIcon> aircraftIcon =
-                aircraftState.categoryProperty().map(
-                        category -> AircraftIcon.iconFor(
-                                aircraftState.
-                                        getAircraftData().
-                                        typeDesignator() == null ?
-                                        new AircraftTypeDesignator("") : aircraftState.
-                                        getAircraftData().
-                                        typeDesignator(),
-                                aircraftState.
-                                        getAircraftData().
-                                        description() == null ?
-                                        new AircraftDescription("") : aircraftState.
-                                        getAircraftData().description(),
-                                category.intValue(),
-                                aircraftState.
-                                        getAircraftData().
-                                        wakeTurbulenceCategory() == null ?
-                                        WakeTurbulenceCategory.of("") : aircraftState.
-                                        getAircraftData().
-                                        wakeTurbulenceCategory())
+                aircraftState.categoryProperty().map(category -> AircraftIcon.iconFor(
+                        aircraftState.getAircraftData().typeDesignator() == null ?
+                                new AircraftTypeDesignator("") : aircraftState.getAircraftData().typeDesignator(),
+                        aircraftState.getAircraftData().description() == null ?
+                                new AircraftDescription("") : aircraftState.getAircraftData().description(),
+                        category.intValue(),
+                        aircraftState.getAircraftData().wakeTurbulenceCategory() == null ?
+                                WakeTurbulenceCategory.of("") : aircraftState.getAircraftData().wakeTurbulenceCategory())
                 );
 
         SVGPath icon = new SVGPath();
@@ -251,7 +238,7 @@ public final class AircraftController {
         // Determine the registration or call sign or the ICAO of the aircraft
         String identification = Optional.ofNullable(aircraftState.getAircraftData().registration().string())
                 .orElse(Optional.ofNullable(aircraftState.getCallSign()).map(Object::toString)
-                                .orElse(aircraftState.getIcaoAddress().string()));
+                        .orElse(aircraftState.getIcaoAddress().string()));
 
         // Bind the text property of the label to the formatted string based on altitude and velocity values
         labelText.textProperty().bind(Bindings.createStringBinding(() -> {
@@ -283,9 +270,11 @@ public final class AircraftController {
         // Bind the visible property of the label group based on the zoom level and selected state
         labelGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
                         mapParameters.getZoom() >= MIN_ZOOM_LEVEL_LABEL
-                                || (selectedAircraftState.get() != null
-                                && aircraftState.equals(selectedAircraftState.get())),
-                    mapParameters.zoomProperty(), selectedAircraftState));
+                        || (selectedAircraftState.get() != null
+                        && aircraftState.equals(selectedAircraftState.get())),
+                        mapParameters.zoomProperty(),
+                        selectedAircraftState)
+        );
 
         return labelGroup;
     }
@@ -307,15 +296,11 @@ public final class AircraftController {
             if (trajectoryGroup.isVisible()) {
                 trajectoryGroup.getChildren().clear();
                 List<ObservableAircraftState.AirbornePos> trajectory = aircraftState.getTrajectory();
-                int size = trajectory.size();
 
                 // Build the trajectory lines based on the positions in the trajectory list
-                List<Line> trajectoryLines = new ArrayList<>();
-                for (int i = 0; i < size - 1; i++) {
-                    ObservableAircraftState.AirbornePos start = trajectory.get(i);
-                    ObservableAircraftState.AirbornePos end = trajectory.get(i + 1);
-                    trajectoryLines.add(buildTrajectoryLine(start, end));
-                }
+                List<Line> trajectoryLines = IntStream.range(0, trajectory.size() - 1)
+                        .mapToObj(i -> buildTrajectoryLine(trajectory.get(i), trajectory.get(i + 1)))
+                        .toList();
 
                 // Add the trajectory lines to the trajectory group
                 trajectoryGroup.getChildren().addAll(trajectoryLines);
@@ -324,7 +309,6 @@ public final class AircraftController {
 
         return trajectoryGroup;
     }
-
 
     /**
      * Builds a trajectory line between two aircraft positions.
@@ -336,8 +320,10 @@ public final class AircraftController {
     private Line buildTrajectoryLine(ObservableAircraftState.AirbornePos start, ObservableAircraftState.AirbornePos end) {
         // Create a line with coordinates based on the start and end positions
         Line line = new Line(
-                WebMercator.x(mapParameters.getZoom(), start.geoPos().longitude()), WebMercator.y(mapParameters.getZoom(), start.geoPos().latitude()),
-                WebMercator.x(mapParameters.getZoom(), end.geoPos().longitude()), WebMercator.y(mapParameters.getZoom(), end.geoPos().latitude())
+                WebMercator.x(mapParameters.getZoom(), start.geoPos().longitude()),
+                WebMercator.y(mapParameters.getZoom(), start.geoPos().latitude()),
+                WebMercator.x(mapParameters.getZoom(), end.geoPos().longitude()),
+                WebMercator.y(mapParameters.getZoom(), end.geoPos().latitude())
         );
 
         // Bind the layout properties of the line to the map parameters to ensure proper positioning

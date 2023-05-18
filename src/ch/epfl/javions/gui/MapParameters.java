@@ -4,27 +4,26 @@ import ch.epfl.javions.Math2;
 import javafx.beans.property.*;
 
 /**
- * A class representing the parameters of a map
- * The properties can be observed and modified
+ * Represents the parameters of a map. The properties can be observed and modified.
+ * This class encapsulates properties of a map view such as zoom level and minimum X/Y coordinates.
  *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
  */
 public final class MapParameters {
-
     private final IntegerProperty zoom;
     private final DoubleProperty minX;
     private final DoubleProperty minY;
-    private final static int SCALB_CONSTANT_ZOOM = 1;
-    private final static int MINIMUM_ZOOM_LEVEL = 6;
-    private final static int MAXIMUM_ZOOM_LEVEL = 19;
+    private final int SCALB_CONSTANT_ZOOM = 1;
+    private final int MINIMUM_ZOOM_LEVEL = 6;
+    private final int MAXIMUM_ZOOM_LEVEL = 19;
 
     /**
-     * Creates a new MapParameters instance
+     * Constructs a MapParameters with the specified initial zoom, initial minimum X value, and initial minimum Y value.
      *
-     * @param initialZoom the initial zoom level
-     * @param initialMinX the initial minimum X value
-     * @param initialMinY the initial minimum Y value
+     * @param initialZoom The initial zoom level.
+     * @param initialMinX The initial minimum X value.
+     * @param initialMinY The initial minimum Y value.
      * @throws IllegalArgumentException if the initialZoom is not in the range [6,19]
      */
     public MapParameters(int initialZoom, double initialMinX, double initialMinY) {
@@ -36,30 +35,28 @@ public final class MapParameters {
         minY = new SimpleDoubleProperty(initialMinY);
     }
 
-
     /**
-     * Returns the zoom property
+     * Returns the read-only zoom property
      *
-     * @return the zoom property
+     * @return the read-only zoom property
      */
     public ReadOnlyIntegerProperty zoomProperty() {
         return zoom;
     }
 
     /**
-     * Returns the zoom
+     * Returns the current zoom level.
      *
-     * @return the zoom
+     * @return The current zoom level.
      */
     public int getZoom() {
         return zoom.get();
     }
 
-
     /**
-     * Returns the minimum X value property
+     * Returns the read-only minimum X value property
      *
-     * @return the minimum X value property
+     * @return the read-only minimum X value property
      */
     public ReadOnlyDoubleProperty minXProperty() {
         return minX;
@@ -99,11 +96,12 @@ public final class MapParameters {
     public double getMinY() {
         return minY.get();
     }
+
     /**
-     * Translates the top-left corner of the displayed map portion by the given vector
+     * Translates the top-left corner of the displayed map portion by the given vector.
      *
-     * @param x the horizontal component of the translation vector
-     * @param y the vertical component of the translation vector
+     * @param x The horizontal component of the translation vector.
+     * @param y The vertical component of the translation vector.
      */
     public void scroll(double x, double y) {
         double newMinX = minX.get() + x;
@@ -111,25 +109,28 @@ public final class MapParameters {
         minX.set(newMinX);
         minY.set(newMinY);
     }
+
     /**
-     * Changes the zoom level by a given difference
+     * Changes the zoom level by a given difference.
      *
-     * @param zoomDifference the difference to add to the current zoom level
+     * @param zoomDifference The difference to add to the current zoom level.
      * @throws IllegalArgumentException if the new zoom level is not in the range [6,19]
      */
     public void changeZoomLevel(int zoomDifference) {
         int newZoom = Math2.clamp(MINIMUM_ZOOM_LEVEL, getZoom() + zoomDifference, MAXIMUM_ZOOM_LEVEL);
-        if (newZoom == getZoom()) {return;}
-
+        if (newZoom == getZoom()) {
+            return;
+        }
         setMinX(getMinX() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
         setMinY(getMinY() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
         zoom.set(newZoom);
     }
 
     /**
-     * Sets the map parameters to the given ones
-     * This method is called when the map is moved
-     * @param newMapParametersWhenMoving the new map parameters
+     * Sets the map parameters to the given ones.
+     * This method is called when the map is moved.
+     *
+     * @param newMapParametersWhenMoving The new map parameters.
      */
     public void set(MapParameters newMapParametersWhenMoving) {
         zoom.set(newMapParametersWhenMoving.getZoom());

@@ -16,14 +16,15 @@ import javafx.scene.layout.Pane;
 import java.io.IOException;
 
 /**
- * BaseMapController class
  * Manages the display and interaction with the background map.
+ * This class is responsible for managing the properties of the map view
+ * such as drawing the map tiles, interacting with the map, handling zoom level changes,
+ * and handling events like moving the map.
  *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
  */
 public final class BaseMapController {
-
     private final TileManager tileManager;
     private final MapParameters mapParameters;
     private final Pane pane;
@@ -33,16 +34,14 @@ public final class BaseMapController {
     private boolean redrawNeeded;
 
     // Size of an OSM Tile in pixels
-    private final static int OSM_TILE_SIZE = 256;
-
+    private final int OSM_TILE_SIZE = 256;
 
     /**
-     * BaseMapManager constructor
+     * Constructs a BaseMapController with the specified TileManager and MapParameters.
      *
      * @param tileM     TileManager to get the tiles from the map
      * @param mapParams MapParameters to get the parameters of the map
      */
-
     public BaseMapController(TileManager tileM, MapParameters mapParams) {
         tileManager = tileM;
         mapParameters = mapParams;
@@ -61,28 +60,30 @@ public final class BaseMapController {
     }
 
     /**
-     * Returns the pane displaying the background map
+     * Returns the pane displaying the background map.
      *
-     * @return Pane
+     * @return The pane displaying the background map.
      */
-
     public Pane pane() {
         return pane;
     }
 
-
     /**
-     * Moves the visible portion of the map so that it is centred at this point (e.g. centring the map on a particular aircraft)
+     * Moves the visible portion of the map so that it is centred at this point (e.g. centring the map on a particular aircraft).
      *
      * @param point a point on the Earth's surface, of type GeoPos
      */
-   public void centerOn(GeoPos point){
-       mapParameters.scroll(
-               WebMercator.x(mapParameters.getZoom(), point.longitude()) - mapParameters.getMinX() - canvas.getWidth() / 2,
-               WebMercator.y(mapParameters.getZoom(),point.latitude())- mapParameters.getMinY() - canvas.getHeight() / 2);
+    public void centerOn(GeoPos point) {
+        mapParameters.scroll(
+                WebMercator.x(mapParameters.getZoom(), point.longitude()) - mapParameters.getMinX() - canvas.getWidth() / 2,
+                WebMercator.y(mapParameters.getZoom(), point.latitude()) - mapParameters.getMinY() - canvas.getHeight() / 2);
     }
 
-
+    /**
+     * Draws the map using tiles obtained from the TileManager.
+     * This function calculates which tiles are needed based on the current map parameters,
+     * obtains these tiles from the TileManager, and then draws them onto the map canvas.
+     */
     private void draw() {
         // First clear the graphic context
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
@@ -138,14 +139,12 @@ public final class BaseMapController {
     }
 
     /**
-     * From a delta Point2D vector and the current MapParameters object,
-     * creates the new MapParameters when moving.
+     * Creates new MapParameters when moving.
      *
      * @param delta            delta of the mouse movement
      * @param oldMapParameters current MapParameters
      * @return new MapParameters when moving
      */
-
     private MapParameters newMapParametersWhenMoving(Point2D delta, MapParameters oldMapParameters) {
         return new MapParameters(
                 oldMapParameters.getZoom(),
@@ -157,16 +156,13 @@ public final class BaseMapController {
     /**
      * Installs the handlers for the map
      */
-    // Installs the handlers in the constructor
     private void installHandlers() {
         ObjectProperty<Point2D> mouseCoordinatesProperty = new SimpleObjectProperty<>(Point2D.ZERO);
         LongProperty minScrollTime = new SimpleLongProperty();
 
-
         // Event handler for movement of the map
         pane.setOnMousePressed(event -> mouseCoordinatesProperty.setValue(
                 new Point2D(event.getX(), event.getY())));
-
 
         pane.setOnMouseDragged(event -> {
             Point2D delta = new Point2D(event.getX(), event.getY()).subtract(mouseCoordinatesProperty.get());
@@ -183,18 +179,16 @@ public final class BaseMapController {
         });
 
         // Even handler for zooming in and out by scrolling
-
-        pane.setOnScroll(e -> {
-            int zoomDelta = (int) Math.signum(e.getDeltaY());
+        pane.setOnScroll(event -> {
+            int zoomDelta = (int) Math.signum(event.getDeltaY());
             if (zoomDelta == 0) return;
 
             long currentTime = System.currentTimeMillis();
             if (currentTime < minScrollTime.get()) return;
             minScrollTime.set(currentTime + 200);
 
-
-            double oldX = e.getX();
-            double oldY = e.getY();
+            double oldX = event.getX();
+            double oldY = event.getY();
 
             mapParameters.scroll(oldX, oldY);
             mapParameters.changeZoomLevel(zoomDelta);
@@ -217,9 +211,9 @@ public final class BaseMapController {
      * Installs the listeners on the canvas and the MapParameters
      */
     private void installListeners() {
-        canvas.sceneProperty().addListener((p, oldS, newS) -> {
-            assert oldS == null;
-            newS.addPreLayoutPulseListener(this::redrawIfNeeded);
+        canvas.sceneProperty().addListener((p, o, n) -> {
+            assert o == null;
+            n.addPreLayoutPulseListener(this::redrawIfNeeded);
         });
 
         // If the height or the width of the canvas change -> redraw
@@ -229,8 +223,5 @@ public final class BaseMapController {
         // When map properties are changed, redraw
         mapParameters.minXProperty().addListener((p, o, n) -> redrawOnNextPulse());
         mapParameters.minYProperty().addListener((p, o, n) -> redrawOnNextPulse());
-
     }
-
-
 }

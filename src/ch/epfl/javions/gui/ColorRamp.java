@@ -17,9 +17,7 @@ public final class ColorRamp {
      * @throws IllegalArgumentException if the number of colors is less than 2
      */
     public ColorRamp(Color... colors) {
-        if (colors.length < 2) {
-            throw new IllegalArgumentException("A color ramp must have at least two colors.");
-        }
+        if (colors.length < 2) throw new IllegalArgumentException("A color ramp must have at least two colors.");
         this.colors = colors;
     }
 
@@ -33,15 +31,13 @@ public final class ColorRamp {
      * @return the interpolated color
      */
     public Color at(double value) {
-        if (value < 0) {
-            return colors[0];
-        } else if (value > 1) {
-            return colors[colors.length - 1];
-        } else {
-            double interval = 1.0 / (colors.length - 1);
-            int index = (int) (value / interval);
-            double percent = (value - index * interval) / interval;
-            return colors[index].interpolate(colors[index + 1], percent);
+        if (value < 0) return colors[0];
+        else if (value > 1) return colors[colors.length - 1];
+        else {
+           double interval = 1.0 / (colors.length - 1);
+           int index = (int) (value / interval);
+           double percent = (value - index * interval) / interval;
+           return colors[index].interpolate(colors[index + 1], percent);
         }
     }
 

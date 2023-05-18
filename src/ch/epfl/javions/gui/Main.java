@@ -19,7 +19,6 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import javafx.animation.AnimationTimer;
@@ -36,7 +35,7 @@ public class Main extends Application {
     private static final int INITIAL_ZOOM = 8;
     private static final double INITIAL_LONGITUDE = 33530;
     private static final double INITIAL_LATITUDE = 23070;
-    private static final long TO_MILLISECONDS = 10000000;
+    private static final long TO_MILLISECONDS = 1000000;
 
     /**
      * This is a thread-safe queue used for storing raw ADS-B messages received from aircraft.
@@ -94,6 +93,7 @@ public class Main extends Application {
         // - aircraftController: controls the aircraft, including movement and selection
         // - aircraftTableController: controls the table that displays the list of aircraft
         // - statusLineController: controls the line that displays the status of the application
+
         ObjectProperty<ObservableAircraftState> selectedAircraftProperty = new SimpleObjectProperty<>();
         var mapParameters = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
         var tileManager = new TileManager(tileCachePath, "tile.openstreetmap.org");
@@ -120,43 +120,7 @@ public class Main extends Application {
         primaryStage.show();
 
         // Setting up a supplier of raw ADS-B messages
-        Supplier<RawMessage> messageSupplier;
-        if (!getParameters().getRaw().isEmpty()) {
-            try {
-                var finished = new AtomicBoolean(false);
-                var inputStream = new DataInputStream(
-                        new BufferedInputStream(new FileInputStream(getParameters().getRaw().get(0))));
-                messageSupplier = () -> {
-                    try {
-                        if (finished.get() || inputStream.available() == 0) {
-                            finished.set(true);
-                            return null;
-                        }
-                        RawMessage currentMessage = readMessage(inputStream);
-                        long currentTime = currentMessage.timeStampNs() - (System.nanoTime() - startTime);
-                        if (currentTime >= 0) {
-                            Thread.sleep(currentTime / TO_MILLISECONDS);
-                        }
-                        return currentMessage;
-                    } catch (IOException e) {
-                        throw new RuntimeException();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                };
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            messageSupplier = () -> {
-                try {
-                    var adsbDemodulator = new AdsbDemodulator(System.in);
-                    return adsbDemodulator.nextMessage();
-                } catch (IOException e) {
-                    throw new RuntimeException();
-                }
-            };
-        }
+        Supplier<RawMessage> messageSupplier = createMessageSupplier(startTime);
 
         // We're starting a new thread that continuously reads in raw ADS-B messages and adds them to our queue
         Thread messageThread = createMessageThread(messageSupplier);
@@ -172,12 +136,9 @@ public class Main extends Application {
                     for (int i = 0; i < 10; i++) {
                         if (messageQueue.peek() != null) {
                             Message message = MessageParser.parse(messageQueue.poll());
-                            if (message != null) {
-                                aircraftStateManager.updateWithMessage(message);
-                            }
-                            if (i == 9) {
-                                aircraftStateManager.purge();
-                            }
+
+                            if (message != null) aircraftStateManager.updateWithMessage(message);
+                            if (i == 9) aircraftStateManager.purge();
                             statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().getValue() + 1);
                             statusLineController.aircraftCountProperty().set(aircraftStateManager.states().size());
                         }
@@ -188,6 +149,45 @@ public class Main extends Application {
             }
         }.start();
     }
+
+    private Supplier<RawMessage> createMessageSupplier(long startTime) {
+        if (!getParameters().getRaw().isEmpty()) {
+            try {
+                File rawFile = new File(getParameters().getRaw().get(0));
+                FileInputStream fileInputStream = new FileInputStream(rawFile);
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+                DataInputStream inputStream = new DataInputStream(bufferedInputStream);
+                return () -> {
+                    try {
+                        if (inputStream.available() == 0) {
+                            inputStream.close();
+                            return null;
+                        }
+                        RawMessage currentMessage = readMessage(inputStream);
+                        long currentTime = currentMessage.timeStampNs() - (System.nanoTime() - startTime);
+                        if (currentTime >= 0) Thread.sleep(currentTime / TO_MILLISECONDS);
+                        return currentMessage;
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                };
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return () -> {
+                try {
+                    AdsbDemodulator adsbDemodulator = new AdsbDemodulator(System.in);
+                    return adsbDemodulator.nextMessage();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        }
+    }
+
 
     /**
      * This method creates a new thread for handling raw ADS-B messages.
@@ -200,9 +200,7 @@ public class Main extends Application {
         return new Thread(() -> {
             while (true) {
                 RawMessage message = messageSupplier.get();
-                if (message == null) {
-                    break;
-                }
+                if (message == null) break;
                 messageQueue.add(message);
             }
         });
