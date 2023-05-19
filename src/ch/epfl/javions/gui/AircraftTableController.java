@@ -41,6 +41,7 @@ public final class AircraftTableController {
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private final DecimalFormat DECIMAL_FORMAT_4_DIGITS = new DecimalFormat("#.####");
     private final DecimalFormat DECIMAL_FORMAT_0_DIGIT = new DecimalFormat("#");
+    private final String EMPTY_STRING = "";
 
     /**
      * Constructs an AircraftTableController object with the given set of aircraft states
@@ -145,19 +146,24 @@ public final class AircraftTableController {
 
         // ---------------------------------Registration-----------------------------------
         TableColumn<ObservableAircraftState, String> registrationColumn = createColumn("Immatriculation", REGISTRATION_COLUMN_WIDTH);
-        registrationColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getAircraftData().registration()).map(AircraftRegistration::string));
-
+        registrationColumn.setCellValueFactory(cellData -> cellData.getValue().getAircraftData() != null ?
+                wrap(cellData.getValue().getAircraftData().registration()).map(AircraftRegistration::string) : wrap(EMPTY_STRING)
+        );
         // ---------------------------------Model------------------------------------------
         TableColumn<ObservableAircraftState, String> modelColumn = createColumn("Modèle", MODEL_COLUMN_WIDTH);
-        modelColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getAircraftData().model() != null ? cellData.getValue().getAircraftData().model() : ""));
+        modelColumn.setCellValueFactory(cellData -> cellData.getValue().getAircraftData() != null ?
+                wrap(cellData.getValue().getAircraftData().model()) : wrap(EMPTY_STRING)
+        );
 
         // ---------------------------------Type Designator---------------------------------
         TableColumn<ObservableAircraftState, String> typeColumn = createColumn("Type", DESIGNATOR_COLUMN_WIDTH);
-        typeColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getAircraftData().typeDesignator()).map(AircraftTypeDesignator::string));
+        typeColumn.setCellValueFactory(cellData -> cellData.getValue().getAircraftData() != null ?
+                wrap(cellData.getValue().getAircraftData().typeDesignator()).map(AircraftTypeDesignator::string) : wrap(EMPTY_STRING));
 
         // ---------------------------------Description-------------------------------------
         TableColumn<ObservableAircraftState, String> descriptionColumn = createColumn("Description", DESCRIPTION_COLUMN_WIDTH);
-        descriptionColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getAircraftData().description()).map(AircraftDescription::string));
+        descriptionColumn.setCellValueFactory(cellData -> cellData.getValue().getAircraftData() != null ?
+                wrap(cellData.getValue().getAircraftData().description()).map(AircraftDescription::string) : wrap(EMPTY_STRING));
 
         // ---------------------------------Longitude --------------------------------------
         TableColumn<ObservableAircraftState, String> longitudeColumn = createColumn("Longitude (°)", NUMERIC_COLUMN_WIDTH);
@@ -177,14 +183,14 @@ public final class AircraftTableController {
         TableColumn<ObservableAircraftState, String> altitudeColumn = createColumn("Altitude (m)", NUMERIC_COLUMN_WIDTH);
         altitudeColumn.setCellValueFactory(cellData -> {
             double altitude = cellData.getValue().getAltitude();
-            return Bindings.createObjectBinding(() -> !Double.isNaN(altitude) ? DECIMAL_FORMAT_0_DIGIT.format(altitude) : "", cellData.getValue().altitudeProperty());
+            return Bindings.createObjectBinding(() -> !Double.isNaN(altitude) ? DECIMAL_FORMAT_0_DIGIT.format(altitude) : EMPTY_STRING, cellData.getValue().altitudeProperty());
         });
 
         // ----------------------------------Speed-------------------------------------------
         TableColumn<ObservableAircraftState, String> speedColumn = createColumn("Vitesse (km/h)", NUMERIC_COLUMN_WIDTH);
         speedColumn.setCellValueFactory(cellData -> {
             double velocity = cellData.getValue().getVelocity();
-            return Bindings.createStringBinding(() -> !Double.isNaN(velocity) ? DECIMAL_FORMAT_0_DIGIT.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)) : "", cellData.getValue().velocityProperty());
+            return Bindings.createStringBinding(() -> !Double.isNaN(velocity) ? DECIMAL_FORMAT_0_DIGIT.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)) : EMPTY_STRING, cellData.getValue().velocityProperty());
         });
         tableView.getColumns().addAll(icaoColumn, callSignColumn, registrationColumn, modelColumn, typeColumn, descriptionColumn, longitudeColumn, latitudeColumn, altitudeColumn, speedColumn);
     }

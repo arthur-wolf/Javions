@@ -36,7 +36,7 @@ public final class AircraftStateManager {
     /**
      * Constructs an aircraft state manager
      *
-     * @param database the aircraft database
+     * @param database The aircraft database
      */
     public AircraftStateManager(AircraftDatabase database) {
         this.database = database;
@@ -48,7 +48,7 @@ public final class AircraftStateManager {
     /**
      * Returns the observable aircraft states
      *
-     * @return the observable aircraft states
+     * @return The observable aircraft states
      */
     public ObservableSet<ObservableAircraftState> states() {
         return observableAircraftStatesView;
@@ -72,9 +72,6 @@ public final class AircraftStateManager {
 
         // Attempt to get the AircraftStateAccumulator associated with the address from the table
         AircraftStateAccumulator<ObservableAircraftState> accumulator = table.get(address);
-
-        // If the address is null or not found in the database, return without making any changes
-        //if(address == null || database.get(address) == null) return;
 
         // If the accumulator is not found in the table, create a new one and add it to the table
         if (accumulator == null) {

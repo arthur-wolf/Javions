@@ -2,9 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.Units;
 import ch.epfl.javions.WebMercator;
-import ch.epfl.javions.aircraft.AircraftDescription;
-import ch.epfl.javions.aircraft.AircraftTypeDesignator;
-import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
+import ch.epfl.javions.aircraft.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -23,9 +21,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
-
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static ch.epfl.javions.Units.Angle.DEGREE;
@@ -42,14 +38,16 @@ public final class AircraftController {
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private final Pane pane;
     private final int MIN_ZOOM_LEVEL_LABEL = 11; //Maximum zoom level at which the label is visible
+    private final String EMPTY_STRING = "";
+    private final String UNKNOWN= "?";
 
     /**
      * Constructs a new AircraftController with the given map parameters, aircraft state set,
      * and selected aircraft state property.
      *
-     * @param mapParameters         the map parameters
-     * @param aircraftState         the set of aircraft states
-     * @param selectedAircraftState the property for the selected aircraft state
+     * @param mapParameters         The map parameters
+     * @param aircraftState         The set of aircraft states
+     * @param selectedAircraftState The property for the selected aircraft state
      */
     public AircraftController(MapParameters mapParameters,
                               ObservableSet<ObservableAircraftState> aircraftState,
@@ -98,24 +96,19 @@ public final class AircraftController {
                 pane.getChildren().removeIf(node -> node.getId().equals(aircraftId));
             }
         });
+
         mapParameters.zoomProperty().addListener((observable, oldValue, newValue) -> {
             for (ObservableAircraftState aircraft : aircraftState) {
                 // Look up the aircraft group by its ID
                 Group aircraftGroup = (Group) pane.lookup("#" + aircraft.getIcaoAddress().string());
                 // Get the trajectory group from the aircraft group
                 if (aircraftGroup != null && aircraftGroup.getChildren().get(0) instanceof Group trajectoryGroup) {
-                    if (trajectoryGroup.isVisible()) {
-                        // Clear the existing trajectory lines
-                        trajectoryGroup.getChildren().clear();
-                        // Get the trajectory positions of the aircraft
-                        List<ObservableAircraftState.AirbornePos> trajectory = aircraft.getTrajectory();
                         // Build trajectory lines between each pair of positions
-                        List<Line> trajectoryLines = IntStream.range(0, trajectory.size() - 1)
-                                .mapToObj(i -> buildTrajectoryLine(trajectory.get(i), trajectory.get(i + 1)))
+                        List<Line> trajectoryLines = IntStream.range(0, aircraft.getTrajectory().size() - 1)
+                                .mapToObj(i -> buildTrajectoryLine(aircraft.getTrajectory().get(i), aircraft.getTrajectory().get(i + 1)))
                                 .toList();
                         // Add the trajectory lines to the trajectory group
                         trajectoryGroup.getChildren().addAll(trajectoryLines);
-                    }
                 }
             }
         });
@@ -124,8 +117,8 @@ public final class AircraftController {
     /**
      * Creates the aircraft group for an observable aircraft state.
      *
-     * @param aircraftState the observable aircraft state
-     * @return the aircraft group
+     * @param aircraftState The observable aircraft state
+     * @return The aircraft group
      */
     private Group createAircraftGroup(ObservableAircraftState aircraftState) {
         Group iconAndLabelGroup = iconAndLabelGroup(aircraftState);
@@ -151,8 +144,8 @@ public final class AircraftController {
     /**
      * Creates the group containing the aircraft icon and label.
      *
-     * @param aircraftState the observable aircraft state
-     * @return the group containing the icon and label
+     * @param aircraftState The observable aircraft state
+     * @return The group containing the icon and label
      */
     private Group iconAndLabelGroup(ObservableAircraftState aircraftState) {
         SVGPath icon = buildIcon(aircraftState);
@@ -186,20 +179,29 @@ public final class AircraftController {
     /**
      * Builds the icon for the aircraft.
      *
-     * @param aircraftState the observable aircraft state
-     * @return the aircraft icon
+     * @param aircraftState The observable aircraft state
+     * @return The aircraft icon
      */
     private SVGPath buildIcon(ObservableAircraftState aircraftState) {
-        ObservableValue<AircraftIcon> aircraftIcon =
-                aircraftState.categoryProperty().map(category -> AircraftIcon.iconFor(
-                        aircraftState.getAircraftData().typeDesignator() == null ?
-                                new AircraftTypeDesignator("") : aircraftState.getAircraftData().typeDesignator(),
-                        aircraftState.getAircraftData().description() == null ?
-                                new AircraftDescription("") : aircraftState.getAircraftData().description(),
-                        category.intValue(),
-                        aircraftState.getAircraftData().wakeTurbulenceCategory() == null ?
-                                WakeTurbulenceCategory.of("") : aircraftState.getAircraftData().wakeTurbulenceCategory())
-                );
+        ObservableValue<AircraftIcon> aircraftIcon = aircraftState.categoryProperty().map(category -> {
+            AircraftData data = aircraftState.getAircraftData();
+            // We need to do all this because some aircraft have their CallSign that might change so their icon have to change too
+
+            AircraftTypeDesignator typeDesignator = (data != null && data.typeDesignator() != null)
+                    ? data.typeDesignator()
+                    : new AircraftTypeDesignator(EMPTY_STRING);
+
+            AircraftDescription description = (data != null && data.description() != null)
+                    ? data.description()
+                    : new AircraftDescription(EMPTY_STRING);
+
+            WakeTurbulenceCategory wakeTurbulenceCategory = (data != null && data.wakeTurbulenceCategory() != null)
+                    ? data.wakeTurbulenceCategory()
+                    : WakeTurbulenceCategory.of(EMPTY_STRING);
+
+            return AircraftIcon.iconFor(typeDesignator, description, category.intValue(), wakeTurbulenceCategory);
+        });
+
 
         SVGPath icon = new SVGPath();
         icon.getStyleClass().add("aircraft");
@@ -209,7 +211,8 @@ public final class AircraftController {
 
         // Bind the rotation property of the SVGPath to the track or heading of the aircraft
         icon.rotateProperty().bind(Bindings.createDoubleBinding(() ->
-                        aircraftIcon.getValue().canRotate() ? Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE) : 0.0,
+                        aircraftIcon.getValue().canRotate()
+                                ? Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE) : 0.0,
                 aircraftState.trackOrHeadingProperty()));
 
         // Set a mouse click event handler to toggle the selected state of the aircraft
@@ -228,33 +231,39 @@ public final class AircraftController {
     /**
      * Builds the label for the aircraft.
      *
-     * @param aircraftState the observable aircraft state
-     * @return the aircraft label
+     * @param aircraftState The observable aircraft state
+     * @return The aircraft label with the information of the aircraft
      */
     private Group buildLabel(ObservableAircraftState aircraftState) {
         Text labelText = new Text();
         Rectangle labelBackground = new Rectangle();
 
-        // Determine the registration or call sign or the ICAO of the aircraft
-        String identification = Optional.ofNullable(aircraftState.getAircraftData().registration().string())
-                .orElse(Optional.ofNullable(aircraftState.getCallSign()).map(Object::toString)
-                        .orElse(aircraftState.getIcaoAddress().string()));
-
-        // Bind the text property of the label to the formatted string based on altitude and velocity values
+        // Bind the text property of the label to the formatted string based on registration, callSign, ICAO, altitude and velocity values
         labelText.textProperty().bind(Bindings.createStringBinding(() -> {
+
+            // If the aircraftData is not null then we show the registration
+            // Else if the CallSign is null then we show the ICAO
+            // The CallSign might be null first and then appear so we need to update the Label by replacing the ICAO by the CallSign
+            String identification = aircraftState.getAircraftData() != null ?
+                    aircraftState.getAircraftData().registration().string() :
+                    (aircraftState.getCallSign() != null ?
+                            aircraftState.getCallSign().string() : aircraftState.getIcaoAddress().string());
+
             // Format the velocity and altitude values
-            // If the value is Nane, then the value is unknown and a question mark is displayed
+            // If the value is NaN, then the value is unknown and a question mark is displayed
             String velocity = Double.isNaN(aircraftState.getVelocity())
-                    ? "?"
+                    ? UNKNOWN
                     : String.format("%.0f", Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
             String altitude = Double.isNaN(aircraftState.getAltitude())
-                    ? "?"
+                    ? UNKNOWN
                     : String.format("%.0f", aircraftState.getAltitude());
+
             return String.format("%s\n%s\u2002km/h %s\u2002m",
                     identification,
                     velocity,
                     altitude);
-        }, aircraftState.altitudeProperty(), aircraftState.velocityProperty()));
+            // The binding depends of this 3 property, because they might change with the time.
+        }, aircraftState.callSignProperty(), aircraftState.altitudeProperty(), aircraftState.velocityProperty()));
 
         labelText.getStyleClass().add("label-text");
 
@@ -270,21 +279,22 @@ public final class AircraftController {
         // Bind the visible property of the label group based on the zoom level and selected state
         labelGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
                         mapParameters.getZoom() >= MIN_ZOOM_LEVEL_LABEL
-                        || (selectedAircraftState.get() != null
-                        && aircraftState.equals(selectedAircraftState.get())),
-                        mapParameters.zoomProperty(),
-                        selectedAircraftState)
+                                || (selectedAircraftState.get() != null
+                                && aircraftState.equals(selectedAircraftState.get())),
+                mapParameters.zoomProperty(),
+                selectedAircraftState)
         );
 
         return labelGroup;
     }
 
 
+
     /**
      * Builds the trajectory group for an aircraft state.
      *
-     * @param aircraftState the observable aircraft state
-     * @return the trajectory group
+     * @param aircraftState The observable aircraft state
+     * @return The trajectory group
      */
     private Group buildTrajectoryGroup(ObservableAircraftState aircraftState) {
         Group trajectoryGroup = new Group();
@@ -313,9 +323,9 @@ public final class AircraftController {
     /**
      * Builds a trajectory line between two aircraft positions.
      *
-     * @param start the start position
-     * @param end   the end position
-     * @return the trajectory line
+     * @param start The start position
+     * @param end   The end position
+     * @return The trajectory line
      */
     private Line buildTrajectoryLine(ObservableAircraftState.AirbornePos start, ObservableAircraftState.AirbornePos end) {
         // Create a line with coordinates based on the start and end positions
@@ -343,8 +353,8 @@ public final class AircraftController {
     /**
      * Returns the altitude color corresponding to a given altitude.
      *
-     * @param altitude the altitude
-     * @return the corresponding altitude color
+     * @param altitude The altitude
+     * @return The corresponding altitude color
      */
     private Color getAltitudeColor(double altitude) {
         double MAX_ALTITUDE = 12000; //Given max altitude : https://cs108.epfl.ch/p/09_aircraft-view.html
@@ -355,8 +365,8 @@ public final class AircraftController {
     /**
      * Returns the fill property for the aircraft state.
      *
-     * @param aircraftState the observable aircraft state
-     * @return the fill property for the aircraft state
+     * @param aircraftState The observable aircraft state
+     * @return The fill property for the aircraft state
      */
     private ObjectProperty<Color> getFillProperty(ObservableAircraftState aircraftState) {
         double altitude = aircraftState.altitudeProperty().get();
