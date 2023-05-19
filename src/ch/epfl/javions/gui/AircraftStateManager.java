@@ -63,8 +63,8 @@ public final class AircraftStateManager {
      * The accumulator is then updated with the message.
      * If the accumulator's state setter's position is not null, the accumulator's state setter is
      * added to the observable aircraft states and the last timestamp is updated with the message's timestamp.
-     * @param message the message used to update the aircraft state manager
-     * @throws IOException if an I/O error occurs
+     * @param message The message used to update the aircraft state manager
+     * @throws IOException If an I/O error occurs
      */
     public void updateWithMessage(Message message) throws IOException {
         // Get the IcaoAddress from the message

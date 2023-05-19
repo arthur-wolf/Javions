@@ -24,12 +24,12 @@ public final class MapParameters {
      * @param initialZoom The initial zoom level.
      * @param initialMinX The initial minimum X value.
      * @param initialMinY The initial minimum Y value.
-     * @throws IllegalArgumentException if the initialZoom is not in the range [6,19]
+     * @throws IllegalArgumentException If the initialZoom is not in the range [6,19]
      */
     public MapParameters(int initialZoom, double initialMinX, double initialMinY) {
-        if (initialZoom < MINIMUM_ZOOM_LEVEL || initialZoom > MAXIMUM_ZOOM_LEVEL) {
+        if (initialZoom < MINIMUM_ZOOM_LEVEL || initialZoom > MAXIMUM_ZOOM_LEVEL)
             throw new IllegalArgumentException();
-        }
+
         zoom = new SimpleIntegerProperty(initialZoom);
         minX = new SimpleDoubleProperty(initialMinX);
         minY = new SimpleDoubleProperty(initialMinY);
@@ -38,7 +38,7 @@ public final class MapParameters {
     /**
      * Returns the read-only zoom property
      *
-     * @return the read-only zoom property
+     * @return The read-only zoom property
      */
     public ReadOnlyIntegerProperty zoomProperty() {
         return zoom;
@@ -56,12 +56,16 @@ public final class MapParameters {
     /**
      * Returns the read-only minimum X value property
      *
-     * @return the read-only minimum X value property
+     * @return The read-only minimum X value property
      */
     public ReadOnlyDoubleProperty minXProperty() {
         return minX;
     }
 
+    /**
+     * Sets the minimum X value
+     * @param minX The minimum X value
+     */
     public void setMinX(double minX) {
         this.minX.set(minX);
     }
@@ -69,7 +73,7 @@ public final class MapParameters {
     /**
      * Returns the minimum X value
      *
-     * @return the minimum X value
+     * @return The minimum X value
      */
     public double getMinX() {
         return minX.get();
@@ -78,12 +82,17 @@ public final class MapParameters {
     /**
      * Returns the minimum Y value property
      *
-     * @return the minimum Y value property
+     * @return The minimum Y value property
      */
     public ReadOnlyDoubleProperty minYProperty() {
         return minY;
     }
 
+    /**
+     * Sets the minimum Y value
+     *
+     * @param minY The minimum Y value
+     */
     public void setMinY(double minY) {
         this.minY.set(minY);
     }
@@ -91,7 +100,7 @@ public final class MapParameters {
     /**
      * Returns the minimum Y value
      *
-     * @return the minimum Y value
+     * @return The minimum Y value
      */
     public double getMinY() {
         return minY.get();
@@ -114,16 +123,15 @@ public final class MapParameters {
      * Changes the zoom level by a given difference.
      *
      * @param zoomDifference The difference to add to the current zoom level.
-     * @throws IllegalArgumentException if the new zoom level is not in the range [6,19]
+     * @throws IllegalArgumentException If the new zoom level is not in the range [6,19]
      */
     public void changeZoomLevel(int zoomDifference) {
         int newZoom = Math2.clamp(MINIMUM_ZOOM_LEVEL, getZoom() + zoomDifference, MAXIMUM_ZOOM_LEVEL);
-        if (newZoom == getZoom()) {
-            return;
+        if (newZoom != getZoom()) {
+            setMinX(getMinX() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
+            setMinY(getMinY() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
+            zoom.set(newZoom);
         }
-        setMinX(getMinX() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
-        setMinY(getMinY() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
-        zoom.set(newZoom);
     }
 
     /**

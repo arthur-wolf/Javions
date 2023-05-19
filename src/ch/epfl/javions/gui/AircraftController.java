@@ -65,7 +65,7 @@ public final class AircraftController {
     /**
      * Returns the pane containing the aircraft representations.
      *
-     * @return the aircraft pane
+     * @return The aircraft pane
      */
     public Pane pane() {
         return pane;
@@ -74,7 +74,7 @@ public final class AircraftController {
     /**
      * Creates the pane for the aircraft.
      *
-     * @return the aircraft pane
+     * @return The aircraft pane
      */
     private Pane createAircraftPane() {
         Pane aircraftPane = new Pane();
@@ -187,19 +187,23 @@ public final class AircraftController {
             AircraftData data = aircraftState.getAircraftData();
             // We need to do all this because some aircraft have their CallSign that might change so their icon have to change too
 
-            AircraftTypeDesignator typeDesignator = (data != null && data.typeDesignator() != null)
-                    ? data.typeDesignator()
-                    : new AircraftTypeDesignator(EMPTY_STRING);
+            AircraftTypeDesignator typeDesignator = (data != null
+                    && data.typeDesignator() != null) ?
+                    data.typeDesignator() : new AircraftTypeDesignator(EMPTY_STRING);
 
-            AircraftDescription description = (data != null && data.description() != null)
-                    ? data.description()
-                    : new AircraftDescription(EMPTY_STRING);
+            AircraftDescription description = (data != null
+                    && data.description() != null) ?
+                    data.description() : new AircraftDescription(EMPTY_STRING);
 
-            WakeTurbulenceCategory wakeTurbulenceCategory = (data != null && data.wakeTurbulenceCategory() != null)
-                    ? data.wakeTurbulenceCategory()
-                    : WakeTurbulenceCategory.of(EMPTY_STRING);
+            WakeTurbulenceCategory wakeTurbulenceCategory = (data != null
+                    && data.wakeTurbulenceCategory() != null) ?
+                    data.wakeTurbulenceCategory() : WakeTurbulenceCategory.of(EMPTY_STRING);
 
-            return AircraftIcon.iconFor(typeDesignator, description, category.intValue(), wakeTurbulenceCategory);
+            return AircraftIcon.iconFor(
+                    typeDesignator,
+                    description,
+                    category.intValue(),
+                    wakeTurbulenceCategory);
         });
 
 
@@ -211,8 +215,8 @@ public final class AircraftController {
 
         // Bind the rotation property of the SVGPath to the track or heading of the aircraft
         icon.rotateProperty().bind(Bindings.createDoubleBinding(() ->
-                        aircraftIcon.getValue().canRotate()
-                                ? Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE) : 0.0,
+                        aircraftIcon.getValue().canRotate() ?
+                        Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE) : 0.0,
                 aircraftState.trackOrHeadingProperty()));
 
         // Set a mouse click event handler to toggle the selected state of the aircraft
@@ -287,8 +291,6 @@ public final class AircraftController {
 
         return labelGroup;
     }
-
-
 
     /**
      * Builds the trajectory group for an aircraft state.

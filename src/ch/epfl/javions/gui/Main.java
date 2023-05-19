@@ -35,11 +35,10 @@ import javafx.animation.AnimationTimer;
  * @author Oussama Ghali (341478)
  */
 public class Main extends Application {
-
-    private static final int INITIAL_ZOOM = 8;
-    private static final double INITIAL_LONGITUDE = 33530;
-    private static final double INITIAL_LATITUDE = 23070;
-    private static final long TO_MILLISECONDS = 1000000;
+    private final int INITIAL_ZOOM = 8;
+    private final double INITIAL_LONGITUDE = 33530;
+    private final double INITIAL_LATITUDE = 23070;
+    private final long TO_MILLISECONDS = 1_000_000;
 
     // This is a thread-safe queue used for storing raw ADS-B messages received from aircraft.
     private final ConcurrentLinkedQueue<RawMessage> messageQueue = new ConcurrentLinkedQueue<>();
@@ -48,7 +47,7 @@ public class Main extends Application {
     /**
      * This is the main method which launches the application.
      *
-     * @param args the command line arguments
+     * @param args The command line arguments
      */
     public static void main(String[] args) {
         launch(args);
@@ -57,9 +56,9 @@ public class Main extends Application {
     /**
      * This method reads a raw ADS-B message from an input stream.
      *
-     * @param inputStream the input stream to read from
-     * @return the raw ADS-B message
-     * @throws IOException if an I/O error occurs
+     * @param inputStream The input stream to read from
+     * @return The raw ADS-B message
+     * @throws IOException If an I/O error occurs
      */
     static RawMessage readMessage(DataInputStream inputStream) throws IOException {
         byte[] bytes = new byte[RawMessage.LENGTH];
@@ -75,8 +74,8 @@ public class Main extends Application {
      * This method initializes the JavaFX application. It sets up the map, aircraft database, status line,
      * and starts the message handling threads.
      *
-     * @param primaryStage the primary stage for this application, onto which the application scene is set.
-     * @throws Exception if an error occurs during initialization
+     * @param primaryStage The primary stage for this application, onto which the application scene is set.
+     * @throws Exception If an error occurs during initialization
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -108,7 +107,7 @@ public class Main extends Application {
         var aircraftTableController = new AircraftTableController(aircraftStateManager.states(), selectedAircraftProperty);
         var statusLineController = new StatusLineController();
 
-
+        // We're binding the aircraft count in the status line to the number of aircraft in the aircraft state manager
         statusLineController.aircraftCountProperty().bind(Bindings.size(aircraftStateManager.states()));
 
         // We're setting up our GUI layout here, with a split pane for the map and the status bar
@@ -119,6 +118,7 @@ public class Main extends Application {
         // Setting up event handling for when the user double-clicks on an aircraft in the table
         aircraftTableController.setOnDoubleClick(event -> baseMapController.centerOn(event.getPosition()));
 
+        // GUI setup
         root.setOrientation(javafx.geometry.Orientation.VERTICAL);
         primaryStage.setScene(new Scene(new BorderPane(root, null, null, null, null)));
         primaryStage.setTitle("Javions");
@@ -143,7 +143,6 @@ public class Main extends Application {
                 if (lastPurge == -1) {
                     lastPurge = now;
                 }
-
                 // Check if a second has passed since the last purge
                 if ((now - lastPurge) >= 1_000_000_000) {  // 1 second = 1_000_000_000 nanoseconds
                     aircraftStateManager.purge();
@@ -162,7 +161,6 @@ public class Main extends Application {
                 }
             }
         }.start();
-
     }
     private Supplier<RawMessage> createMessageSupplier(long startTime) throws IOException {
         List<String> params = getParameters().getRaw();
@@ -212,14 +210,12 @@ public class Main extends Application {
         };
     }
 
-
-
     /**
      * This method creates a new thread for handling raw ADS-B messages.
      * It continuously reads messages from a supplier and adds them to a queue.
      *
-     * @param messageSupplier the supplier of raw ADS-B messages
-     * @return the new thread
+     * @param messageSupplier The supplier of raw ADS-B messages
+     * @return The new thread
      */
     private Thread createMessageThread(Supplier<RawMessage> messageSupplier) {
         return new Thread(() -> {

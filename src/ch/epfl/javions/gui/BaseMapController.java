@@ -71,7 +71,7 @@ public final class BaseMapController {
     /**
      * Moves the visible portion of the map so that it is centred at this point (e.g. centring the map on a particular aircraft).
      *
-     * @param point a point on the Earth's surface, of type GeoPos
+     * @param point A point to centre the map on.
      */
     public void centerOn(GeoPos point) {
         mapParameters.scroll(
@@ -141,9 +141,9 @@ public final class BaseMapController {
     /**
      * Creates new MapParameters when moving.
      *
-     * @param delta            delta of the mouse movement
-     * @param oldMapParameters current MapParameters
-     * @return new MapParameters when moving
+     * @param delta            Delta of the mouse movement
+     * @param oldMapParameters Current MapParameters
+     * @return New MapParameters when moving
      */
     private MapParameters newMapParametersWhenMoving(Point2D delta, MapParameters oldMapParameters) {
         return new MapParameters(
