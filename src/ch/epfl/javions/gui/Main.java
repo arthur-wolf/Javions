@@ -7,6 +7,7 @@ import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
@@ -18,10 +19,13 @@ import javafx.stage.Stage;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
 
 import javafx.animation.AnimationTimer;
+
 
 /**
  * This is the main class for the Javions application.
@@ -37,10 +41,9 @@ public class Main extends Application {
     private static final double INITIAL_LATITUDE = 23070;
     private static final long TO_MILLISECONDS = 1000000;
 
-    /**
-     * This is a thread-safe queue used for storing raw ADS-B messages received from aircraft.
-     */
+    // This is a thread-safe queue used for storing raw ADS-B messages received from aircraft.
     private final ConcurrentLinkedQueue<RawMessage> messageQueue = new ConcurrentLinkedQueue<>();
+    private AdsbDemodulator adsbDemodulator;
 
     /**
      * This is the main method which launches the application.
@@ -95,6 +98,7 @@ public class Main extends Application {
         // - statusLineController: controls the line that displays the status of the application
 
         ObjectProperty<ObservableAircraftState> selectedAircraftProperty = new SimpleObjectProperty<>();
+
         var mapParameters = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
         var tileManager = new TileManager(tileCachePath, "tile.openstreetmap.org");
         var baseMapController = new BaseMapController(tileManager, mapParameters);
@@ -103,6 +107,9 @@ public class Main extends Application {
         var aircraftController = new AircraftController(mapParameters, aircraftStateManager.states(), selectedAircraftProperty);
         var aircraftTableController = new AircraftTableController(aircraftStateManager.states(), selectedAircraftProperty);
         var statusLineController = new StatusLineController();
+
+
+        statusLineController.aircraftCountProperty().bind(Bindings.size(aircraftStateManager.states()));
 
         // We're setting up our GUI layout here, with a split pane for the map and the status bar
         var stackPane = new StackPane(baseMapController.pane(), aircraftController.pane());
@@ -131,62 +138,80 @@ public class Main extends Application {
         new AnimationTimer() {
             @Override
             public void handle(long now) {
+                long lastPurge = -1;
                 if (messageQueue.isEmpty()) return;
+                if (lastPurge == -1) {
+                    lastPurge = now;
+                }
+
+                // Check if a second has passed since the last purge
+                if ((now - lastPurge) >= 1_000_000_000) {  // 1 second = 1_000_000_000 nanoseconds
+                    aircraftStateManager.purge();
+                    lastPurge = now;
+                }
                 try {
-                    for (int i = 0; i < 10; i++) {
                         if (messageQueue.peek() != null) {
                             Message message = MessageParser.parse(messageQueue.poll());
-
-                            if (message != null) aircraftStateManager.updateWithMessage(message);
-                            if (i == 9) aircraftStateManager.purge();
-                            statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().getValue() + 1);
-                            statusLineController.aircraftCountProperty().set(aircraftStateManager.states().size());
+                            if (message != null) {
+                                aircraftStateManager.updateWithMessage(message);
+                                statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().get() + 1);
+                            }
                         }
-                    }
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
             }
         }.start();
+
+    }
+    private Supplier<RawMessage> createMessageSupplier(long startTime) throws IOException {
+        List<String> params = getParameters().getRaw();
+        if (!params.isEmpty()) {
+            return createFileSupplier(params.get(0), startTime);
+        } else {
+            adsbDemodulator = new AdsbDemodulator(System.in);
+            return createSystemInSupplier();
+        }
     }
 
-    private Supplier<RawMessage> createMessageSupplier(long startTime) {
-        if (!getParameters().getRaw().isEmpty()) {
-            try {
-                File rawFile = new File(getParameters().getRaw().get(0));
-                FileInputStream fileInputStream = new FileInputStream(rawFile);
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-                DataInputStream inputStream = new DataInputStream(bufferedInputStream);
-                return () -> {
-                    try {
-                        if (inputStream.available() == 0) {
-                            inputStream.close();
-                            return null;
-                        }
-                        RawMessage currentMessage = readMessage(inputStream);
-                        long currentTime = currentMessage.timeStampNs() - (System.nanoTime() - startTime);
-                        if (currentTime >= 0) Thread.sleep(currentTime / TO_MILLISECONDS);
-                        return currentMessage;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                };
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
+    private Supplier<RawMessage> createFileSupplier(String filePath, long startTime) {
+        try {
+            File rawFile = new File(filePath);
+            FileInputStream fileInputStream = new FileInputStream(rawFile);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+            DataInputStream inputStream = new DataInputStream(bufferedInputStream);
+
             return () -> {
                 try {
-                    AdsbDemodulator adsbDemodulator = new AdsbDemodulator(System.in);
-                    return adsbDemodulator.nextMessage();
-                } catch (IOException e) {
+                    if (inputStream.available() == 0) {
+                        inputStream.close();
+                        return null;
+                    }
+                    RawMessage currentMessage = readMessage(inputStream);
+                    long currentTime = currentMessage.timeStampNs() - (System.nanoTime() - startTime);
+                    if (currentTime >= 0) {
+                        Thread.sleep(currentTime / TO_MILLISECONDS);
+                    }
+                    return currentMessage;
+                } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             };
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
+
+    private Supplier<RawMessage> createSystemInSupplier() {
+        return () -> {
+            try {
+                return adsbDemodulator.nextMessage();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
 
 
     /**
@@ -200,7 +225,7 @@ public class Main extends Application {
         return new Thread(() -> {
             while (true) {
                 RawMessage message = messageSupplier.get();
-                if (message == null) break;
+                if (Objects.isNull(message)) break;
                 messageQueue.add(message);
             }
         });

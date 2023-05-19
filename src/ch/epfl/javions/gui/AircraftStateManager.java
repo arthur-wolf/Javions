@@ -74,7 +74,7 @@ public final class AircraftStateManager {
         AircraftStateAccumulator<ObservableAircraftState> accumulator = table.get(address);
 
         // If the address is null or not found in the database, return without making any changes
-        if(address == null || database.get(address) == null) return;
+        //if(address == null || database.get(address) == null) return;
 
         // If the accumulator is not found in the table, create a new one and add it to the table
         if (accumulator == null) {
