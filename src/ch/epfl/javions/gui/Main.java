@@ -10,7 +10,7 @@ import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
-import javafx.scene.control.SplitPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -88,6 +88,17 @@ public class Main extends Application {
         Objects.requireNonNull(dbUrl, "Database URL cannot be null");
         String dbFilePath = Path.of(dbUrl.toURI()).toString();
 
+        // We're setting up several key components here:
+        // - selectedAircraftProperty: which aircraft is currently selected by the user
+        // - mapParameters: the parameters for our map, such as zoom level and initial coordinates
+        // - tileManager: responsible for managing the map's tiles
+        // - baseMapController: controls the base map
+        // - aircraftDatabase: a database of all the aircraft
+        // - aircraftStateManager: manages the state of all the aircraft
+        // - aircraftController: controls the aircraft, including movement and selection
+        // - aircraftTableController: controls the table that displays the list of aircraft
+        // - statusLineController: controls the line that displays the status of the application
+
         var selectedAircraftProperty = new SimpleObjectProperty<ObservableAircraftState>();
         var mapParameters = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
         var tileManager = new TileManager(tileCachePath, TILE_SERVER_ADDRESS);
@@ -139,9 +150,9 @@ public class Main extends Application {
             lastPurge = now;
         }
         try {
-            if (!Objects.isNull(messageQueue.peek())) {
+            if (messageQueue.peek() != null) {
                 Message parsedMessage = MessageParser.parse(messageQueue.poll());
-                if (!Objects.isNull(parsedMessage)) {
+                if (parsedMessage != null) {
                     aircraftStateManager.updateWithMessage(parsedMessage);
                     statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().get() + 1);
                 }
@@ -150,8 +161,6 @@ public class Main extends Application {
             throw new UncheckedIOException(e);
         }
     }
-
-
 
     /**
      * This method creates a new supplier of raw ADS-B messages based on the input source (file or System.in).
@@ -189,7 +198,6 @@ public class Main extends Application {
                         inputStream.close();
                         return null;
                     }
-
                     RawMessage currentMessage = readMessage(inputStream);
                     Objects.requireNonNull(currentMessage, "Current message cannot be null");
                     long currentTime = currentMessage.timeStampNs() - (System.nanoTime() - startTime);

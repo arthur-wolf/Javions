@@ -157,9 +157,6 @@ public final class AircraftController {
         // Create a group to contain the icon and label
         Group iconAndLabelGroup = new Group(label, icon);
 
-        // Set the view priority depending on the altitude
-        iconAndLabelGroup.viewOrderProperty().bind(aircraftState.altitudeProperty().negate());
-
         // Bind the layout X property of the group to the position of the aircraft (longitude)
         iconAndLabelGroup.layoutXProperty().bind(Bindings.createDoubleBinding(() -> WebMercator.x(
                 mapParameters.getZoom(),
@@ -358,10 +355,11 @@ public final class AircraftController {
      *
      * @param altitude The altitude
      * @return The corresponding altitude color
+     * @see 2.2 Given formula : https://cs108.epfl.ch/p/09_aircraft-view.html
      */
     private Color getAltitudeColor(double altitude) {
-        double MAX_ALTITUDE = 12000; //Given max altitude : https://cs108.epfl.ch/p/09_aircraft-view.html
-        double c = Math.cbrt(altitude / MAX_ALTITUDE); //Given formula (2.2) for altitude color : https://cs108.epfl.ch/p/09_aircraft-view.html
+        double MAX_ALTITUDE = 12000;
+        double c = Math.cbrt(altitude / MAX_ALTITUDE);
         return ColorRamp.PLASMA.at(c);
     }
 

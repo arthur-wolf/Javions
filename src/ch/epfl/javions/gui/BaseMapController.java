@@ -225,4 +225,5 @@ public final class BaseMapController {
         mapParameters.minXProperty().addListener((p, o, n) -> redrawOnNextPulse());
         mapParameters.minYProperty().addListener((p, o, n) -> redrawOnNextPulse());
     }
+
 }

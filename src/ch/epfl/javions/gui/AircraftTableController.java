@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  */
 public final class AircraftTableController {
     private final int NUMERIC_COLUMN_WIDTH = 85;
-    private final DecimalFormat DECIMAL_FORMAT_4_DIGITS = new DecimalFormat("#.####");
+    private final DecimalFormat DECIMAL_FORMAT_4_DIGITS = new DecimalFormat("#.0000");
     private final DecimalFormat DECIMAL_FORMAT_0_DIGIT = new DecimalFormat("#");
     private final String EMPTY_STRING = "";
     private final TableView<ObservableAircraftState> tableView;
@@ -102,6 +102,7 @@ public final class AircraftTableController {
                     && selectedAircraftState.get() != null)
                 consumer.accept(selectedAircraftState.get());
         });
+
     }
 
     /**
