@@ -14,7 +14,6 @@ public final class MapParameters {
     private final IntegerProperty zoom;
     private final DoubleProperty minX;
     private final DoubleProperty minY;
-    private final int SCALB_CONSTANT_ZOOM = 1;
     private final int MINIMUM_ZOOM_LEVEL = 6;
     private final int MAXIMUM_ZOOM_LEVEL = 19;
 
@@ -128,6 +127,7 @@ public final class MapParameters {
     public void changeZoomLevel(int zoomDifference) {
         int newZoom = Math2.clamp(MINIMUM_ZOOM_LEVEL, getZoom() + zoomDifference, MAXIMUM_ZOOM_LEVEL);
         if (newZoom != getZoom()) {
+            final int SCALB_CONSTANT_ZOOM = 1;
             setMinX(getMinX() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
             setMinY(getMinY() * Math.scalb(SCALB_CONSTANT_ZOOM, zoomDifference));
             zoom.set(newZoom);

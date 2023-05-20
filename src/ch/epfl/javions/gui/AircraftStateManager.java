@@ -31,7 +31,6 @@ public final class AircraftStateManager {
     private final ObservableSet<ObservableAircraftState> observableAircraftStatesView;
     private final AircraftDatabase database;
     private long lastTimeStampsNs;
-    private final long DT = 60_000_000_000L; // 1 minute in nanoseconds
 
     /**
      * Constructs an aircraft state manager
@@ -57,12 +56,13 @@ public final class AircraftStateManager {
     /**
      * Updates the aircraft state manager with a given message.
      * This method first retrieves the IcaoAddress from the message and attempts to get the associated
-     * AircraftStateAccumulator from the table. If the address is null or not found in the database,
-     * the method returns without making any changes.
+     * AircraftStateAccumulator from the table.
+     * If the address is null or not found in the database, the method does not make any changes.
      * If the accumulator is not found in the table, a new one is created and added to the table.
      * The accumulator is then updated with the message.
      * If the accumulator's state setter's position is not null, the accumulator's state setter is
      * added to the observable aircraft states and the last timestamp is updated with the message's timestamp.
+     *
      * @param message The message used to update the aircraft state manager
      * @throws IOException If an I/O error occurs
      */
@@ -99,6 +99,9 @@ public final class AircraftStateManager {
      * This method is keeping the data up-to-date.
      */
     public void purge() {
+        // 1 minute in nanoseconds
+        final long DT = 60_000_000_000L;
+
         // Create an iterator for the entry set of the table
         Iterator<Map.Entry<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>>> it = table.entrySet().iterator();
         // Iterate over the entries in the table
@@ -108,6 +111,7 @@ public final class AircraftStateManager {
             AircraftStateAccumulator<ObservableAircraftState> accumulator = entry.getValue();
             // If the difference between the last timestamp and the accumulator's last message
             // timestamp is greater than DT, remove the accumulator from the observable aircraft states and the table
+
             if (lastTimeStampsNs - accumulator.stateSetter().getLastMessageTimeStampNs() > DT) {
                 observableAircraftStates.remove(accumulator.stateSetter());
                 it.remove();

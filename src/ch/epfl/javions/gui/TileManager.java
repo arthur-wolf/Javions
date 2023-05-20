@@ -24,21 +24,11 @@ public final class TileManager {
     //Memory cache array with access-order
     private final LinkedHashMap<TileId, Image> memoryCache;
 
-    //Path to the memory disk folder
     private final Path pathToMemoryDisk;
 
-    //Name of the tile server where are stored tile images
     private final String tileServerName;
 
-    //Memory cache capacity
     private final int CACHE_CAPACITY = 100;
-    private final String IMAGE_EXTENSION_FORMAT = ".png";
-    private final String USER_AGENT_NAME = "Javions";
-    private final String PROTOCOL_NAME = "https";
-    private final int PORT_NUMBER = 443;
-    private final String URL_DELIMITER = "/";
-    private final int TIMEOUT_IN_MS = 5000;
-    private final float LOAD_FACTOR = 0.75f;
 
     /**
      * Constructs a TileManager with the specified disk cache path and tile server name.
@@ -46,8 +36,8 @@ public final class TileManager {
      * @param pathFolder  The path of the disk cache.
      * @param tileServerN The name of the tile server.
      */
-
     public TileManager(Path pathFolder, String tileServerN) {
+        final float LOAD_FACTOR = 0.75f;
         pathToMemoryDisk = pathFolder;
         tileServerName = tileServerN;
 
@@ -61,7 +51,6 @@ public final class TileManager {
      * @param tileIdentity The ID of the tile associated with the image.
      * @param image        The image of the tile.
      */
-
     private void addToCache(TileId tileIdentity, Image image) {
         if (memoryCache.size() >= CACHE_CAPACITY) {
             //Complexity is 0(1)
@@ -76,7 +65,6 @@ public final class TileManager {
      * @param tileIdentity The ID of the tile.
      * @return True if the memory cache contains the image of this tile; false otherwise.
      */
-
     private boolean cacheContains(TileId tileIdentity) {
         return memoryCache.containsKey(tileIdentity);
     }
@@ -89,13 +77,13 @@ public final class TileManager {
      * @return The image associated with the tile ID.
      * @throws IOException if an error occurs while getting the image from the tile server.
      */
-
     public Image imageForTileAt(TileId tileIdentity) throws IOException {
         //Look in memory cache first
         if (cacheContains(tileIdentity)) {
             return memoryCache.get(tileIdentity);
         } else {
             //Look in memory disk
+            final String IMAGE_EXTENSION_FORMAT = ".png";
             Path pathToFile = pathToMemoryDisk.resolve(String.valueOf(tileIdentity.zoomLevel))
                     .resolve(String.valueOf(tileIdentity.indexX))
                     .resolve(tileIdentity.indexY + IMAGE_EXTENSION_FORMAT);
@@ -107,6 +95,12 @@ public final class TileManager {
                 return imageTile;
             } else {
                 //We are going to load the image from the tile server
+                final String PROTOCOL_NAME = "https";
+                final String USER_AGENT_NAME = "Javions";
+                final String URL_DELIMITER = "/";
+                final int PORT_NUMBER = 443;
+                final int TIMEOUT_IN_MS = 5000;
+
                 URL u = new URL(PROTOCOL_NAME, tileServerName, PORT_NUMBER, URL_DELIMITER + tileIdentity.zoomLevel
                         + URL_DELIMITER + tileIdentity.indexX + URL_DELIMITER
                         + tileIdentity.indexY + IMAGE_EXTENSION_FORMAT);
@@ -143,7 +137,6 @@ public final class TileManager {
      * @param indexX    The x-index of the tile.
      * @param indexY    The y-index of the tile.
      */
-
     public record TileId(int zoomLevel, int indexX, int indexY) {
 
         /**
@@ -152,7 +145,6 @@ public final class TileManager {
          *
          * @throws IllegalArgumentException if the tile parameters aren't valid.
          */
-
         public TileId {
             Preconditions.checkArgument(isValid(zoomLevel, indexX, indexY));
         }
@@ -165,14 +157,14 @@ public final class TileManager {
          * @param indexY    The y-index of the tile to check.
          * @return True if the parameters form a valid tile ID; false otherwise.
          */
-
         public static boolean isValid(int zoomLevel, int indexX, int indexY) {
             //No restrictions concerning the zoom level (can be greater than 20) in TileId,
             //Will be restricted in the gui.
             double maxIndex_X_and_Y = Math.pow(2, zoomLevel);
             return ((indexX + 1) <= maxIndex_X_and_Y
                     && (indexY + 1) <= maxIndex_X_and_Y
-                    && zoomLevel >= 0 && indexX >= 0
+                    && zoomLevel >= 0
+                    && indexX >= 0
                     && indexY >= 0);
         }
     }

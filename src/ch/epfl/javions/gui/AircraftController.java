@@ -27,8 +27,9 @@ import java.util.stream.IntStream;
 import static ch.epfl.javions.Units.Angle.DEGREE;
 
 /**
- * The AircraftController class is responsible for managing and displaying aircrafts on a map.
+ * The AircraftController class is responsible for managing and displaying aircraft on a map.
  * It binds the aircraft state to the graphical representation in the GUI.
+ *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
  */
@@ -59,7 +60,6 @@ public final class AircraftController {
         this.pane = createAircraftPane();
         this.pane.setPickOnBounds(false);
         bindAircraftSetListeners();
-
     }
 
     /**
@@ -79,6 +79,7 @@ public final class AircraftController {
     private Pane createAircraftPane() {
         Pane aircraftPane = new Pane();
         aircraftPane.getStylesheets().add("aircraft.css");
+
         return aircraftPane;
     }
 
@@ -125,14 +126,13 @@ public final class AircraftController {
         Group trajectoryGroup = buildTrajectoryGroup(aircraftState);
 
         // Bind the visibility of the trajectory group to the selected aircraft state
-        trajectoryGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
-                selectedAircraftState.get() == aircraftState, selectedAircraftState));
+        trajectoryGroup.visibleProperty().bind(Bindings.createBooleanBinding(() -> selectedAircraftState.get() == aircraftState, selectedAircraftState));
 
         // Create the aircraft group with the trajectory group and icon/label group
         Group aircraftGroup = new Group(trajectoryGroup, iconAndLabelGroup);
 
-        String aircraftId = aircraftState.getIcaoAddress().string();
         // Set the ID of the aircraft group to the aircraft address
+        String aircraftId = aircraftState.getIcaoAddress().string();
         aircraftGroup.setId(aircraftId);
 
         // Set the view order of the aircraft group based on the altitude (higher altitude appears in front)
@@ -161,16 +161,20 @@ public final class AircraftController {
         iconAndLabelGroup.viewOrderProperty().bind(aircraftState.altitudeProperty().negate());
 
         // Bind the layout X property of the group to the position of the aircraft (longitude)
-        iconAndLabelGroup.layoutXProperty().bind(Bindings.createDoubleBinding(
-                () -> WebMercator.x(mapParameters.getZoom(),
-                        aircraftState.getPosition().longitude()) - mapParameters.getMinX(),
-                mapParameters.zoomProperty(), mapParameters.minXProperty(), aircraftState.positionProperty()));
+        iconAndLabelGroup.layoutXProperty().bind(Bindings.createDoubleBinding(() -> WebMercator.x(
+                mapParameters.getZoom(),
+                aircraftState.getPosition().longitude()) - mapParameters.getMinX(),
+                mapParameters.zoomProperty(),
+                mapParameters.minXProperty(),
+                aircraftState.positionProperty()));
 
         // Bind the layout Y property of the group to the position of the aircraft (latitude)
-        iconAndLabelGroup.layoutYProperty().bind(Bindings.createDoubleBinding(
-                () -> WebMercator.y(mapParameters.getZoom(),
-                        aircraftState.getPosition().latitude()) - mapParameters.getMinY(),
-                mapParameters.zoomProperty(), mapParameters.minYProperty(), aircraftState.positionProperty()));
+        iconAndLabelGroup.layoutYProperty().bind(Bindings.createDoubleBinding(() -> WebMercator.y(
+                mapParameters.getZoom(),
+                aircraftState.getPosition().latitude()) - mapParameters.getMinY(),
+                mapParameters.zoomProperty(),
+                mapParameters.minYProperty(),
+                aircraftState.positionProperty()));
 
         return iconAndLabelGroup;
     }
@@ -187,17 +191,17 @@ public final class AircraftController {
             AircraftData data = aircraftState.getAircraftData();
             // We need to do all this because some aircraft have their CallSign that might change so their icon have to change too
 
-            AircraftTypeDesignator typeDesignator = (data != null
-                    && data.typeDesignator() != null) ?
-                    data.typeDesignator() : new AircraftTypeDesignator(EMPTY_STRING);
+            AircraftTypeDesignator typeDesignator = (data != null && data.typeDesignator() != null)
+                    ? data.typeDesignator()
+                    : new AircraftTypeDesignator(EMPTY_STRING);
 
-            AircraftDescription description = (data != null
-                    && data.description() != null) ?
-                    data.description() : new AircraftDescription(EMPTY_STRING);
+            AircraftDescription description = (data != null && data.description() != null)
+                    ? data.description()
+                    : new AircraftDescription(EMPTY_STRING);
 
-            WakeTurbulenceCategory wakeTurbulenceCategory = (data != null
-                    && data.wakeTurbulenceCategory() != null) ?
-                    data.wakeTurbulenceCategory() : WakeTurbulenceCategory.of(EMPTY_STRING);
+            WakeTurbulenceCategory wakeTurbulenceCategory = (data != null && data.wakeTurbulenceCategory() != null)
+                    ? data.wakeTurbulenceCategory()
+                    : WakeTurbulenceCategory.of(EMPTY_STRING);
 
             return AircraftIcon.iconFor(
                     typeDesignator,
@@ -206,7 +210,6 @@ public final class AircraftController {
                     wakeTurbulenceCategory);
         });
 
-
         SVGPath icon = new SVGPath();
         icon.getStyleClass().add("aircraft");
 
@@ -214,9 +217,9 @@ public final class AircraftController {
         icon.contentProperty().bind(aircraftIcon.map(AircraftIcon::svgPath));
 
         // Bind the rotation property of the SVGPath to the track or heading of the aircraft
-        icon.rotateProperty().bind(Bindings.createDoubleBinding(() ->
-                        aircraftIcon.getValue().canRotate() ?
-                        Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE) : 0.0,
+        icon.rotateProperty().bind(Bindings.createDoubleBinding(() -> aircraftIcon.getValue().canRotate()
+                        ? Units.convertTo(aircraftState.trackOrHeadingProperty().doubleValue(), DEGREE)
+                        : 0.0,
                 aircraftState.trackOrHeadingProperty()));
 
         // Set a mouse click event handler to toggle the selected state of the aircraft
@@ -246,12 +249,13 @@ public final class AircraftController {
         labelText.textProperty().bind(Bindings.createStringBinding(() -> {
 
             // If the aircraftData is not null then we show the registration
-            // Else if the CallSign is null then we show the ICAO
-            // The CallSign might be null first and then appear so we need to update the Label by replacing the ICAO by the CallSign
-            String identification = aircraftState.getAircraftData() != null ?
-                    aircraftState.getAircraftData().registration().string() :
-                    (aircraftState.getCallSign() != null ?
-                            aircraftState.getCallSign().string() : aircraftState.getIcaoAddress().string());
+            // Else if the CallSign is null then we show the ICAO address
+            // The CallSign might be null first and then appear, so we need to update the label by replacing the ICAO address by the CallSign
+            String identification = aircraftState.getAircraftData() != null
+                    ? aircraftState.getAircraftData().registration().string()
+                    : (aircraftState.getCallSign() != null
+                        ? aircraftState.getCallSign().string()
+                        : aircraftState.getIcaoAddress().string());
 
             // Format the velocity and altitude values
             // If the value is NaN, then the value is unknown and a question mark is displayed
@@ -266,7 +270,7 @@ public final class AircraftController {
                     identification,
                     velocity,
                     altitude);
-            // The binding depends of this 3 property, because they might change with the time.
+            // The binding depends on these 3 property, because they might change with the time.
         }, aircraftState.callSignProperty(), aircraftState.altitudeProperty(), aircraftState.velocityProperty()));
 
         labelText.getStyleClass().add("label-text");
@@ -285,9 +289,8 @@ public final class AircraftController {
                         mapParameters.getZoom() >= MIN_ZOOM_LEVEL_LABEL
                                 || (selectedAircraftState.get() != null
                                 && aircraftState.equals(selectedAircraftState.get())),
-                mapParameters.zoomProperty(),
-                selectedAircraftState)
-        );
+                        mapParameters.zoomProperty(),
+                        selectedAircraftState));
 
         return labelGroup;
     }
@@ -331,12 +334,10 @@ public final class AircraftController {
      */
     private Line buildTrajectoryLine(ObservableAircraftState.AirbornePos start, ObservableAircraftState.AirbornePos end) {
         // Create a line with coordinates based on the start and end positions
-        Line line = new Line(
-                WebMercator.x(mapParameters.getZoom(), start.geoPos().longitude()),
+        Line line = new Line(WebMercator.x(mapParameters.getZoom(), start.geoPos().longitude()),
                 WebMercator.y(mapParameters.getZoom(), start.geoPos().latitude()),
                 WebMercator.x(mapParameters.getZoom(), end.geoPos().longitude()),
-                WebMercator.y(mapParameters.getZoom(), end.geoPos().latitude())
-        );
+                WebMercator.y(mapParameters.getZoom(), end.geoPos().latitude()));
 
         // Bind the layout properties of the line to the map parameters to ensure proper positioning
         line.layoutXProperty().bind(mapParameters.minXProperty().negate());

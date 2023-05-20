@@ -35,9 +35,6 @@ import javafx.animation.AnimationTimer;
  * @author Oussama Ghali (341478)
  */
 public class Main extends Application {
-    private final int INITIAL_ZOOM = 8;
-    private final double INITIAL_LONGITUDE = 33530;
-    private final double INITIAL_LATITUDE = 23070;
     private final long TO_MILLISECONDS = 1_000_000;
 
     // This is a thread-safe queue used for storing raw ADS-B messages received from aircraft.
@@ -79,7 +76,13 @@ public class Main extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
-        long startTime = System.nanoTime();
+        final int INITIAL_ZOOM = 8;
+        final double INITIAL_LONGITUDE = 33530;
+        final double INITIAL_LATITUDE = 23070;
+        final long START_TIME = System.nanoTime();
+
+        final String TILE_SERVER_ADDRESS = "tile.openstreetmap.org";
+
         Path tileCachePath = Path.of("tile-cache");
         URL dbUrl = getClass().getResource("/aircraft.zip");
         assert dbUrl != null;
@@ -99,7 +102,7 @@ public class Main extends Application {
         ObjectProperty<ObservableAircraftState> selectedAircraftProperty = new SimpleObjectProperty<>();
 
         var mapParameters = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
-        var tileManager = new TileManager(tileCachePath, "tile.openstreetmap.org");
+        var tileManager = new TileManager(tileCachePath, TILE_SERVER_ADDRESS);
         var baseMapController = new BaseMapController(tileManager, mapParameters);
         var aircraftDatabase = new AircraftDatabase(dbFilePath);
         var aircraftStateManager = new AircraftStateManager(aircraftDatabase);
@@ -127,7 +130,7 @@ public class Main extends Application {
         primaryStage.show();
 
         // Setting up a supplier of raw ADS-B messages
-        Supplier<RawMessage> messageSupplier = createMessageSupplier(startTime);
+        Supplier<RawMessage> messageSupplier = createMessageSupplier(START_TIME);
 
         // We're starting a new thread that continuously reads in raw ADS-B messages and adds them to our queue
         Thread messageThread = createMessageThread(messageSupplier);
@@ -186,6 +189,7 @@ public class Main extends Application {
                         return null;
                     }
                     RawMessage currentMessage = readMessage(inputStream);
+                    assert currentMessage != null;
                     long currentTime = currentMessage.timeStampNs() - (System.nanoTime() - startTime);
                     if (currentTime >= 0) {
                         Thread.sleep(currentTime / TO_MILLISECONDS);

@@ -18,24 +18,14 @@ import java.util.Comparator;
 import java.util.function.Consumer;
 
 /**
- * The AircraftTableController class represents a controller for a TableView of aircraft states.
- * It manages the creation and configuration of the columns and also installs listeners and handlers for the table view.
- * The AircraftTableController class is responsible for creating and configuring the columns,
- * adding listeners to the aircraft states set and selected item property of the table view,
- * setting a consumer to be called on double-click events on the table view, and also providing
- * the table view that this controller manages.
+ * Represents a controller for a TableView of aircraft states.
+ * This class manages the creation and configuration of the columns and also installs listeners and handlers for the table view.
  *
  * @author Arthur Wolf (344200)
  * @author Oussama Ghali (341478)
  */
 public final class AircraftTableController {
-    private final int DESIGNATOR_COLUMN_WIDTH = 50;
-    private final int ICAO_ADDRESS_COLUMN_WIDTH = 60;
-    private final int CALLSIGN_COLUMN_WIDTH = 70;
-    private final int DESCRIPTION_COLUMN_WIDTH = 70;
     private final int NUMERIC_COLUMN_WIDTH = 85;
-    private final int REGISTRATION_COLUMN_WIDTH = 90;
-    private final int MODEL_COLUMN_WIDTH = 230;
     private final DecimalFormat DECIMAL_FORMAT_4_DIGITS = new DecimalFormat("#.####");
     private final DecimalFormat DECIMAL_FORMAT_0_DIGIT = new DecimalFormat("#");
     private final String EMPTY_STRING = "";
@@ -135,44 +125,57 @@ public final class AircraftTableController {
      * The cells of the columns are bound to the corresponding properties of the aircraft states.
      */
     private void createColumns() {
+        // ---------------------------------Widths------------------------------------------
+        final int DESIGNATOR_COLUMN_WIDTH = 50;
+        final int ICAO_ADDRESS_COLUMN_WIDTH = 60;
+        final int CALLSIGN_COLUMN_WIDTH = 70;
+        final int DESCRIPTION_COLUMN_WIDTH = 70;
+        final int REGISTRATION_COLUMN_WIDTH = 90;
+        final int MODEL_COLUMN_WIDTH = 230;
+
         // ---------------------------------ICAO Address-----------------------------------
         TableColumn<ObservableAircraftState, String> icaoColumn = createColumn("ICAO", ICAO_ADDRESS_COLUMN_WIDTH);
-        icaoColumn.setCellValueFactory(cellData ->
-                wrap(cellData.getValue().
-                        getIcaoAddress())
-                        .map(IcaoAddress::string));
+        icaoColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getIcaoAddress()).map(IcaoAddress::string));
 
         // ---------------------------------CallSign---------------------------------------
         TableColumn<ObservableAircraftState, String> callSignColumn = createColumn("Indicatif", CALLSIGN_COLUMN_WIDTH);
-        callSignColumn.setCellValueFactory(cellData ->
-                cellData.getValue().
-                        callSignProperty().
-                        map(CallSign::string));
+        callSignColumn.setCellValueFactory(cellData -> cellData
+                .getValue()
+                .callSignProperty()
+                .map(CallSign::string));
 
         // ---------------------------------Registration-----------------------------------
         TableColumn<ObservableAircraftState, String> registrationColumn = createColumn("Immatriculation", REGISTRATION_COLUMN_WIDTH);
-        registrationColumn.setCellValueFactory(cellData -> cellData.getValue().getAircraftData() != null ?
-                wrap(cellData.getValue().getAircraftData().registration()).map(AircraftRegistration::string) :
-                wrap(EMPTY_STRING)
+        registrationColumn.setCellValueFactory(cellData -> cellData
+                .getValue()
+                .getAircraftData() != null
+                ? wrap(cellData.getValue().getAircraftData().registration()).map(AircraftRegistration::string)
+                : wrap(EMPTY_STRING)
         );
         // ---------------------------------Model------------------------------------------
         TableColumn<ObservableAircraftState, String> modelColumn = createColumn("Modèle", MODEL_COLUMN_WIDTH);
-        modelColumn.setCellValueFactory(cellData -> cellData.getValue().getAircraftData() != null ?
-                wrap(cellData.getValue().getAircraftData().model()) :
-                wrap(EMPTY_STRING)
+        modelColumn.setCellValueFactory(cellData -> cellData
+                .getValue()
+                .getAircraftData() != null
+                ? wrap(cellData.getValue().getAircraftData().model())
+                : wrap(EMPTY_STRING)
         );
 
         // ---------------------------------Type Designator---------------------------------
         TableColumn<ObservableAircraftState, String> typeColumn = createColumn("Type", DESIGNATOR_COLUMN_WIDTH);
-        typeColumn.setCellValueFactory(cellData -> cellData.getValue().getAircraftData() != null ?
-                wrap(cellData.getValue().getAircraftData().typeDesignator()).map(AircraftTypeDesignator::string) :
-                wrap(EMPTY_STRING));
+        typeColumn.setCellValueFactory(cellData -> cellData
+                .getValue()
+                .getAircraftData() != null
+                ? wrap(cellData.getValue().getAircraftData().typeDesignator()).map(AircraftTypeDesignator::string)
+                : wrap(EMPTY_STRING));
 
         // ---------------------------------Description-------------------------------------
         TableColumn<ObservableAircraftState, String> descriptionColumn = createColumn("Description", DESCRIPTION_COLUMN_WIDTH);
-        descriptionColumn.setCellValueFactory(cellData -> cellData.getValue().getAircraftData() != null ?
-                wrap(cellData.getValue().getAircraftData().description()).map(AircraftDescription::string) :
-                wrap(EMPTY_STRING));
+        descriptionColumn.setCellValueFactory(cellData -> cellData
+                .getValue()
+                .getAircraftData() != null
+                ? wrap(cellData.getValue().getAircraftData().description()).map(AircraftDescription::string)
+                : wrap(EMPTY_STRING));
 
         // ---------------------------------Longitude---------------------------------------
         TableColumn<ObservableAircraftState, String> longitudeColumn = createColumn("Longitude (°)", NUMERIC_COLUMN_WIDTH);
@@ -196,8 +199,9 @@ public final class AircraftTableController {
         TableColumn<ObservableAircraftState, String> altitudeColumn = createColumn("Altitude (m)", NUMERIC_COLUMN_WIDTH);
         altitudeColumn.setCellValueFactory(cellData -> {
             double altitude = cellData.getValue().getAltitude();
-            return Bindings.createObjectBinding(() -> !Double.isNaN(altitude) ?
-                    DECIMAL_FORMAT_0_DIGIT.format(altitude) : EMPTY_STRING,
+            return Bindings.createObjectBinding(() -> !Double.isNaN(altitude)
+                            ? DECIMAL_FORMAT_0_DIGIT.format(altitude)
+                            : EMPTY_STRING,
                     cellData.getValue().altitudeProperty());
         });
 
@@ -205,8 +209,9 @@ public final class AircraftTableController {
         TableColumn<ObservableAircraftState, String> speedColumn = createColumn("Vitesse (km/h)", NUMERIC_COLUMN_WIDTH);
         speedColumn.setCellValueFactory(cellData -> {
             double velocity = cellData.getValue().getVelocity();
-            return Bindings.createStringBinding(() -> !Double.isNaN(velocity) ?
-                    DECIMAL_FORMAT_0_DIGIT.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR)) : EMPTY_STRING,
+            return Bindings.createStringBinding(() -> !Double.isNaN(velocity)
+                            ? DECIMAL_FORMAT_0_DIGIT.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR))
+                            : EMPTY_STRING,
                     cellData.getValue().velocityProperty());
         });
         tableView.getColumns().addAll(
@@ -248,8 +253,7 @@ public final class AircraftTableController {
             column.getStyleClass().add("numeric");
             column.setPrefWidth(NUMERIC_COLUMN_WIDTH);
             column.setComparator(getComparator());
-        } else
-            column.setPrefWidth(width);
+        } else column.setPrefWidth(width);
 
         return column;
     }

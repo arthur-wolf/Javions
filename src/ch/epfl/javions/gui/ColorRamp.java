@@ -1,5 +1,6 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.Preconditions;
 import javafx.scene.paint.Color;
 
 /**
@@ -17,7 +18,7 @@ public final class ColorRamp {
      * @throws IllegalArgumentException if the number of colors is less than 2
      */
     public ColorRamp(Color... colors) {
-        if (colors.length < 2) throw new IllegalArgumentException("A color ramp must have at least two colors.");
+        Preconditions.checkArgument(colors.length >= 2);
         this.colors = colors;
     }
 
@@ -43,7 +44,7 @@ public final class ColorRamp {
 
     /**
      * A predefined ColorRamp with the "Plasma" color scheme.
-     * 3.2 : https://cs108.epfl.ch/p/09_aircraft-view.html
+     * 3.2 : <a href="https://cs108.epfl.ch/p/09_aircraft-view.html">Indications</a>
      */
     public static final ColorRamp PLASMA = new ColorRamp(
             Color.valueOf("0x0d0887ff"), Color.valueOf("0x220690ff"),

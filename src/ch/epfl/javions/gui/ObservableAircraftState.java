@@ -32,8 +32,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitude;    // m
     private final DoubleProperty velocity;    // m/s
     private final DoubleProperty trackOrHeading; // Radians
-    private final double UNKNOWN = Double.NaN; // Value for unknown altitude, velocity
-    private final int INITIAL_VALUE = 0;
     ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
     ObservableList<AirbornePos> trajectoryView = FXCollections.unmodifiableObservableList(trajectory);
 
@@ -46,6 +44,8 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      */
     public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData aircraftData) {
         Objects.requireNonNull(icaoAddress);
+        final int INITIAL_VALUE = 0;
+        final double UNKNOWN = Double.NaN; // Value for unknown altitude and velocity
 
         this.icaoAddress = icaoAddress;
         this.aircraftData = aircraftData;
@@ -54,6 +54,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         category = new SimpleIntegerProperty(INITIAL_VALUE);
         callSign = new SimpleObjectProperty<>(null);
         position = new SimpleObjectProperty<>(null);
+
         altitude = new SimpleDoubleProperty(UNKNOWN);
         velocity = new SimpleDoubleProperty(UNKNOWN);
         trackOrHeading = new SimpleDoubleProperty(INITIAL_VALUE);
@@ -78,7 +79,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     // ----------------- Timestamp -----------------
-
     /**
      * Returns the read-only property for the last message timestamp in nanoseconds.
      *
@@ -108,7 +108,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     // ----------------- Category -----------------
-
     /**
      * Returns the category property
      *
@@ -138,7 +137,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     // ----------------- CallSign -----------------
-
     /**
      * Returns the CallSign property
      *
@@ -168,7 +166,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     // ----------------- Position -----------------
-
     /**
      * Returns the position property
      *
@@ -199,7 +196,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     // ----------------- Trajectory -----------------
-
     /**
      * Returns the trajectory
      *
@@ -232,7 +228,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     // ----------------- Altitude -----------------
-
     /**
      * Returns the read-only property for the altitude.
      *
@@ -263,7 +258,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     // ----------------- Velocity -----------------
-
     /**
      * Returns the read-only property for the velocity.
      *
@@ -293,7 +287,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     // ----------------- Track or Heading -----------------
-
     /**
      * Returns the read-only property for the track or heading.
      *

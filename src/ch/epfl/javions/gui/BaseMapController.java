@@ -33,9 +33,6 @@ public final class BaseMapController {
     // Will be true if redraw is needed
     private boolean redrawNeeded;
 
-    // Size of an OSM Tile in pixels
-    private final int OSM_TILE_SIZE = 256;
-
     /**
      * Constructs a BaseMapController with the specified TileManager and MapParameters.
      *
@@ -85,6 +82,9 @@ public final class BaseMapController {
      * obtains these tiles from the TileManager, and then draws them onto the map canvas.
      */
     private void draw() {
+        // Size of an OSM Tile in pixels
+        final int OSM_TILE_SIZE = 256;
+
         // First clear the graphic context
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -146,8 +146,7 @@ public final class BaseMapController {
      * @return New MapParameters when moving
      */
     private MapParameters newMapParametersWhenMoving(Point2D delta, MapParameters oldMapParameters) {
-        return new MapParameters(
-                oldMapParameters.getZoom(),
+        return new MapParameters(oldMapParameters.getZoom(),
                 oldMapParameters.getMinX() - delta.getX(),
                 oldMapParameters.getMinY() - delta.getY()
         );
@@ -161,15 +160,18 @@ public final class BaseMapController {
         LongProperty minScrollTime = new SimpleLongProperty();
 
         // Event handler for movement of the map
-        pane.setOnMousePressed(event -> mouseCoordinatesProperty.setValue(
-                new Point2D(event.getX(), event.getY())));
+        pane.setOnMousePressed(event -> mouseCoordinatesProperty.setValue(new Point2D(
+                event.getX(),
+                event.getY())));
 
         pane.setOnMouseDragged(event -> {
             Point2D delta = new Point2D(event.getX(), event.getY()).subtract(mouseCoordinatesProperty.get());
 
             mapParameters.set(newMapParametersWhenMoving(delta, mapParameters));
 
-            mouseCoordinatesProperty.setValue(new Point2D(event.getX(), event.getY()));
+            mouseCoordinatesProperty.setValue(new Point2D(
+                    event.getX(),
+                    event.getY()));
         });
 
         // If the mouse did not move since press, create waypoint
@@ -193,7 +195,6 @@ public final class BaseMapController {
             mapParameters.scroll(oldX, oldY);
             mapParameters.changeZoomLevel(zoomDelta);
             mapParameters.scroll(-oldX, -oldY);
-
         });
     }
 
