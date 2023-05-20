@@ -44,7 +44,7 @@ public final class ColorRamp {
 
     /**
      * A predefined ColorRamp with the "Plasma" color scheme.
-     * 3.2 : <a href="https://cs108.epfl.ch/p/09_aircraft-view.html">Indications</a>
+     * @see 3.2 : <a href="https://cs108.epfl.ch/p/09_aircraft-view.html">Indications</a>
      */
     public static final ColorRamp PLASMA = new ColorRamp(
             Color.valueOf("0x0d0887ff"), Color.valueOf("0x220690ff"),
