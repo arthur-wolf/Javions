@@ -3,7 +3,6 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.*;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
@@ -136,7 +135,10 @@ public final class AircraftTableController {
 
         // ---------------------------------ICAO Address-----------------------------------
         TableColumn<ObservableAircraftState, String> icaoColumn = createColumn("ICAO", ICAO_ADDRESS_COLUMN_WIDTH);
-        icaoColumn.setCellValueFactory(cellData -> wrap(cellData.getValue().getIcaoAddress()).map(IcaoAddress::string));
+        icaoColumn.setCellValueFactory(cellData -> wrap(cellData.
+                getValue().
+                getIcaoAddress())
+                .map(IcaoAddress::string));
 
         // ---------------------------------CallSign---------------------------------------
         TableColumn<ObservableAircraftState, String> callSignColumn = createColumn("Indicatif", CALLSIGN_COLUMN_WIDTH);
@@ -155,12 +157,10 @@ public final class AircraftTableController {
         );
         // ---------------------------------Model------------------------------------------
         TableColumn<ObservableAircraftState, String> modelColumn = createColumn("Modèle", MODEL_COLUMN_WIDTH);
-        modelColumn.setCellValueFactory(cellData -> cellData
+        modelColumn.setCellValueFactory(cellData -> wrap(cellData
                 .getValue()
-                .getAircraftData() != null
-                ? wrap(cellData.getValue().getAircraftData().model())
-                : wrap(EMPTY_STRING)
-        );
+                .getAircraftData())
+                .map(AircraftData::model));
 
         // ---------------------------------Type Designator---------------------------------
         TableColumn<ObservableAircraftState, String> typeColumn = createColumn("Type", DESIGNATOR_COLUMN_WIDTH);
@@ -180,41 +180,41 @@ public final class AircraftTableController {
 
         // ---------------------------------Longitude---------------------------------------
         TableColumn<ObservableAircraftState, String> longitudeColumn = createColumn("Longitude (°)", NUMERIC_COLUMN_WIDTH);
-        longitudeColumn.setCellValueFactory(cellData -> {
-            double longitude = cellData.getValue().getPosition().longitude();
-            return Bindings.createObjectBinding(() ->
-                    DECIMAL_FORMAT_4_DIGITS.format(Units.convertTo(longitude, Units.Angle.DEGREE)),
-                    cellData.getValue().positionProperty());
-        });
+        longitudeColumn.setCellValueFactory(cellData -> cellData
+                .getValue()
+                .positionProperty()
+                .map(position -> {
+                double longitude = position.longitude();
+                return DECIMAL_FORMAT_4_DIGITS.format(Units.convertTo(longitude, Units.Angle.DEGREE));
+        }));
 
         // ---------------------------------Latitude-----------------------------------------
         TableColumn<ObservableAircraftState, String> latitudeColumn = createColumn("Latitude (°)", NUMERIC_COLUMN_WIDTH);
-        latitudeColumn.setCellValueFactory(cellData -> {
-            double latitude = cellData.getValue().getPosition().latitude();
-            return Bindings.createObjectBinding(() ->
-                    DECIMAL_FORMAT_4_DIGITS.format(Units.convertTo(latitude, Units.Angle.DEGREE)),
-                    cellData.getValue().positionProperty());
-        });
+        latitudeColumn.setCellValueFactory(cellData -> cellData.
+                getValue().
+                positionProperty()
+                .map(position -> {
+                double latitude = position.latitude();
+                return DECIMAL_FORMAT_4_DIGITS.format(Units.convertTo(latitude, Units.Angle.DEGREE));
+        }));
 
         // ---------------------------------Altitude-----------------------------------------
         TableColumn<ObservableAircraftState, String> altitudeColumn = createColumn("Altitude (m)", NUMERIC_COLUMN_WIDTH);
-        altitudeColumn.setCellValueFactory(cellData -> {
-            double altitude = cellData.getValue().getAltitude();
-            return Bindings.createObjectBinding(() -> !Double.isNaN(altitude)
-                            ? DECIMAL_FORMAT_0_DIGIT.format(altitude)
-                            : EMPTY_STRING,
-                    cellData.getValue().altitudeProperty());
-        });
+        // Altitude is never unknown, so we can safely use the map method
+        altitudeColumn.setCellValueFactory(cellData -> cellData
+                .getValue()
+                .altitudeProperty()
+                .map(DECIMAL_FORMAT_0_DIGIT::format));
 
         // ----------------------------------Speed-------------------------------------------
         TableColumn<ObservableAircraftState, String> speedColumn = createColumn("Vitesse (km/h)", NUMERIC_COLUMN_WIDTH);
-        speedColumn.setCellValueFactory(cellData -> {
-            double velocity = cellData.getValue().getVelocity();
-            return Bindings.createStringBinding(() -> !Double.isNaN(velocity)
-                            ? DECIMAL_FORMAT_0_DIGIT.format(Units.convertTo(velocity, Units.Speed.KILOMETER_PER_HOUR))
-                            : EMPTY_STRING,
-                    cellData.getValue().velocityProperty());
-        });
+        speedColumn.setCellValueFactory(cellData -> cellData
+                .getValue()
+                .velocityProperty()
+                .map(velocity -> {
+                double speed = Units.convertTo(velocity.doubleValue(), Units.Speed.KILOMETER_PER_HOUR);
+                return DECIMAL_FORMAT_0_DIGIT.format(speed);
+        }));
         tableView.getColumns().addAll(
                 icaoColumn,
                 callSignColumn,
@@ -228,6 +228,7 @@ public final class AircraftTableController {
                 speedColumn
         );
     }
+
 
 
     /**

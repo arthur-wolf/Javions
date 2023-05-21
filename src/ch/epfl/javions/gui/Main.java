@@ -206,11 +206,11 @@ public class Main extends Application {
                     }
 
                     return currentMessage;
-                } catch (IOException | InterruptedException e) {
+                } catch (InterruptedException | IOException e) {
                     throw new RuntimeException(e);
                 }
             };
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
