@@ -23,11 +23,8 @@ public final class TileManager {
 
     //Memory cache array with access-order
     private final LinkedHashMap<TileId, Image> memoryCache;
-
     private final Path pathToMemoryDisk;
-
     private final String tileServerName;
-
     private final int CACHE_CAPACITY = 100;
 
     /**
@@ -52,10 +49,10 @@ public final class TileManager {
      * @param image        The image of the tile.
      */
     private void addToCache(TileId tileIdentity, Image image) {
-        if (memoryCache.size() >= CACHE_CAPACITY) {
+        if (memoryCache.size() >= CACHE_CAPACITY)
             //Complexity is 0(1)
             memoryCache.remove(memoryCache.entrySet().iterator().next().getKey());
-        }
+
         memoryCache.put(tileIdentity, image);
     }
 
@@ -75,13 +72,13 @@ public final class TileManager {
      *
      * @param tileIdentity The ID of the tile.
      * @return The image associated with the tile ID.
-     * @throws IOException if an error occurs while getting the image from the tile server.
+     * @throws IOException If an error occurs while getting the image from the tile server.
      */
     public Image imageForTileAt(TileId tileIdentity) throws IOException {
         //Look in memory cache first
-        if (cacheContains(tileIdentity)) {
+        if (cacheContains(tileIdentity))
             return memoryCache.get(tileIdentity);
-        } else {
+        else {
             //Look in memory disk
             final String IMAGE_EXTENSION_FORMAT = ".png";
             Path pathToFile = pathToMemoryDisk.resolve(String.valueOf(tileIdentity.zoomLevel))
@@ -143,7 +140,7 @@ public final class TileManager {
          * Constructs a TileId with the specified zoom level, x-index, and y-index.
          * Checks if tile parameters are valid.
          *
-         * @throws IllegalArgumentException if the tile parameters aren't valid.
+         * @throws IllegalArgumentException If the tile parameters aren't valid.
          */
         public TileId {
             Preconditions.checkArgument(isValid(zoomLevel, indexX, indexY));

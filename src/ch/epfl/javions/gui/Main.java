@@ -44,6 +44,10 @@ public class Main extends Application {
     private final ConcurrentLinkedQueue<RawMessage> messageQueue = new ConcurrentLinkedQueue<>();
     private AdsbDemodulator adsbDemodulator;
 
+    /**
+     * This method starts the application.
+     * @param args The command line arguments.
+     */
     public static void main(String[] args) {
         launch(args);
     }
@@ -60,9 +64,9 @@ public class Main extends Application {
         long timeStampNs = inputStream.readLong();
         int bytesRead = inputStream.readNBytes(bytes, 0, bytes.length);
 
-        if (bytesRead == RAW_MESSAGE_LENGTH) {
+        if (bytesRead == RAW_MESSAGE_LENGTH)
             return new RawMessage(timeStampNs, new ByteString(bytes));
-        }
+
         return null;
     }
 
@@ -170,9 +174,9 @@ public class Main extends Application {
      */
     private Supplier<RawMessage> createMessageSupplier(long startTime) throws IOException {
         List<String> params = getParameters().getRaw();
-        if (!params.isEmpty()) {
+        if (!params.isEmpty())
             return createFileSupplier(params.get(0), startTime);
-        } else {
+        else {
             adsbDemodulator = new AdsbDemodulator(System.in);
             return createSystemInSupplier();
         }
@@ -201,9 +205,8 @@ public class Main extends Application {
                     RawMessage currentMessage = readMessage(inputStream);
                     Objects.requireNonNull(currentMessage, "Current message cannot be null");
                     long currentTime = currentMessage.timeStampNs() - (System.nanoTime() - startTime);
-                    if (currentTime >= 0) {
+                    if (currentTime >= 0)
                         Thread.sleep(currentTime / TO_MILLISECONDS);
-                    }
 
                     return currentMessage;
                 } catch (InterruptedException | IOException e) {

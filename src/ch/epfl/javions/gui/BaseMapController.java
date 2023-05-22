@@ -113,8 +113,8 @@ public final class BaseMapController {
                                 xTileMap * OSM_TILE_SIZE - mapParameters.getMinX(),
                                 yTileMap * OSM_TILE_SIZE - mapParameters.getMinY());
                     }
-                } catch (IOException exception) {
-                    exception.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -207,7 +207,6 @@ public final class BaseMapController {
         canvas.heightProperty().bind(pane.heightProperty());
     }
 
-
     /**
      * Installs the listeners on the canvas and the MapParameters
      */
@@ -225,5 +224,4 @@ public final class BaseMapController {
         mapParameters.minXProperty().addListener((p, o, n) -> redrawOnNextPulse());
         mapParameters.minYProperty().addListener((p, o, n) -> redrawOnNextPulse());
     }
-
 }

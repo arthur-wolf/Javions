@@ -19,8 +19,8 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     /**
      * Constructs a new aircraft state accumulator with the given state setter
      *
-     * @param stateSetter the state setter of the accumulator
-     * @throws NullPointerException if the given state setter is null
+     * @param stateSetter The state setter of the accumulator
+     * @throws NullPointerException If the given state setter is null
      */
     public AircraftStateAccumulator(T stateSetter) {
         this.stateSetter = Objects.requireNonNull(stateSetter);
@@ -29,7 +29,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     /**
      * Returns the state setter of the accumulator
      *
-     * @return the state setter of the accumulator
+     * @return The state setter of the accumulator
      */
     public T stateSetter() {
         return stateSetter;
@@ -40,7 +40,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
      * to know whether it is an instance of AircraftIdentificationMessage, AirbornePositionMessage or AirborneVelocityMessage.
      * Updates the state of the aircraft with the given message.
      *
-     * @param message the message to update the state with.
+     * @param message The message to update the state with.
      */
     public void update(Message message) {
         stateSetter.setLastMessageTimeStampNs(message.timeStampNs());
@@ -52,9 +52,8 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 stateSetter.setAltitude(apm.altitude());
                 if (isValid()) {
                     GeoPos position = CprDecoder.decodePosition(evenMessage.x(), evenMessage.y(), oddMessage.x(), oddMessage.y(), evenMessage.timeStampNs() - oddMessage.timeStampNs() > 0 ? 0 : 1);
-                    if (position != null) {
+                    if (position != null)
                         stateSetter.setPosition(position);
-                    }
                 }
             }
             case AircraftIdentificationMessage aim -> {
@@ -65,20 +64,19 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 stateSetter.setVelocity(avm.speed());
                 stateSetter.setTrackOrHeading(avm.trackOrHeading());
             }
-            default -> {
-            }
+            // Do nothing if the message is of another type
+            default -> {}
         }
     }
 
     /**
      * Returns true if the odd and even messages aren't null and the difference between them is less than or equal to 10 seconds.
      *
-     * @return the corresponding boolean
+     * @return The corresponding boolean
      */
     private boolean isValid() {
-        //timestamp in seconds
+        // Timestamp in seconds
         final double DELTA = 10e9;
-
         return (evenMessage != null
                 && oddMessage != null
                 && Math.abs(evenMessage.timeStampNs() - oddMessage.timeStampNs()) <= DELTA);

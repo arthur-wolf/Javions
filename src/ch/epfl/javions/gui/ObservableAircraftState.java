@@ -218,13 +218,12 @@ public final class ObservableAircraftState implements AircraftStateSetter {
             trajectory.add(new AirbornePos(currentPosition, currentAltitude));
             lastMessageTimeStamps = getLastMessageTimeStampNs();
             // Update altitude in last position if altitude is updated and position is known
-        } else if (!trajectory.isEmpty()) {
+        } else if (!trajectory.isEmpty())
             if (!Double.isNaN(currentAltitude)
                     && currentPosition != null
                     && lastMessageTimeStamps == getLastMessageTimeStampNs()) {
                 trajectory.set(trajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude));
             }
-        }
     }
 
     // ----------------- Altitude -----------------

@@ -126,7 +126,8 @@ public final class AircraftController {
         Group trajectoryGroup = buildTrajectoryGroup(aircraftState);
 
         // Bind the visibility of the trajectory group to the selected aircraft state
-        trajectoryGroup.visibleProperty().bind(Bindings.createBooleanBinding(() -> selectedAircraftState.get() == aircraftState, selectedAircraftState));
+        trajectoryGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
+                selectedAircraftState.get() == aircraftState, selectedAircraftState));
 
         // Create the aircraft group with the trajectory group and icon/label group
         Group aircraftGroup = new Group(trajectoryGroup, iconAndLabelGroup);
@@ -175,7 +176,6 @@ public final class AircraftController {
 
         return iconAndLabelGroup;
     }
-
 
     /**
      * Builds the icon for the aircraft.
@@ -263,7 +263,7 @@ public final class AircraftController {
                     ? UNKNOWN
                     : String.format("%.0f", aircraftState.getAltitude());
 
-            return String.format("%s\n%s\u2002km/h %s\u2002m",
+            return String.format("%s\n %s\u2002km/h %s\u2002m",
                     identification,
                     velocity,
                     altitude);
@@ -311,8 +311,9 @@ public final class AircraftController {
 
                 // Build the trajectory lines based on the positions in the trajectory list
                 List<Line> trajectoryLines = IntStream.range(0, trajectory.size() - 1)
-                        .mapToObj(i -> buildTrajectoryLine(trajectory.get(i), trajectory.get(i + 1)))
-                        .toList();
+                        .mapToObj(i ->
+                            buildTrajectoryLine(trajectory.get(i), trajectory.get(i + 1)))
+                            .toList();
 
                 // Add the trajectory lines to the trajectory group
                 trajectoryGroup.getChildren().addAll(trajectoryLines);
@@ -358,7 +359,7 @@ public final class AircraftController {
      * @see 2.2 Given formula : https://cs108.epfl.ch/p/09_aircraft-view.html
      */
     private Color getAltitudeColor(double altitude) {
-        double MAX_ALTITUDE = 12000;
+        final double MAX_ALTITUDE = 12000;
         double c = Math.cbrt(altitude / MAX_ALTITUDE);
         return ColorRamp.PLASMA.at(c);
     }

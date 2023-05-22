@@ -145,5 +145,4 @@ public final class MapParameters {
         minX.set(newMapParametersWhenMoving.getMinX());
         minY.set(newMapParametersWhenMoving.getMinY());
     }
-
 }

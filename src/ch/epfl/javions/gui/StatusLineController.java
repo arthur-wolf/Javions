@@ -33,10 +33,12 @@ public final class StatusLineController {
 
         // Create nodes
         Text aircraftCountText = new Text();
-        aircraftCountText.textProperty().bind(Bindings.createStringBinding(() -> "Aéronefs visibles : " + aircraftCountProperty.getValue(), aircraftCountProperty));
+        aircraftCountText.textProperty().bind(Bindings.createStringBinding(() ->
+                "Aéronefs visibles : " + aircraftCountProperty.getValue(), aircraftCountProperty));
 
         Text messageCountText = new Text();
-        messageCountText.textProperty().bind(Bindings.createStringBinding(() -> "Messages reçus : " + messageCountProperty.getValue(), messageCountProperty));
+        messageCountText.textProperty().bind(Bindings.createStringBinding(() ->
+                "Messages reçus : " + messageCountProperty.getValue(), messageCountProperty));
 
         // Build scene graph
         pane = new BorderPane();
@@ -46,8 +48,8 @@ public final class StatusLineController {
     /**
      * Builds the scene graph for the status line.
      *
-     * @param aircraftCountText the text node for the aircraft count.
-     * @param messageCountText the text node for the message count.
+     * @param aircraftCountText The text node for the aircraft count.
+     * @param messageCountText The text node for the message count.
      */
     private void buildScene(Text aircraftCountText, Text messageCountText) {
         pane.getStylesheets().add("status.css");
@@ -59,7 +61,7 @@ public final class StatusLineController {
     /**
      * Returns the BorderPane that contains the status line.
      *
-     * @return the BorderPane containing the status line.
+     * @return The BorderPane containing the status line.
      */
     public BorderPane pane() {
         return pane;
@@ -68,7 +70,7 @@ public final class StatusLineController {
     /**
      * Returns the IntegerProperty that represents the number of visible aircraft.
      *
-     * @return the IntegerProperty for the aircraft count.
+     * @return The IntegerProperty for the aircraft count.
      */
     public IntegerProperty aircraftCountProperty() {
         return aircraftCountProperty;
@@ -77,7 +79,7 @@ public final class StatusLineController {
     /**
      * Returns the LongProperty that represents the number of received messages.
      *
-     * @return the LongProperty for the message count.
+     * @return The LongProperty for the message count.
      */
     public LongProperty messageCountProperty() {
         return messageCountProperty;
