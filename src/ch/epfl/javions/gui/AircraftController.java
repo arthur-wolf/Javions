@@ -22,6 +22,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static ch.epfl.javions.Units.Angle.DEGREE;
@@ -188,23 +189,24 @@ public final class AircraftController {
             AircraftData data = aircraftState.getAircraftData();
             // We need to do all this because some aircraft have their CallSign that might change so their icon have to change too
 
-            AircraftTypeDesignator typeDesignator = (data != null && data.typeDesignator() != null)
-                    ? data.typeDesignator()
-                    : new AircraftTypeDesignator(EMPTY_STRING);
+            AircraftTypeDesignator typeDesignator = Optional.ofNullable(data)
+                    .map(AircraftData::typeDesignator)
+                    .orElse(new AircraftTypeDesignator(EMPTY_STRING));
 
-            AircraftDescription description = (data != null && data.description() != null)
-                    ? data.description()
-                    : new AircraftDescription(EMPTY_STRING);
+            AircraftDescription description = Optional.ofNullable(data)
+                    .map(AircraftData::description)
+                    .orElse(new AircraftDescription(EMPTY_STRING));
 
-            WakeTurbulenceCategory wakeTurbulenceCategory = (data != null && data.wakeTurbulenceCategory() != null)
-                    ? data.wakeTurbulenceCategory()
-                    : WakeTurbulenceCategory.of(EMPTY_STRING);
+            WakeTurbulenceCategory wakeTurbulenceCategory = Optional.ofNullable(data)
+                    .map(AircraftData::wakeTurbulenceCategory)
+                    .orElse(WakeTurbulenceCategory.of(EMPTY_STRING));
 
             return AircraftIcon.iconFor(
                     typeDesignator,
                     description,
                     category.intValue(),
                     wakeTurbulenceCategory);
+
         });
 
         SVGPath icon = new SVGPath();
