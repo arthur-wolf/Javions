@@ -22,7 +22,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static ch.epfl.javions.Units.Angle.DEGREE;
@@ -39,9 +38,6 @@ public final class AircraftController {
     private final ObservableSet<ObservableAircraftState> aircraftState;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private final Pane pane;
-    private final int MIN_ZOOM_LEVEL_LABEL = 11; //Maximum zoom level at which the label is visible
-    private final String EMPTY_STRING = "";
-    private final String UNKNOWN= "?";
 
     /**
      * Constructs a new AircraftController with the given map parameters, aircraft state set,
@@ -104,14 +100,9 @@ public final class AircraftController {
                 // Look up the aircraft group by its ID
                 Group aircraftGroup = (Group) pane.lookup("#" + aircraft.getIcaoAddress().string());
                 // Get the trajectory group from the aircraft group
-                if (aircraftGroup != null && aircraftGroup.getChildren().get(0) instanceof Group trajectoryGroup) {
-                        // Build trajectory lines between each pair of positions
-                        List<Line> trajectoryLines = IntStream.range(0, aircraft.getTrajectory().size() - 1)
-                                .mapToObj(i -> buildTrajectoryLine(aircraft.getTrajectory().get(i), aircraft.getTrajectory().get(i + 1)))
-                                .toList();
-                        // Add the trajectory lines to the trajectory group
-                        trajectoryGroup.getChildren().addAll(trajectoryLines);
-                }
+                Group trajectoryGroup = (Group) aircraftGroup.getChildren().get(0);
+
+                updateTrajectoryLines(trajectoryGroup, aircraft.getTrajectory());
             }
         });
     }
@@ -185,28 +176,26 @@ public final class AircraftController {
      * @return The aircraft icon
      */
     private SVGPath buildIcon(ObservableAircraftState aircraftState) {
+        final String EMPTY_STRING = "";
         ObservableValue<AircraftIcon> aircraftIcon = aircraftState.categoryProperty().map(category -> {
             AircraftData data = aircraftState.getAircraftData();
+
             // We need to do all this because some aircraft have their CallSign that might change so their icon have to change too
+            AircraftTypeDesignator typeDesignator = new AircraftTypeDesignator(EMPTY_STRING);
+            AircraftDescription description = new AircraftDescription(EMPTY_STRING);
+            WakeTurbulenceCategory wakeTurbulenceCategory = WakeTurbulenceCategory.of(EMPTY_STRING);
 
-            AircraftTypeDesignator typeDesignator = Optional.ofNullable(data)
-                    .map(AircraftData::typeDesignator)
-                    .orElse(new AircraftTypeDesignator(EMPTY_STRING));
-
-            AircraftDescription description = Optional.ofNullable(data)
-                    .map(AircraftData::description)
-                    .orElse(new AircraftDescription(EMPTY_STRING));
-
-            WakeTurbulenceCategory wakeTurbulenceCategory = Optional.ofNullable(data)
-                    .map(AircraftData::wakeTurbulenceCategory)
-                    .orElse(WakeTurbulenceCategory.of(EMPTY_STRING));
+            if (data != null) {
+                typeDesignator = data.typeDesignator();
+                description = data.description();
+                wakeTurbulenceCategory = data.wakeTurbulenceCategory();
+            }
 
             return AircraftIcon.iconFor(
                     typeDesignator,
                     description,
                     category.intValue(),
                     wakeTurbulenceCategory);
-
         });
 
         SVGPath icon = new SVGPath();
@@ -223,9 +212,7 @@ public final class AircraftController {
 
         // Set a mouse click event handler to toggle the selected state of the aircraft
         icon.setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.PRIMARY) {
-                selectedAircraftState.set(aircraftState);
-            }
+            if (event.getButton() == MouseButton.PRIMARY) selectedAircraftState.set(aircraftState);
         });
 
         // Bind the fill property of the SVGPath to the altitude-based color of the aircraft
@@ -241,6 +228,9 @@ public final class AircraftController {
      * @return The aircraft label with the information of the aircraft
      */
     private Group buildLabel(ObservableAircraftState aircraftState) {
+        final String UNKNOWN= "?";
+        final int MIN_ZOOM_LEVEL_LABEL = 11; //Maximum zoom level at which the label is visible
+
         Text labelText = new Text();
         Rectangle labelBackground = new Rectangle();
 
@@ -265,7 +255,7 @@ public final class AircraftController {
                     ? UNKNOWN
                     : String.format("%.0f", aircraftState.getAltitude());
 
-            return String.format("%s\n %s\u2002km/h %s\u2002m",
+            return String.format("%s\n%s\u2002km/h %s\u2002m",
                     identification,
                     velocity,
                     altitude);
@@ -306,23 +296,31 @@ public final class AircraftController {
         trajectoryGroup.setVisible(false);
 
         // Add a listener to the trajectory property of the aircraft state
-        aircraftState.getTrajectory().addListener((ListChangeListener<ObservableAircraftState.AirbornePos>) change -> {
-            if (trajectoryGroup.isVisible()) {
-                trajectoryGroup.getChildren().clear();
-                List<ObservableAircraftState.AirbornePos> trajectory = aircraftState.getTrajectory();
-
-                // Build the trajectory lines based on the positions in the trajectory list
-                List<Line> trajectoryLines = IntStream.range(0, trajectory.size() - 1)
-                        .mapToObj(i ->
-                            buildTrajectoryLine(trajectory.get(i), trajectory.get(i + 1)))
-                            .toList();
-
-                // Add the trajectory lines to the trajectory group
-                trajectoryGroup.getChildren().addAll(trajectoryLines);
-            }
-        });
+        aircraftState.getTrajectory().addListener((ListChangeListener<ObservableAircraftState.AirbornePos>) change ->
+                updateTrajectoryLines(trajectoryGroup, aircraftState.getTrajectory())
+        );
 
         return trajectoryGroup;
+    }
+
+    /**
+     * Builds the trajectory line between two aircraft positions.
+     * @param trajectoryGroup The trajectory group
+     * @param trajectory The trajectory
+     */
+    private void updateTrajectoryLines(Group trajectoryGroup, List<ObservableAircraftState.AirbornePos> trajectory) {
+        if (trajectoryGroup.isVisible()) {
+            // Clear the existing trajectory lines
+            trajectoryGroup.getChildren().clear();
+
+            // Build trajectory lines between each pair of positions
+            List<Line> trajectoryLines = IntStream.range(0, trajectory.size() - 1)
+                    .mapToObj(i -> buildTrajectoryLine(trajectory.get(i), trajectory.get(i + 1)))
+                    .toList();
+
+            // Add the trajectory lines to the trajectory group
+            trajectoryGroup.getChildren().addAll(trajectoryLines);
+        }
     }
 
     /**

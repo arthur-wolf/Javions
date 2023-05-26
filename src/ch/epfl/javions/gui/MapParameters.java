@@ -14,8 +14,8 @@ public final class MapParameters {
     private final IntegerProperty zoom;
     private final DoubleProperty minX;
     private final DoubleProperty minY;
-    private final int MINIMUM_ZOOM_LEVEL = 6;
-    private final int MAXIMUM_ZOOM_LEVEL = 19;
+    private static final int MINIMUM_ZOOM_LEVEL = 6;
+    private static final int MAXIMUM_ZOOM_LEVEL = 19;
 
     /**
      * Constructs a MapParameters with the specified initial zoom, initial minimum X value, and initial minimum Y value.

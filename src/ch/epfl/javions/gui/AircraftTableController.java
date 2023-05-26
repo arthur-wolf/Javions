@@ -24,9 +24,11 @@ import java.util.function.Consumer;
  * @author Oussama Ghali (341478)
  */
 public final class AircraftTableController {
-    private final int NUMERIC_COLUMN_WIDTH = 85;
-    private final DecimalFormat DECIMAL_FORMAT_4_DIGITS = new DecimalFormat("#.0000");
-    private final DecimalFormat DECIMAL_FORMAT_0_DIGIT = new DecimalFormat("#");
+    private static final int NUMERIC_COLUMN_WIDTH = 85;
+
+    // Valid alternative : https://edstem.org/eu/courses/237/discussion/37541
+    private static final DecimalFormat DECIMAL_FORMAT_4_DIGITS = new DecimalFormat("#.0000");
+    private static final DecimalFormat DECIMAL_FORMAT_0_DIGIT = new DecimalFormat("#");
     private final TableView<ObservableAircraftState> tableView;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
     private Consumer<ObservableAircraftState> consumer;
@@ -148,9 +150,7 @@ public final class AircraftTableController {
         TableColumn<ObservableAircraftState, String> registrationColumn = createColumn("Immatriculation", REGISTRATION_COLUMN_WIDTH);
         registrationColumn.setCellValueFactory(cellData ->
                     wrap(cellData.getValue().getAircraftData())
-                    .map(AircraftData::registration)
-                    .map(AircraftRegistration::string));
-
+                    .map(f -> f.registration().string()));
         // ---------------------------------Model------------------------------------------
         TableColumn<ObservableAircraftState, String> modelColumn = createColumn("Modèle", MODEL_COLUMN_WIDTH);
         modelColumn.setCellValueFactory(cellData ->
@@ -161,15 +161,13 @@ public final class AircraftTableController {
         TableColumn<ObservableAircraftState, String> typeColumn = createColumn("Type", DESIGNATOR_COLUMN_WIDTH);
         typeColumn.setCellValueFactory(cellData ->
                     wrap(cellData.getValue().getAircraftData())
-                    .map(AircraftData::typeDesignator)
-                    .map(AircraftTypeDesignator::string));
+                    .map(f -> f.typeDesignator().string()));
 
         // ---------------------------------Description-------------------------------------
         TableColumn<ObservableAircraftState, String> descriptionColumn = createColumn("Description", DESCRIPTION_COLUMN_WIDTH);
         descriptionColumn.setCellValueFactory(cellData ->
                     wrap(cellData.getValue().getAircraftData())
-                    .map(AircraftData::description)
-                    .map(AircraftDescription::string));
+                    .map(f -> f.description().string()));
 
         // ---------------------------------Longitude---------------------------------------
         TableColumn<ObservableAircraftState, String> longitudeColumn = createColumn("Longitude (°)", NUMERIC_COLUMN_WIDTH);

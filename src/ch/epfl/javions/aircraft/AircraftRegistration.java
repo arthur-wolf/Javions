@@ -2,7 +2,6 @@ package ch.epfl.javions.aircraft;
 
 import ch.epfl.javions.Preconditions;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -22,6 +21,6 @@ public record AircraftRegistration(String string) {
      * @throws IllegalArgumentException if the registration does not match the regular expression
      */
     public AircraftRegistration {
-        Preconditions.checkArgument(AIRCRAFT_REGISTRATION_PATTERN.matcher(Objects.requireNonNull(string)).matches());
+        Preconditions.checkArgument(AIRCRAFT_REGISTRATION_PATTERN.matcher(string).matches());
     }
 }

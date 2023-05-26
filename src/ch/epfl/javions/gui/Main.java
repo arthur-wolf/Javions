@@ -40,9 +40,7 @@ import javafx.animation.AnimationTimer;
  * @author Oussama Ghali (341478)
  */
 public class Main extends Application {
-    private long lastPurge = -1;
-    private final ConcurrentLinkedQueue<RawMessage> messageQueue = new ConcurrentLinkedQueue<>();
-    private AdsbDemodulator adsbDemodulator;
+    long lastPurge = System.nanoTime();
 
     /**
      * This method starts the application.
@@ -58,7 +56,7 @@ public class Main extends Application {
      * @return The raw ADS-B message or null if the length of the read bytes does not match the expected length.
      * @throws IOException If an I/O error occurs.
      */
-    static RawMessage readMessage(DataInputStream inputStream) throws IOException {
+    private static RawMessage readMessage(DataInputStream inputStream) throws IOException {
         final int RAW_MESSAGE_LENGTH = RawMessage.LENGTH;
         byte[] bytes = new byte[RAW_MESSAGE_LENGTH];
         long timeStampNs = inputStream.readLong();
@@ -85,6 +83,7 @@ public class Main extends Application {
         final String TITLE = "Javions";
         final int MIN_WIDTH = 800;
         final int MIN_HEIGHT = 600;
+        final ConcurrentLinkedQueue<RawMessage> messageQueue = new ConcurrentLinkedQueue<>();
 
         long startTime = System.nanoTime();
         Path tileCachePath = Path.of("tile-cache");
@@ -103,21 +102,21 @@ public class Main extends Application {
         // - aircraftTableController: controls the table that displays the list of aircraft
         // - statusLineController: controls the line that displays the status of the application
 
-        var selectedAircraftProperty = new SimpleObjectProperty<ObservableAircraftState>();
-        var mapParameters = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
-        var tileManager = new TileManager(tileCachePath, TILE_SERVER_ADDRESS);
-        var baseMapController = new BaseMapController(tileManager, mapParameters);
-        var aircraftDatabase = new AircraftDatabase(dbFilePath);
-        var aircraftStateManager = new AircraftStateManager(aircraftDatabase);
-        var aircraftController = new AircraftController(mapParameters, aircraftStateManager.states(), selectedAircraftProperty);
-        var aircraftTableController = new AircraftTableController(aircraftStateManager.states(), selectedAircraftProperty);
-        var statusLineController = new StatusLineController();
+        SimpleObjectProperty<ObservableAircraftState> selectedAircraftProperty = new SimpleObjectProperty<>();
+        MapParameters mapParameters = new MapParameters(INITIAL_ZOOM, INITIAL_LONGITUDE, INITIAL_LATITUDE);
+        TileManager tileManager = new TileManager(tileCachePath, TILE_SERVER_ADDRESS);
+        BaseMapController baseMapController = new BaseMapController(tileManager, mapParameters);
+        AircraftDatabase aircraftDatabase = new AircraftDatabase(dbFilePath);
+        AircraftStateManager aircraftStateManager = new AircraftStateManager(aircraftDatabase);
+        AircraftController aircraftController = new AircraftController(mapParameters, aircraftStateManager.states(), selectedAircraftProperty);
+        AircraftTableController aircraftTableController = new AircraftTableController(aircraftStateManager.states(), selectedAircraftProperty);
+        StatusLineController statusLineController = new StatusLineController();
 
         statusLineController.aircraftCountProperty().bind(Bindings.size(aircraftStateManager.states()));
 
-        var stackPane = new StackPane(baseMapController.pane(), aircraftController.pane());
-        var statusBar = new BorderPane(aircraftTableController.pane(), statusLineController.pane(), null, null, null);
-        var root = new SplitPane(stackPane, statusBar);
+        StackPane stackPane = new StackPane(baseMapController.pane(), aircraftController.pane());
+        BorderPane statusBar = new BorderPane(aircraftTableController.pane(), statusLineController.pane(), null, null, null);
+        SplitPane root = new SplitPane(stackPane, statusBar);
 
         aircraftTableController.setOnDoubleClick(event -> baseMapController.centerOn(event.getPosition()));
 
@@ -129,14 +128,14 @@ public class Main extends Application {
         primaryStage.show();
 
         Supplier<RawMessage> messageSupplier = createMessageSupplier(startTime);
-        Thread messageThread = createMessageThread(messageSupplier);
+        Thread messageThread = createMessageThread(messageSupplier, messageQueue);
         messageThread.setDaemon(true);
         messageThread.start();
 
         new AnimationTimer() {
             @Override
             public void handle(long now) {
-                purgeAndUpdateStatesIfNeeded(now, aircraftStateManager, statusLineController);
+                purgeAndUpdateStatesIfNeeded(now, aircraftStateManager, statusLineController,  messageQueue);
             }
         }.start();
     }
@@ -147,9 +146,9 @@ public class Main extends Application {
      * @param aircraftStateManager The aircraft state manager responsible for managing aircraft states.
      * @param statusLineController The controller responsible for managing the status line.
      */
-    private void purgeAndUpdateStatesIfNeeded(long now, AircraftStateManager aircraftStateManager, StatusLineController statusLineController) {
+    private void purgeAndUpdateStatesIfNeeded(long now, AircraftStateManager aircraftStateManager, StatusLineController statusLineController,ConcurrentLinkedQueue<RawMessage> messageQueue) {
         final int ONE_SECOND_IN_NANO = 1_000_000_000;
-        if (lastPurge == -1 || (now - lastPurge) >= ONE_SECOND_IN_NANO) {
+        if (now - lastPurge > ONE_SECOND_IN_NANO) {
             aircraftStateManager.purge();
             lastPurge = now;
         }
@@ -168,6 +167,7 @@ public class Main extends Application {
 
     /**
      * This method creates a new supplier of raw ADS-B messages based on the input source (file or System.in).
+     *
      * @param startTime Start time of the application in nanoseconds.
      * @return The supplier of raw ADS-B messages.
      * @throws IOException If an I/O error occurs.
@@ -177,8 +177,8 @@ public class Main extends Application {
         if (!params.isEmpty())
             return createFileSupplier(params.get(0), startTime);
         else {
-            adsbDemodulator = new AdsbDemodulator(System.in);
-            return createSystemInSupplier();
+            var adsbDemodulator = new AdsbDemodulator(System.in);
+            return createSystemInSupplier(adsbDemodulator);
         }
     }
 
@@ -198,10 +198,8 @@ public class Main extends Application {
 
             return () -> {
                 try {
-                    if (inputStream.available() == 0) {
+                    if (inputStream.available() == 0)
                         inputStream.close();
-                        return null;
-                    }
                     RawMessage currentMessage = readMessage(inputStream);
                     Objects.requireNonNull(currentMessage, "Current message cannot be null");
                     long currentTime = currentMessage.timeStampNs() - (System.nanoTime() - startTime);
@@ -222,7 +220,7 @@ public class Main extends Application {
      * This method creates a new supplier of raw ADS-B messages from System.in.
      * @return The supplier of raw ADS-B messages.
      */
-    private Supplier<RawMessage> createSystemInSupplier() {
+    private Supplier<RawMessage> createSystemInSupplier(AdsbDemodulator adsbDemodulator) {
         return () -> {
             try {
                 return adsbDemodulator.nextMessage();
@@ -238,11 +236,11 @@ public class Main extends Application {
      * @param messageSupplier The supplier of raw ADS-B messages.
      * @return The new thread.
      */
-    private Thread createMessageThread(Supplier<RawMessage> messageSupplier) {
+    private Thread createMessageThread(Supplier<RawMessage> messageSupplier, ConcurrentLinkedQueue<RawMessage> messageQueue) {
         return new Thread(() -> {
             while (true) {
                 RawMessage message = messageSupplier.get();
-                if (Objects.isNull(message)) break;
+                if (message == null) break;
                 messageQueue.add(message);
             }
         });

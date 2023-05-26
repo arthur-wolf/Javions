@@ -25,7 +25,7 @@ public final class TileManager {
     private final LinkedHashMap<TileId, Image> memoryCache;
     private final Path pathToMemoryDisk;
     private final String tileServerName;
-    private final int CACHE_CAPACITY = 100;
+    private static final int CACHE_CAPACITY = 100;
 
     /**
      * Constructs a TileManager with the specified disk cache path and tile server name.
@@ -50,7 +50,6 @@ public final class TileManager {
      */
     private void addToCache(TileId tileIdentity, Image image) {
         if (memoryCache.size() >= CACHE_CAPACITY)
-            //Complexity is 0(1)
             memoryCache.remove(memoryCache.entrySet().iterator().next().getKey());
 
         memoryCache.put(tileIdentity, image);
