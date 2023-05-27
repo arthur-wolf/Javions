@@ -1,6 +1,7 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.Math2;
+import ch.epfl.javions.Preconditions;
 import javafx.beans.property.*;
 
 /**
@@ -26,8 +27,7 @@ public final class MapParameters {
      * @throws IllegalArgumentException If the initialZoom is not in the range [6,19]
      */
     public MapParameters(int initialZoom, double initialMinX, double initialMinY) {
-        if (initialZoom < MINIMUM_ZOOM_LEVEL || initialZoom > MAXIMUM_ZOOM_LEVEL)
-            throw new IllegalArgumentException();
+       Preconditions.checkArgument(initialZoom >= MINIMUM_ZOOM_LEVEL && initialZoom <= MAXIMUM_ZOOM_LEVEL);
 
         zoom = new SimpleIntegerProperty(initialZoom);
         minX = new SimpleDoubleProperty(initialMinX);

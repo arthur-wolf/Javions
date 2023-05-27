@@ -94,17 +94,9 @@ public final class AircraftController {
                 pane.getChildren().removeIf(node -> node.getId().equals(aircraftId));
             }
         });
+        selectedAircraftState.addListener((observable, oldValue, newValue) -> updateTrajectoryLines());
+        mapParameters.zoomProperty().addListener((observable, oldValue, newValue) -> updateTrajectoryLines());
 
-        mapParameters.zoomProperty().addListener((observable, oldValue, newValue) -> {
-            for (ObservableAircraftState aircraft : aircraftState) {
-                // Look up the aircraft group by its ID
-                Group aircraftGroup = (Group) pane.lookup("#" + aircraft.getIcaoAddress().string());
-                // Get the trajectory group from the aircraft group
-                Group trajectoryGroup = (Group) aircraftGroup.getChildren().get(0);
-
-                updateTrajectoryLines(trajectoryGroup, aircraft.getTrajectory());
-            }
-        });
     }
 
     /**
@@ -177,6 +169,9 @@ public final class AircraftController {
      */
     private SVGPath buildIcon(ObservableAircraftState aircraftState) {
         final String EMPTY_STRING = "";
+        SVGPath icon = new SVGPath();
+        icon.getStyleClass().add("aircraft");
+
         ObservableValue<AircraftIcon> aircraftIcon = aircraftState.categoryProperty().map(category -> {
             AircraftData data = aircraftState.getAircraftData();
 
@@ -197,9 +192,6 @@ public final class AircraftController {
                     category.intValue(),
                     wakeTurbulenceCategory);
         });
-
-        SVGPath icon = new SVGPath();
-        icon.getStyleClass().add("aircraft");
 
         // Bind the content property of the SVGPath to the SVG path of the aircraft icon
         icon.contentProperty().bind(aircraftIcon.map(AircraftIcon::svgPath));
@@ -229,10 +221,20 @@ public final class AircraftController {
      */
     private Group buildLabel(ObservableAircraftState aircraftState) {
         final String UNKNOWN= "?";
-        final int MIN_ZOOM_LEVEL_LABEL = 11; //Maximum zoom level at which the label is visible
+        //Maximum zoom level at which the label is visible
+        final int MIN_ZOOM_LEVEL_LABEL = 11;
 
         Text labelText = new Text();
+        labelText.getStyleClass().add("label-text");
+
         Rectangle labelBackground = new Rectangle();
+        // Bind the width and height properties of the label background to accommodate the text
+        labelBackground.widthProperty().bind(labelText.layoutBoundsProperty().map(bounds -> bounds.getWidth() + 4));
+        labelBackground.heightProperty().bind(labelText.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
+        labelBackground.getStyleClass().add("label-rectangle");
+
+        Group labelGroup = new Group(labelBackground, labelText);
+        labelGroup.getStyleClass().add("label");
 
         // Bind the text property of the label to the formatted string based on registration, callSign, ICAO, altitude and velocity values
         labelText.textProperty().bind(Bindings.createStringBinding(() -> {
@@ -251,6 +253,8 @@ public final class AircraftController {
             String velocity = Double.isNaN(aircraftState.getVelocity())
                     ? UNKNOWN
                     : String.format("%.0f", Units.convertTo(aircraftState.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
+
+            // Altitude is never NaN, but we still check it
             String altitude = Double.isNaN(aircraftState.getAltitude())
                     ? UNKNOWN
                     : String.format("%.0f", aircraftState.getAltitude());
@@ -261,17 +265,6 @@ public final class AircraftController {
                     altitude);
             // The binding depends on these 3 property, because they might change with the time.
         }, aircraftState.callSignProperty(), aircraftState.altitudeProperty(), aircraftState.velocityProperty()));
-
-        labelText.getStyleClass().add("label-text");
-
-        // Bind the width and height properties of the label background to accommodate the text
-        labelBackground.widthProperty().bind(labelText.layoutBoundsProperty().map(bounds -> bounds.getWidth() + 4));
-        labelBackground.heightProperty().bind(labelText.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
-
-        labelBackground.getStyleClass().add("label-rectangle");
-
-        Group labelGroup = new Group(labelBackground, labelText);
-        labelGroup.getStyleClass().add("label");
 
         // Bind the visible property of the label group based on the zoom level and selected state
         labelGroup.visibleProperty().bind(Bindings.createBooleanBinding(() ->
@@ -297,30 +290,10 @@ public final class AircraftController {
 
         // Add a listener to the trajectory property of the aircraft state
         aircraftState.getTrajectory().addListener((ListChangeListener<ObservableAircraftState.AirbornePos>) change ->
-                updateTrajectoryLines(trajectoryGroup, aircraftState.getTrajectory())
+                updateTrajectoryLines()
         );
 
         return trajectoryGroup;
-    }
-
-    /**
-     * Builds the trajectory line between two aircraft positions.
-     * @param trajectoryGroup The trajectory group
-     * @param trajectory The trajectory
-     */
-    private void updateTrajectoryLines(Group trajectoryGroup, List<ObservableAircraftState.AirbornePos> trajectory) {
-        if (trajectoryGroup.isVisible()) {
-            // Clear the existing trajectory lines
-            trajectoryGroup.getChildren().clear();
-
-            // Build trajectory lines between each pair of positions
-            List<Line> trajectoryLines = IntStream.range(0, trajectory.size() - 1)
-                    .mapToObj(i -> buildTrajectoryLine(trajectory.get(i), trajectory.get(i + 1)))
-                    .toList();
-
-            // Add the trajectory lines to the trajectory group
-            trajectoryGroup.getChildren().addAll(trajectoryLines);
-        }
     }
 
     /**
@@ -349,6 +322,31 @@ public final class AircraftController {
         line.setStroke(new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, s1, s2));
 
         return line;
+    }
+
+    /**
+     * Updates the trajectory lines.
+     */
+    private void updateTrajectoryLines() {
+        for (ObservableAircraftState aircraft : aircraftState) {
+            // Look up the aircraft group by its ID
+            Group aircraftGroup = (Group) pane.lookup("#" + aircraft.getIcaoAddress().string());
+            // Get the trajectory group from the aircraft group
+            Group trajectoryGroup = (Group) aircraftGroup.getChildren().get(0);
+
+            if (trajectoryGroup.isVisible()) {
+                // Clear the existing trajectory lines
+                trajectoryGroup.getChildren().clear();
+
+                // Build trajectory lines between each pair of positions
+                List<Line> trajectoryLines = IntStream.range(0, aircraft.getTrajectory().size() - 1)
+                        .mapToObj(i -> buildTrajectoryLine(aircraft.getTrajectory().get(i), aircraft.getTrajectory().get(i + 1)))
+                        .toList();
+
+                // Add the trajectory lines to the trajectory group
+                trajectoryGroup.getChildren().addAll(trajectoryLines);
+            }
+        }
     }
 
     /**

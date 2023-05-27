@@ -22,7 +22,6 @@ import java.util.Objects;
  * @author Oussama Ghali (341478)
  */
 public final class ObservableAircraftState implements AircraftStateSetter {
-    private long lastMessageTimeStamps = -1L;
     private final IcaoAddress icaoAddress;
     private final AircraftData aircraftData;
     private final LongProperty lastMessageTimeStampsNs;    // ns
@@ -45,7 +44,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData aircraftData) {
         Objects.requireNonNull(icaoAddress);
         final int INITIAL_VALUE = 0;
-        final double UNKNOWN = Double.NaN; // Value for unknown altitude and velocity
+        final double UNKNOWN = Double.NaN; // Value for unknown altitude and velocity (Update : Altitude is never unknown)
 
         this.icaoAddress = icaoAddress;
         this.aircraftData = aircraftData;
@@ -221,6 +220,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         // Update altitude in last position if altitude is updated and position is known
         else if (!Double.isNaN(currentAltitude)) {
             if (currentPosition != null) {
+                long lastMessageTimeStamps = -1L;
                 if (trajectory.isEmpty()) {
                     trajectory.add(new AirbornePos(currentPosition, currentAltitude));
                 } else if (lastMessageTimeStamps == getLastMessageTimeStampNs()) {

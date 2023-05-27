@@ -187,6 +187,7 @@ public final class AircraftTableController {
 
         // ---------------------------------Altitude-----------------------------------------
         TableColumn<ObservableAircraftState, String> altitudeColumn = createColumn("Altitude (m)", NUMERIC_COLUMN_WIDTH);
+        // Altitude is in reality never unknown, so we don't really need to check for NaN
         altitudeColumn.setCellValueFactory(cellData ->
                     cellData.getValue().altitudeProperty()
                     .map(DECIMAL_FORMAT_0_DIGIT::format));
@@ -195,8 +196,9 @@ public final class AircraftTableController {
         TableColumn<ObservableAircraftState, String> speedColumn = createColumn("Vitesse (km/h)", NUMERIC_COLUMN_WIDTH);
         speedColumn.setCellValueFactory(cellData ->
                     cellData.getValue().velocityProperty()
-                    .map(speed ->
-                    DECIMAL_FORMAT_0_DIGIT.format(Units.convertTo(speed.doubleValue(), Units.Speed.KILOMETER_PER_HOUR))
+                    .map(speed -> Double.isNaN(speed.doubleValue())
+                            ? ""
+                            : DECIMAL_FORMAT_0_DIGIT.format(Units.convertTo(speed.doubleValue(), Units.Speed.KILOMETER_PER_HOUR))
         ));
 
         tableView.getColumns().addAll(

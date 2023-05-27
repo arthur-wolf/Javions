@@ -58,10 +58,6 @@ public final class AircraftStateManager {
      * This method first retrieves the IcaoAddress from the message and attempts to get the associated
      * AircraftStateAccumulator from the table.
      * If the address is null or not found in the database, the method does not make any changes.
-     * If the accumulator is not found in the table, a new one is created and added to the table.
-     * The accumulator is then updated with the message.
-     * If the accumulator's state setter's position is not null, the accumulator's state setter is
-     * added to the observable aircraft states and the last timestamp is updated with the message's timestamp.
      *
      * @param message The message used to update the aircraft state manager
      * @throws IOException If an I/O error occurs
@@ -93,9 +89,7 @@ public final class AircraftStateManager {
     /**
      * Purges the aircraft state manager.
      * This method iterates over the entries in the table. Each entry contains an IcaoAddress
-     * and an associated AircraftStateAccumulator. If the difference between the last
-     * timestamp and the last message timestamp of the accumulator is greater than DT,
-     * the accumulator is removed from the observable aircraft states and from the table.
+     * and an associated AircraftStateAccumulator.
      * This method is keeping the data up-to-date.
      */
     public void purge() {

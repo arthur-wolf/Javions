@@ -154,8 +154,7 @@ public final class TileManager {
          * @return True if the parameters form a valid tile ID; false otherwise.
          */
         public static boolean isValid(int zoomLevel, int indexX, int indexY) {
-            //No restrictions concerning the zoom level (can be greater than 20) in TileId,
-            //Will be restricted in the gui.
+            //No restrictions concerning the zoom level in TileId, will be restricted in the gui.
             double maxIndex_X_and_Y = Math.pow(2, zoomLevel);
             return ((indexX + 1) <= maxIndex_X_and_Y
                     && (indexY + 1) <= maxIndex_X_and_Y

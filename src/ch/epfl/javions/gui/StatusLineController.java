@@ -23,13 +23,15 @@ public final class StatusLineController {
     private final IntegerProperty aircraftCountProperty;
     private final LongProperty messageCountProperty;
 
+
     /**
      * The constructor for the StatusLineController. Initializes the aircraft and
      * message count properties and binds them to text nodes for display.
      */
     public StatusLineController() {
-        aircraftCountProperty = new SimpleIntegerProperty(0);
-        messageCountProperty = new SimpleLongProperty(0);
+        final int INITIAL_VALUE = 0;
+        aircraftCountProperty = new SimpleIntegerProperty(INITIAL_VALUE);
+        messageCountProperty = new SimpleLongProperty(INITIAL_VALUE);
 
         // Create nodes
         Text aircraftCountText = new Text();
