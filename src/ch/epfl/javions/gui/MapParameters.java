@@ -65,7 +65,7 @@ public final class MapParameters {
      * Sets the minimum X value
      * @param minX The minimum X value
      */
-    public void setMinX(double minX) {
+    private void setMinX(double minX) {
         this.minX.set(minX);
     }
 
@@ -92,7 +92,7 @@ public final class MapParameters {
      *
      * @param minY The minimum Y value
      */
-    public void setMinY(double minY) {
+    private void setMinY(double minY) {
         this.minY.set(minY);
     }
 

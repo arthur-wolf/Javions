@@ -31,7 +31,7 @@ public final class AircraftTableController {
     private static final DecimalFormat DECIMAL_FORMAT_0_DIGIT = new DecimalFormat("#");
     private final TableView<ObservableAircraftState> tableView;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftState;
-    private Consumer<ObservableAircraftState> consumer;
+    private  Consumer<ObservableAircraftState> consumer;
 
     /**
      * Constructs an AircraftTableController object with the given set of aircraft states
@@ -188,6 +188,7 @@ public final class AircraftTableController {
         // ---------------------------------Altitude-----------------------------------------
         TableColumn<ObservableAircraftState, String> altitudeColumn = createColumn("Altitude (m)", NUMERIC_COLUMN_WIDTH);
         // Altitude is in reality never unknown, so we don't really need to check for NaN
+        // https://edstem.org/eu/courses/237/discussion/34517
         altitudeColumn.setCellValueFactory(cellData ->
                     cellData.getValue().altitudeProperty()
                     .map(DECIMAL_FORMAT_0_DIGIT::format));

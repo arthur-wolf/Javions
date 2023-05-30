@@ -40,7 +40,7 @@ import javafx.animation.AnimationTimer;
  * @author Oussama Ghali (341478)
  */
 public class Main extends Application {
-    long lastPurge = System.nanoTime();
+    private long lastPurge = System.nanoTime();
 
     /**
      * This method starts the application.
