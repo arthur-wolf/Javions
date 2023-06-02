@@ -96,7 +96,6 @@ public final class AircraftController {
         });
         selectedAircraftState.addListener((observable, oldValue, newValue) -> updateTrajectoryLines());
         mapParameters.zoomProperty().addListener((observable, oldValue, newValue) -> updateTrajectoryLines());
-
     }
 
     /**

@@ -43,8 +43,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      */
     public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData aircraftData) {
         Objects.requireNonNull(icaoAddress);
+        // Value for unknown altitude and velocity (Update : Altitude is never unknown) : https://edstem.org/eu/courses/237/discussion/34517
         final int INITIAL_VALUE = 0;
-        final double UNKNOWN = Double.NaN; // Value for unknown altitude and velocity (Update : Altitude is never unknown)
+        final double UNKNOWN = Double.NaN;
 
         this.icaoAddress = icaoAddress;
         this.aircraftData = aircraftData;
